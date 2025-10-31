@@ -1,0 +1,160 @@
+---
+title: "Supported Languages"
+description: "Complete list of languages supported by NavTalk Real-time Digital Human API"
+---
+
+## Supported Languages
+
+NavTalk Real-time Digital Human API supports **60+ languages** for multilingual conversations. The system features intelligent automatic language detection and switching.
+
+### Automatic Language Detection and Switching
+
+NavTalk can **automatically detect** the user's input language and respond in the same language **without any code configuration**. The system intelligently recognizes the user's language and automatically switches responses accordingly—all happening seamlessly during the conversation with no additional programming required.
+
+When you don't specify a language in the `instructions`, NavTalk will:
+- Automatically detect the language of each user input
+- Respond in the detected language automatically
+- Switch between languages in real-time as the user changes languages during the conversation
+
+This means users can speak in multiple languages within a single conversation, and NavTalk will automatically adapt.
+
+## Language Configuration Methods
+
+### Method 1: Automatic Detection (Recommended)
+
+Don't specify a language in instructions - NavTalk will automatically detect and match the user's input language:
+
+<CodeGroup>
+```javascript JavaScript
+const sessionConfig = {
+  type: 'session.update',
+  session: {
+    instructions: 'You are a helpful assistant.',
+    // No language specified - will auto-detect
+    voice: 'cedar',
+    // ... other session parameters
+  }
+};
+
+socket.send(JSON.stringify(sessionConfig));
+```
+
+```python Python
+session_config = {
+    'type': 'session.update',
+    'session': {
+        'instructions': 'You are a helpful assistant.',
+        # No language specified - will auto-detect
+        'voice': 'cedar',
+        # ... other session parameters
+    }
+}
+
+await websocket.send(json.dumps(session_config))
+```
+</CodeGroup>
+
+### Method 2: Explicit Language Setting
+
+Specify the desired response language in the instructions:
+
+<CodeGroup>
+```javascript JavaScript
+const sessionConfig = {
+  type: 'session.update',
+  session: {
+    instructions: `
+      You are a helpful assistant.
+      Please respond in Chinese.
+    `,
+    voice: 'cedar',
+    // ... other session parameters
+  }
+};
+
+socket.send(JSON.stringify(sessionConfig));
+```
+
+```python Python
+session_config = {
+    'type': 'session.update',
+    'session': {
+        'instructions': '''
+            You are a helpful assistant.
+            Please respond in Chinese.
+        ''',
+        'voice': 'cedar',
+        # ... other session parameters
+    }
+}
+
+await websocket.send(json.dumps(session_config))
+```
+</CodeGroup>
+
+## Complete List of Supported Languages
+
+NavTalk supports **60+ languages** for seamless multilingual conversations. Below is the complete list:
+
+- **Afrikaans** (南非荷兰语)
+- **Arabic** (阿拉伯语)
+- **Armenian** (亚美尼亚语)
+- **Azerbaijani** (阿塞拜疆语)
+- **Belarusian** (白俄罗斯语)
+- **Bosnian** (波斯尼亚语)
+- **Bulgarian** (保加利亚语)
+- **Catalan** (加泰罗尼亚语)
+- **Chinese** (中文)
+- **Croatian** (克罗地亚语)
+- **Czech** (捷克语)
+- **Danish** (丹麦语)
+- **Dutch** (荷兰语)
+- **English** (英语)
+- **Estonian** (爱沙尼亚语)
+- **Finnish** (芬兰语)
+- **French** (法语)
+- **Galician** (加利西亚语)
+- **German** (德语)
+- **Greek** (希腊语)
+- **Hebrew** (希伯来语)
+- **Hindi** (印地语)
+- **Hungarian** (匈牙利语)
+- **Icelandic** (冰岛语)
+- **Indonesian** (印度尼西亚语)
+- **Italian** (意大利语)
+- **Japanese** (日语)
+- **Kannada** (卡纳达语)
+- **Kazakh** (哈萨克语)
+- **Korean** (韩语)
+- **Latvian** (拉脱维亚语)
+- **Lithuanian** (立陶宛语)
+- **Macedonian** (马其顿语)
+- **Malay** (马来语)
+- **Marathi** (马拉地语)
+- **Maori** (毛利语)
+- **Nepali** (尼泊尔语)
+- **Norwegian** (挪威语)
+- **Persian** (波斯语)
+- **Polish** (波兰语)
+- **Portuguese** (葡萄牙语)
+- **Romanian** (罗马尼亚语)
+- **Russian** (俄语)
+- **Serbian** (塞尔维亚语)
+- **Slovak** (斯洛伐克语)
+- **Slovenian** (斯洛文尼亚语)
+- **Spanish** (西班牙语)
+- **Swahili** (斯瓦希里语)
+- **Swedish** (瑞典语)
+- **Tagalog** (塔加洛语)
+- **Tamil** (泰米尔语)
+- **Thai** (泰语)
+- **Turkish** (土耳其语)
+- **Ukrainian** (乌克兰语)
+- **Urdu** (乌尔都语)
+- **Vietnamese** (越南语)
+- **Welsh** (威尔士语)
+
+<Info>
+  **Best Practice**: For the best user experience, use automatic language detection. This allows users to communicate in their preferred language without any configuration, and the system will seamlessly adapt.
+</Info>
+

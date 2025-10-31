@@ -44,9 +44,18 @@
             "group": "Real-time Digital Human API",
             "pages": [
               "api/real-time-digital-human-api/overview",
+              {
+                "group": "Quick Start",
+                "pages": [
+                  "api/real-time-digital-human-api/quick-start/get-api-key",
+                  "api/real-time-digital-human-api/quick-start/establish-connection",
+                  "api/real-time-digital-human-api/quick-start/webrtc-connection"
+                ]
+              },
               "api/real-time-digital-human-api/system-character",
               "api/real-time-digital-human-api/custom-character-creation",
               "api/real-time-digital-human-api/editor",
+              "api/real-time-digital-human-api/supported-languages",
               "api/real-time-digital-human-api/function-calling",
               "api/real-time-digital-human-api/historical-dialogue"
             ]

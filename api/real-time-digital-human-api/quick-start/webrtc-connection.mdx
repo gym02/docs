@@ -1,0 +1,271 @@
+---
+title: "WebRTC Connection"
+description: "Learn how to establish WebRTC connections to receive audio and video responses from the NavTalk Real-time Digital Human API"
+---
+
+## WebRTC Connection
+
+WebRTC connections are used to **receive the returned audio and video data** from the NavTalk API. After processing your audio input via WebSocket, the digital human's audio and video responses are delivered through WebRTC for optimal streaming performance.
+
+<Steps>
+<Step title="Establish WebRTC Signaling Connection">
+  Connect to the WebRTC signaling server using WebSocket. This server handles the WebRTC offer/answer exchange:
+
+<CodeGroup>
+```javascript JavaScript
+const LICENSE = 'your-api-key-here'; // Use the same API key as WebSocket connection
+const webrtcUrl = 'transfer.navtalk.ai';
+const targetSessionId = LICENSE; // Usually your API key or session ID
+
+// Connect to WebRTC signaling WebSocket
+const resultSocket = new WebSocket(`wss://${webrtcUrl}/api/webrtc?userId=${targetSessionId}`);
+
+resultSocket.onopen = () => {
+  console.log('WebRTC signaling connection established');
+  
+  // Send create message to initiate WebRTC connection
+  const message = {
+    type: 'create',
+    targetSessionId: targetSessionId
+  };
+  resultSocket.send(JSON.stringify(message));
+};
+
+resultSocket.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  
+  if (message.type === 'offer') {
+    handleOffer(message);
+  } else if (message.type === 'answer') {
+    handleAnswer(message);
+  } else if (message.type === 'iceCandidate') {
+    handleIceCandidate(message);
+  }
+};
+
+resultSocket.onerror = (error) => {
+  console.error('WebRTC signaling error:', error);
+};
+
+resultSocket.onclose = (event) => {
+  console.log('WebRTC signaling connection closed:', event.code, event.reason);
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+
+LICENSE = 'your-api-key-here'
+webrtc_url = 'transfer.navtalk.ai'
+target_session_id = LICENSE
+
+async def connect_webrtc_signaling():
+    uri = f'wss://{webrtc_url}/api/webrtc?userId={target_session_id}'
+    
+    async with websockets.connect(uri) as websocket:
+        print('WebRTC signaling connection established')
+        
+        # Send create message
+        message = {
+            'type': 'create',
+            'targetSessionId': target_session_id
+        }
+        await websocket.send(json.dumps(message))
+        
+        # Handle messages
+        async for msg in websocket:
+            data = json.loads(msg)
+            if data.get('type') == 'offer':
+                await handle_offer(data, websocket)
+            elif data.get('type') == 'answer':
+                await handle_answer(data)
+            elif data.get('type') == 'iceCandidate':
+                await handle_ice_candidate(data)
+
+asyncio.run(connect_webrtc_signaling())
+```
+</CodeGroup>
+</Step>
+
+<Step title="Handle WebRTC Offer">
+  When you receive an offer from the server, create a peer connection, set the remote description, create an answer, and send it back:
+
+<CodeGroup>
+```javascript JavaScript
+let peerConnection;
+
+// ICE server configuration for NAT traversal
+const configuration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }
+  ]
+};
+
+function handleOffer(message) {
+  const targetId = message.targetSessionId;
+  const offer = new RTCSessionDescription(message.sdp);
+  
+  // Create RTCPeerConnection
+  peerConnection = new RTCPeerConnection(configuration);
+  
+  // Set remote description
+  peerConnection.setRemoteDescription(offer)
+    .then(() => peerConnection.createAnswer())
+    .then(answer => peerConnection.setLocalDescription(answer))
+    .then(() => {
+      // Send answer back to server
+      const responseMessage = {
+        type: 'answer',
+        targetSessionId: targetId,
+        sdp: peerConnection.localDescription
+      };
+      resultSocket.send(JSON.stringify(responseMessage));
+    })
+    .catch(err => console.error('Error handling offer:', err));
+  
+  // Handle incoming tracks (audio/video)
+  peerConnection.ontrack = (event) => {
+    console.log('Received remote track:', event);
+    const remoteVideo = document.getElementById('character-video');
+    if (remoteVideo) {
+      remoteVideo.srcObject = event.streams[0];
+      remoteVideo.play().catch(e => console.error('Video play failed:', e));
+    }
+  };
+  
+  // Handle ICE candidates
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      const message = {
+        type: 'iceCandidate',
+        targetSessionId: targetId,
+        candidate: event.candidate
+      };
+      resultSocket.send(JSON.stringify(message));
+    }
+  };
+  
+  // Monitor connection state
+  peerConnection.oniceconnectionstatechange = () => {
+    console.log('ICE connection state:', peerConnection.iceConnectionState);
+    if (peerConnection.iceConnectionState === 'connected') {
+      console.log('WebRTC connection fully established!');
+    } else if (peerConnection.iceConnectionState === 'failed') {
+      console.log('ICE connection failed');
+    }
+  };
+}
+```
+
+```python Python
+# Python WebRTC implementation requires additional libraries
+# such as aiortc or python-webrtc
+# This is a conceptual example
+
+async def handle_offer(message, websocket):
+    from aiortc import RTCPeerConnection, RTCSessionDescription
+    
+    target_id = message['targetSessionId']
+    offer = RTCSessionDescription(sdp=message['sdp']['sdp'], type=message['sdp']['type'])
+    
+    pc = RTCPeerConnection()
+    
+    @pc.on('track')
+    def on_track(track):
+        print('Received track:', track.kind)
+        # Handle incoming audio/video track
+        # Play in appropriate media element
+    
+    await pc.setRemoteDescription(offer)
+    answer = await pc.createAnswer()
+    await pc.setLocalDescription(answer)
+    
+    # Send answer
+    response = {
+        'type': 'answer',
+        'targetSessionId': target_id,
+        'sdp': {
+            'sdp': pc.localDescription.sdp,
+            'type': pc.localDescription.type
+        }
+    }
+    await websocket.send(json.dumps(response))
+    
+    # Handle ICE candidates
+    @pc.on('icecandidate')
+    def on_ice_candidate(candidate):
+        if candidate:
+            ice_message = {
+                'type': 'iceCandidate',
+                'targetSessionId': target_id,
+                'candidate': {
+                    'candidate': candidate.candidate,
+                    'sdpMid': candidate.sdpMid,
+                    'sdpMLineIndex': candidate.sdpMLineIndex
+                }
+            }
+            asyncio.create_task(websocket.send(json.dumps(ice_message)))
+```
+</CodeGroup>
+</Step>
+
+<Step title="Handle ICE Candidates">
+  Exchange ICE candidates to establish the optimal network path for media streaming:
+
+<CodeGroup>
+```javascript JavaScript
+function handleIceCandidate(message) {
+  const candidate = new RTCIceCandidate(message.candidate);
+  
+  peerConnection.addIceCandidate(candidate)
+    .then(() => console.log('ICE candidate added successfully'))
+    .catch(err => console.error('Error adding ICE candidate:', err));
+}
+```
+
+```python Python
+async def handle_ice_candidate(message):
+    candidate_info = message['candidate']
+    candidate = RTCIceCandidate(
+        candidate=candidate_info['candidate'],
+        sdpMid=candidate_info['sdpMid'],
+        sdpMLineIndex=candidate_info['sdpMLineIndex']
+    )
+    await pc.addIceCandidate(candidate)
+    print('ICE candidate added successfully')
+```
+</CodeGroup>
+</Step>
+
+<Step title="Display Video Stream">
+  Display the received video stream in a video element:
+
+<CodeGroup>
+```javascript JavaScript
+// HTML: <video id="character-video" autoplay playsinline></video>
+
+peerConnection.ontrack = (event) => {
+  console.log('Received remote track:', event);
+  
+  const remoteVideo = document.getElementById('character-video');
+  if (remoteVideo && event.streams && event.streams[0]) {
+    remoteVideo.srcObject = event.streams[0];
+    
+    // Start playback
+    remoteVideo.play()
+      .then(() => console.log('Video playback started'))
+      .catch(e => console.error('Video play failed:', e));
+  }
+};
+```
+
+```python Python
+# Python implementation depends on your GUI framework
+# For web-based Python apps, you might use aiohttp + WebRTC
+# or integrate with a frontend framework
+```
+</CodeGroup>
+</Step>
+</Steps>
