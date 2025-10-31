@@ -1,0 +1,92 @@
+---
+title: "Overview"
+description: "Real-time Digital Human System Character"
+---
+
+1. [Real-time digital human API](/api/real-time-digital-human-api)
+
+NavTalk provides a diverse collection of preset digital character avatars. When establishing a WebSocket connection, you can easily specify your preferred character through URL parameters. The system will automatically load the corresponding character model and animations.
+
+## **Configuration Method**
+
+Copy
+
+```
+// Construct URL with license and character parameters
+const websocketUrl = 'wss://api.navtalk.ai/api/realtime-api';
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterPngName)}`;
+
+// Establish WebSocket connection
+const socket = new WebSocket(websocketUrlWithParams);
+```
+
+## **Parameter Explanation**
+
+Parameter
+
+Type
+
+Required
+
+Description
+
+`license`
+
+string
+
+✅
+
+Your API license key for authentication
+
+`characterName`
+
+string
+
+✅
+
+Preset character identifier (e.g., "girl2", "boy1")
+
+## **System Supported Characters**
+
+![Cover](\images\api\real-time-digital-human-api\Alex.png)
+
+navtalk.Alex
+
+![Cover](\images\api\real-time-digital-human-api\Ethan.png)
+
+navtalk.Ethan
+
+![Cover](\images\api\real-time-digital-human-api\Leo.png)
+
+navtalk.Leo
+
+![Cover](\images\api\real-time-digital-human-api\Lily.png)
+
+navtalk.Lily
+
+![Cover](\images\api\real-time-digital-human-api\Emma.png)
+
+navtalk.Emma
+
+![Cover](\images\api\real-time-digital-human-api\Sophia.png)
+
+navtalk.Sophia
+
+![Cover](\images\api\real-time-digital-human-api\Mia.png)
+
+navtalk.Mia
+
+![Cover](\images\api\real-time-digital-human-api\Chloe.png)
+
+navtalk.Chloe
+
+![Cover](\images\api\real-time-digital-human-api\Zoe.png)
+
+navtalk.Zoe
+
+![Cover](\images\api\real-time-digital-human-api\Ava.png)
+
+navtalk.Ava
+
+> Stay tuned for more characters!
+

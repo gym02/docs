@@ -1,0 +1,165 @@
+---
+title: "Tool call"
+description: "Images and Media"
+---
+
+1. [Real-time digital human API](/api/real-time-digital-human-api)
+
+NavTalk supports integration of digital humans with external systems through function calling, enabling functionalities such as weather inquiries, knowledge base retrieval, and business system triggers.
+
+## Step 1: Define Function Tools
+
+When establishing a WebSocket session, configure the tools in the `session.update` request body:
+
+Copy
+
+```
+tools: [
+  {
+    "type": "function",
+    "name": "function_call_judge",
+    "description": "Automatically triggers function extension calls when user requests exceed the current conversation capabilities.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "userInput": {
+          "type": "string",
+          "description": "Raw user request content to be processed"
+        }
+      },
+      "required": ["userInput"]
+    }
+  }
+]
+```
+
+## Step 2: Receive Callback Events
+
+When the function is triggered, the WebSocket will receive messages of the following type:
+
+Copy
+
+```
+if (data.type === "response.function_call_arguments.done") {
+  handleFunctionCall(data);
+}
+```
+
+field
+
+meaning
+
+`type`
+
+Fixed as `response.function_call_arguments.done`
+
+`arguments`
+
+The parameters for the function call (in JSON string format)
+
+`call_id`
+
+The current unique identifier for the function call
+
+## Step 3: Handle Function Calls
+
+Copy
+
+```
+function handleFunctionCall(eventJson) {
+  try {
+    const functionCallArgs = JSON.parse(eventJson.arguments);
+    const userInput = functionCallArgs.userInput;
+    const callId = eventJson.call_id;
+
+    handleWithMemAgent(userInput)
+      .then(result => {
+        sendFunctionCallResult(result, callId);
+      })
+      .catch(error => {
+        console.error("Function call failed: ", error);
+      });
+
+  } catch (error) {
+    console.error("Parameter parsing failed: ", error);
+  }
+}
+```
+
+## Step 4: Call Backend Interfaces to Handle Business Logic
+
+You can pass the `userInput `to the business system or middleware interface, such as a weather API or CRM system:
+
+Copy
+
+```
+function handleWithMemAgent(userInput) {
+  return new Promise(async (resolve, reject) => {
+    const chatId = await getFromChromeStorage("chatId");
+
+    fetch(`${baseUrl}/api/realtime_function_call`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userInput,
+        license,
+        chatId
+      }),
+    })
+    .then(response => response.text())
+    .then(result => resolve(result))
+    .catch(error => reject(error));
+  });
+}
+```
+
+## Step 5: Return Results to AI Conversation
+
+After processing the results, they need to be pushed back to the WebSocket, prompting the AI to continue responding:
+
+Copy
+
+```
+function sendFunctionCallResult(result, callId) {
+  const resultJson = {
+    "type": "conversation.item.create",
+    "item": {
+      "type": "function_call_output",
+      "output": result,
+      "call_id": callId
+    }
+  };
+
+  socket.send(JSON.stringify(resultJson));
+
+  // Actively trigger AI response
+  socket.send(JSON.stringify({ "type": "response.create" }));
+}
+```
+
+## Common Application Scenario Examples
+
+scene
+
+user input
+
+system action
+
+Check the weather
+
+"What will the weather be like in Beijing tomorrow?"
+
+Call the weather API and return the weather forecast
+
+Query the knowledge base
+
+"How to integrate Function Calling with NavTalk?"
+
+Access the internal knowledge system to retrieve answers
+
+Control devices
+
+"Turn on the conference room lights."
+
+Call the IoT interface to control hardware devices
+

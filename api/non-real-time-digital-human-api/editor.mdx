@@ -1,0 +1,478 @@
+---
+title: "Overview"
+description: "Non-real-time Digital Human API Editor"
+---
+
+1. [Non-real-time digital human API](/api/non-real-time-digital-human-api)
+
+NavTalk supports multiple methods for generating digital human videos, categorized into three main types: **image-driven**, **video-driven**, and **system character-driven**. Below are the 9 supported calling methods and usage instructions.
+
+## **API Request Examples**
+
+### ① video + audio URL
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "video_url": "https://example.com/video.mp4",
+       "audio_url": "https://example.com/audio.mp3"
+     }'
+```
+
+### ② video + audio Base64
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "video_url": "https://example.com/video.mp4",
+       "audio_base64": "base64-audio-data"
+     }'
+```
+
+### ③ video + text（TTS）
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "video_url": "https://example.com/video.mp4",
+       "content": "Welcome to NavTalk.",
+       "voice": "nova"
+     }'
+```
+
+### ④ image + text（TTS）
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "image_url": "https://example.com/photo.jpg",
+       "content": "Welcome to NavTalk.",
+       "voice": "echo"
+     }'
+```
+
+### ⑤ image + audio URL
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "image_url": "https://example.com/photo.jpg",
+       "audio_url": "https://example.com/audio.mp3"
+     }'
+```
+
+### ⑥ image + audio Base64
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "image_url": "https://example.com/photo.jpg",
+       "audio_base64": "base64-audio-data"
+     }'
+```
+
+### ⑦ system role + audio URL
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "character_name": "girl2",
+       "audio_url": "https://example.com/audio.mp3"
+     }'
+```
+
+### ⑧ system role + audio Base64
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "character_name": "girl2",
+       "audio_base64": "base64-audio-data"
+     }'
+```
+
+### ⑨ system role + text（TTS）
+
+Copy
+
+```
+curl -X POST "https://app.navtalk.ai/generate" \
+ -H "Content-Type: application/json" \
+ -d '{
+       "license": "sk-xxx",
+       "character_name": "girl2",
+       "content": "Welcome to NavTalk.",
+       "voice": "fable"
+     }'
+```
+
+## **Response Handling**
+
+All synthesis APIs process requests asynchronously. After submission, the system returns a `task_id` for querying the final video URL.
+
+### Step 1：Submit Task
+
+**Successful Response:**
+
+Copy
+
+```
+{
+  "status": "started",
+  "task_id": "14cb760f-05ac-4fd3-a82c-e841f2f005d0"
+}
+```
+
+### **Step 2: Query Task Status**
+
+Use the returned `task_id `to check the processing result:
+
+Copy
+
+```
+curl -X GET "https://api.navtalk.ai/query_status?license=YOUR_LICENSE&task_id=14cb760f-05ac-4fd3-a82c-e841f2f005d0"
+```
+
+**Successful response:**
+
+Copy
+
+```
+{
+  "status": "done",
+  "video_url": "https://easyaistorageaccount.blob.core.windows.net/easyai/uploadFiles/2025/05/09/xxx.mp4"
+}
+```
+
+📌 Status Explanation:
+
+status value
+
+meaning
+
+`started`
+
+The task has been created and is currently being processed.
+
+`processing`
+
+In video composition
+
+`done`
+
+The successful completion, and the results are available for download.
+
+`failed`
+
+The synthesis failed. You can retry or check the error message.
+
+**Recommendations**
+
+* **Keep tasks under 30 seconds** for faster processing.
+
+* **Use clear, front-facing images/videos** for optimal results.
+
+* **Advanced parameters** (e.g., face cropping, mouth openness) are available for fine-tuning but are optional. Defaults work well for most cases.
+
+## **Advanced Face Control Parameters**
+
+NavTalk supports optional parameters inherited from MuseTalk for fine-tuning face cropping, mouth openness, and blending. These controls are advanced and should be used only when needed.
+
+Parameter
+
+Default
+
+Allowed / Recommended Range
+
+Description
+
+**bbox\_shift**
+
+`0`
+
+Typically **\[-9, 9]** based on runtime adjustment experiments
+
+Vertical movement of the face crop box. Positive values shift the crop downward (making the mouth more open), while negative values shift upward (making the mouth less open). Start with `0` and test within the suggested range.
+
+**extra\_margin**
+
+`10`
+
+Recommended trial range: **\[0, 50]** (no official bounds provided)
+
+Pixels of extra margin added around the face crop. Increases buffer area to prevent clipping of chin, hair, or jaw.
+
+**parsing\_mode**
+
+`"jaw"`
+
+Currently supports `"jaw"or "raw"`
+
+Defines how facial regions—especially around the jawline—are parsed and blended.
+
+**left\_cheek\_width**
+
+`90`
+
+Suggested trial range: **\[50, 150]** (no official bounds)
+
+Pixel width for blending region on the left cheek. Adjust wider to soften seam visibility.
+
+**right\_cheek\_width**
+
+`90`
+
+Suggested trial range: **\[50, 150]** (no official bounds)
+
+Pixel width for blending region on the right cheek. Functions the same as `left_cheek_width`.
+
+***
+
+## **API Call Overview**
+
+Number
+
+Scene
+
+Use Video
+
+Use Audio
+
+Use System Role
+
+Use TTS
+
+①
+
+Video + Audio URL
+
+✅
+
+✅ URL
+
+❌
+
+❌
+
+②
+
+Video + Audio Base64
+
+✅
+
+✅ Base64
+
+❌
+
+❌
+
+③
+
+Video + Text（TTS）
+
+✅
+
+❌
+
+❌
+
+✅
+
+④
+
+Image + Text（TTS）
+
+✅（image\_url）
+
+❌
+
+❌
+
+✅
+
+⑤
+
+Image + Audio URL
+
+✅（image\_url）
+
+✅ URL
+
+❌
+
+❌
+
+⑥
+
+Image + Audio Base64
+
+✅（image\_url）
+
+✅ Base64
+
+❌
+
+❌
+
+⑦
+
+System Role + Audio URL
+
+❌
+
+✅ URL
+
+✅
+
+❌
+
+⑧
+
+System Role + Audio Base64
+
+❌
+
+✅ Base64
+
+✅
+
+❌
+
+⑨
+
+System Role + Text（TTS）
+
+❌
+
+❌
+
+✅
+
+✅
+
+## General Parameter Description
+
+Parameter name
+
+Type
+
+Explanation
+
+`license`
+
+string
+
+API authorization key (requested from the console)
+
+`video_url`
+
+string
+
+The video link should support public MP4/MOV formats
+
+`image_url`
+
+string
+
+Image URL (Driving Static Digital Human)
+
+`audio_url`
+
+string
+
+The audio address (MP3/WAV)
+
+`audio_base64`
+
+string
+
+Local audio base64 encoding
+
+`content`
+
+string
+
+Text content for synthesized speech
+
+`voice`
+
+string
+
+Voice style (see below)
+
+`character_name`
+
+string
+
+The built-in system roles (such as girl2)
+
+## Support for voice style
+
+name
+
+style
+
+`alloy`
+
+Neutral Authority
+
+`echo`
+
+Casual and friendly
+
+`fable`
+
+Warm Narrative
+
+`onyx`
+
+Profound drama
+
+`nova`
+
+High energy and enthusiasm
+
+`shimmer`
+
+Dreamy and light-hearted
+
+**Usage Tips**
+
+* These parameters are **optional** — if not provided, defaults are applied automatically.
+
+* For most standard use cases, leaving them at default values produces good results.
+
+* Adjust them only if you observe issues like the face crop being too tight/loose, or visible seams along the cheeks.
+

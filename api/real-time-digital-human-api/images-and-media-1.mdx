@@ -1,0 +1,87 @@
+---
+title: "Maintaining Historical Dialogue"
+description: "Maintaining Historical Dialogue"
+---
+
+1. [Real-time digital human API](/api/real-time-digital-human-api)
+
+In a real-time digital human system, the character's behavior, tone, knowledge structure, and multi-turn dialogue "memory" are controlled through two mechanisms:
+
+## 1. **Conversation Item Creation Message** (Unidirectional User Memory)
+
+The system supports building context by sending historical user messages one by one, but this method has significant limitations:
+
+Copy
+
+```
+conversationHistory.forEach((msg) => {
+  if (msg.role === "user") {
+    const messageConfig = {
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [{ type: "input_text", text: msg.content }]
+      }
+    };
+    socket.send(JSON.stringify(messageConfig));
+  }
+});
+```
+
+**Limitations:**
+
+* AI-generated historical messages cannot be embedded.
+
+* The system will not automatically associate with the context of the previous dialogue (e.g., whether AI has already answered).
+
+* It is recommended to use this in conjunction with prompt injection, and it is only for supplementing user behavior.
+
+The inability to inject AI-generated historical messages is a known bug in the OpenAI Realtime API and not a bug within this system.
+
+## 2. **System Instructions Injection for Context**
+
+By using the `instructions` field in `session.update`, role definitions and historical context descriptions can be injected. This way, `${messageConfig}` can fully retain the dialogue history between the user and AI, which helps to:
+
+* Maintain semantic coherence.
+
+* Support the AI's continuous understanding and memory.
+
+* Support ongoing control of the AI's tone and behavior.
+
+Copy
+
+```
+const instructions = `
+You are a gentle and patient emotional companion assistant, skilled at listening and guiding.
+Please respond in ${userLanguage}.
+Welcome message: "${activeCharacter.greeting}"
+
+Historical dialogue:
+User: I wasn't feeling very well yesterday.
+AI: What happened? Can you tell me about it?
+User: I had an argument with my friend...
+
+When the user requests services like image generation, real-time weather queries, etc., it automatically triggers function calls.
+
+Current context: ${messageConfig}
+`;
+
+const sessionConfig = {
+  type: "session.update",
+  session: {
+    instructions,
+    /* other session configuration */
+  }
+};
+socket.send(JSON.stringify(sessionConfig));
+```
+
+**Note:**
+
+* The instructions should not be too long (recommended to keep it within 2000 tokens).
+
+* For large-scale context, a summary integration should be performed.
+
+* The system's prompt length will directly affect cost consumption; longer system prompts will result in higher per-minute conversation costs.
+

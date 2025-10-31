@@ -1,0 +1,251 @@
+---
+title: "Character Definition"
+description: "Real-time Digital Human Editor"
+---
+
+1. [Real-time digital human API](/api/real-time-digital-human-api)
+
+NavTalk supports the customization of digital personas' personalities, language styles, welcome messages, automatic response rules, and contextual memory capabilities through the `instructions` field in the `session.update` request, enabling highly tailored behaviors of digital entities.
+
+By configuring the `instructions`, you can set the following:
+
+* The behavioral style and professional background of the digital persona
+
+* The response language (Chinese, English, Japanese, etc.)
+
+* The initial welcome message
+
+* The function call trigger rules
+
+* Contextual memory and personalized preferences
+
+* Voice emotional characteristics
+
+## Configuration Entry: `session.update` Request Body
+
+When establishing a connection with the OpenAI Realtime API, send the session with configured instructions:
+
+Copy
+
+```
+const instructions = `
+  ${activeCharacter.characterDefinition}.
+  Please respond in ${userLanguage}.
+  Please greet the user with: "${activeCharacter.greeting}".
+  When encountering requests beyond conversational capabilities, 
+  automatically trigger function calls for:
+  - Multimedia content generation (images/audio/video)
+  - Real-time data queries (weather/stocks, etc.)
+  - Business system interactions (CRM/ERP, etc.)
+
+  Current context: ${messageConfig}
+`;
+
+const sessionConfig = {
+  type: "session.update",
+  session: {
+    instructions,
+    voice: "nova", // Optional voice type (see the voice list below)
+    temperature: 1,
+    modalities: ["text", "audio"],
+    input_audio_format: "pcm16",
+    output_audio_format: "pcm16",
+    input_audio_transcription: {
+      model: "whisper-1"
+    }
+  }
+};
+
+socket.send(JSON.stringify(sessionConfig));
+```
+
+## Parameter Descriptions:
+
+parameter name
+
+type
+
+example
+
+explanation
+
+`characterDefinition`
+
+string
+
+You are a gentle and rational psychologist
+
+This is my input: Used to set personality, tone, professional background, etc
+
+`userLanguage`
+
+string
+
+zh-CN / en-US / ja-JP
+
+Control the output language
+
+`greeting`
+
+string
+
+"Hello, I am your intelligent assistant."
+
+An optional welcome message that supports variables
+
+`function call rules`
+
+string
+
+The natural language description of the timing for invocation.
+
+Describe the scenarios in which functions are called automatically
+
+`messageConfig`
+
+object
+
+Contains a JSON object with a summary of historical dialogues, user preferences, etc
+
+Used to inject the current contextual information (supporting AI + user content)
+
+`voice`
+
+string
+
+"nova"
+
+Specify the desired voice style (see below)
+
+### **Behavioral Style and Professional Background of the Digital Persona**
+
+By configuring `characterDefinition`, you can define the digital persona's personality traits, tone style, knowledge background, and communication habits.
+
+Example setting
+
+Description
+
+You are a gentle and rational counselor, skilled in listening and empathy.
+
+This is my input: For mental health applications
+
+You are a witty and humorous virtual host, skilled at creating a lively atmosphere.
+
+This is suitable for live interaction and entertainment content.
+
+You are a business consultant with 20 years of experience, known for your clear, concise, and professional communication.
+
+The improved English version is: "For enterprise customer service and knowledge inquiries."
+
+### **Response Language Setting(**`userLanguage` **)**
+
+You can specify the dialogue language for the digital persona using the `userLanguage` parameter, which supports various languages such as Chinese, English, Japanese, etc.
+
+language
+
+parameter value
+
+Chinese
+
+`zh-CN`
+
+English
+
+`en-US`
+
+Japanese
+
+`ja-JP`
+
+**Note:**
+
+* After setting, all response content will be generated in that language.
+
+* If this setting is absent in the `instructions`, the system will default to automatically recognizing the user's input language.
+
+### **Initial Welcome Message (**`greeting`**)**
+
+The digital persona can initiate the first conversation proactively by setting a welcome message after establishing a connection.
+
+parameter name
+
+type
+
+example
+
+`greeting`
+
+string
+
+"Hello, I am your intelligent assistant. How can I assist you?"
+
+### **Function Call Trigger Rules**
+
+NavTalk supports seamless integration between the digital persona and external systems using OpenAI Function Calling technology (e.g., databases, weather APIs, order inquiries).
+
+> For details, see the Function Calling section: [Tool Call](/api/real-time-digital-human-api/images-and-media)
+
+### **Contextual Memory Strategy (**`messageConfig`  **vs.**`conversation.item.create`**)**
+
+NavTalk supports contextual memory capabilities, enabling the digital persona to understand the context of previous conversations.
+
+> For details, see the Maintaining Historical Conversations section: [Maintaining Historical Dialogue](/api/real-time-digital-human-api/images-and-media-1)
+
+### **Supported Voice Styles (**`voice`**)**
+
+NavTalk offers various high-quality voice synthesis styles. You can freely choose the digital persona's voice type using the `voice` parameter.
+
+Voice Name
+
+Description of Style
+
+Sample listening link
+
+`alloy`
+
+Neutral authority, suitable for business/popular science
+
+[🔊](https://cdn.openai.com/API/voice-previews/alloy.flac)
+
+`shimmer`
+
+Bright and energetic female voice, suitable for customer service
+
+[🔊](https://cdn.openai.com/API/voice-previews/shimmer.flac)
+
+`ballad`
+
+Warm narrative male voice
+
+[🔊](https://cdn.openai.com/API/voice-previews/ballad.flac)
+
+`coral`
+
+Professional and Clear Broadcast Voice
+
+[🔊](https://cdn.openai.com/API/voice-previews/coral.flac)
+
+`echo`
+
+A rendition with echoes
+
+[🔊](https://cdn.openai.com/API/voice-previews/echo.flac)
+
+`ash`
+
+The stable and trustworthy male voice
+
+[🔊](https://cdn.openai.com/API/voice-previews/ash.flac)
+
+`sage`
+
+Intelligent and gentle female voice
+
+[🔊](https://cdn.openai.com/API/voice-previews/sage.flac)
+
+`verse`
+
+Rich in rhythm, suitable for reciting poetry
+
+[🔊](https://cdn.openai.com/API/voice-previews/verse.flac)
+

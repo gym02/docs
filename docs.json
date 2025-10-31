@@ -1,48 +1,68 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "aspen",
+  "name": "NavTalk API Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0D9373",
+    "light": "#55D799",
+    "dark": "#0D9373"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon-navtalk.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:hi@navtalk.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://console.navtalk.ai/login#/dashboard"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Quick Start",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "api/quick-start/quickstart",
+              "api/quick-start/publish-your-docs"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Non-real-time digital human API",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "api/non-real-time-digital-human-api/editor"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Real-time digital human API",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "api/real-time-digital-human-api/system-character",
+              "api/real-time-digital-human-api/custom-character-creation",
+              "api/real-time-digital-human-api/editor",
+              "api/real-time-digital-human-api/images-and-media",
+              "api/real-time-digital-human-api/images-and-media-1"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Frequently asked questions",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "api/frequently-asked-questions/frequently-asked-questions"
+            ]
+          },
+          {
+            "group": "Update Log",
+            "pages": [
+              "api/update-log/update-log"
             ]
           }
         ]
@@ -67,56 +87,7 @@
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
-  }
+  "openapi": "api-reference/openapi.json"
 }
