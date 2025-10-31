@@ -3,67 +3,87 @@ title: "Welcome"
 description: "Welcome to NavTalk API Documentation"
 ---
 
-Welcome to NavTalk, the platform where digital life begins. Our advanced technology enables you to create intelligent digital characters with unique voices, facial expressions, and emotional capabilities. Transform your vision into reality — whether it's a brand ambassador, virtual assistant, intelligent customer service representative, or any persona you can imagine.
+<Hero
+  title="NavTalk API Documentation"
+  subtitle="The platform where digital life begins. Create intelligent digital characters with unique voices, facial expressions, and emotional capabilities."
+  image="/images/hero-light.png"
+/>
 
-Every interaction starts with understanding your needs and delivering exceptional digital experiences.
-
-***
-
-### Core Capabilities
+## Core Capabilities
 
 NavTalk enables you to create intelligent digital characters with:
 
-* **Natural Voice Synthesis** - Generate lifelike speech with emotional tone control
+<CardGroup cols={2}>
+  <Card
+    title="Natural Voice Synthesis"
+    icon="microphone"
+    href="/api/quick-start/quickstart"
+  >
+    Generate lifelike speech with emotional tone control
+  </Card>
+  <Card
+    title="Facial Expression Animation"
+    icon="face-smile"
+    href="/api/quick-start/quickstart"
+  >
+    Create realistic facial movements and expressions
+  </Card>
+  <Card
+    title="Real-time Interaction"
+    icon="bolt"
+    href="/api/real-time-digital-human-api/system-character"
+  >
+    Support for live conversational applications
+  </Card>
+  <Card
+    title="Batch Processing"
+    icon="layer-group"
+    href="/api/non-real-time-digital-human-api/editor"
+  >
+    Efficient generation for pre-recorded content
+  </Card>
+</CardGroup>
 
-* **Facial Expression Animation** - Create realistic facial movements and expressions
-
-* **Real-time Interaction** - Support for live conversational applications
-
-* **Batch Processing** - Efficient generation for pre-recorded content
-
-### API Module Navigation
+## API Module Navigation
 
 NavTalk offers two digital human interaction modes to meet different business needs:
 
-#### One-shot Synthesis Digital Human
+<Columns cols={2}>
+  <Card
+    title="One-shot Synthesis Digital Human"
+    icon="film"
+    href="/api/non-real-time-digital-human-api/editor"
+  >
+    Suitable for one-time content generation scenarios such as short video generation, course recording and broadcasting, and advertisement production.
+    
+    <br/><br/>
+    
+    **Features:**
+    * Text + Image Parameters → Generate Complete Audio-Visual Video
+    * Supports customization of tonal quality, background
+    * Interface Returns Video File / URL
+    * Easily integrated, suitable for batch processing
+  </Card>
 
-> It is suitable for one-time content generation scenarios such as short video generation, course recording and broadcasting, and advertisement production
+  <Card
+    title="Real-time Digital Human"
+    icon="video"
+    href="/api/real-time-digital-human-api/system-character"
+  >
+    Targeting continuous interactive applications such as live streaming interaction, intelligent customer service, and online teaching assistants.
+    
+    <br/><br/>
+    
+    **Features:**
+    * Supports real-time voice input/output
+    * High-precision lip sync and expression-driven features
+    * Supports real-time function calling for external data
+    * Maintains context for multi-turn conversations
+    * WebSocket/real-time streaming API support
+  </Card>
+</Columns>
 
-* Text + Image Parameters → Generate Complete Audio-Visual Video
-
-* Supports customization of tonal quality, background
-
-* Interface Returns Video File / URL
-
-* Easily integrated, suitable for batch processing
-
-<Card
-  title="View the Synthetic Digital Human API Documentation"
-  icon="code"
-  href="/api/non-real-time-digital-human-api/editor"
-/>
-
-#### Real-time Digital Human
-
-> Targeting continuous interactive applications such as live streaming interaction, intelligent customer service, and online teaching assistants
-
-* Supports real-time voice input/output
-
-* High-precision lip sync and expression-driven features
-
-* Supports real-time function calling for external data
-
-* Maintains context for multi-turn conversations
-
-* WebSocket/real-time streaming API support
-
-<Card
-  title="View Real-time Digital Human API Documentation"
-  icon="bolt"
-  href="/api/real-time-digital-human-api/system-character"
-/>
-
-### Get Started Immediately
+## Get Started Immediately
 
 Clone our complete sample project to experience NavTalk's capabilities in minutes:
 
@@ -74,7 +94,7 @@ git clone https://github.com/navtalk/Sample
 The sample includes full front-end implementation with pre-configured examples - simply follow the README to run the demo and start interacting with our services directly.
 
 <Card
-  title="Get Started"
+  title="Quick Start Guide"
   icon="rocket"
   href="/api/quick-start/quickstart"
   horizontal

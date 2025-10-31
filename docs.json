@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "aspen",
+  "theme": "mint",
   "name": "NavTalk API Documentation",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#55D799",
-    "dark": "#0D9373"
+    "primary": "#8B5CF6",
+    "light": "#A78BFA",
+    "dark": "#7C3AED"
   },
   "favicon": "/favicon-navtalk.png",
   "logo": {
@@ -15,13 +15,17 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
+        "label": "Get Support",
         "href": "mailto:hi@navtalk.ai"
+      },
+      {
+        "label": "Community",
+        "href": "https://github.com/navtalk"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Get Started",
       "href": "https://console.navtalk.ai/login#/dashboard"
     }
   },
@@ -31,37 +35,31 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Quick Start",
+            "group": "Getting Started",
             "pages": [
-              "api/quick-start/quickstart",
-              "api/quick-start/publish-your-docs"
+              "api/quick-start/quickstart"
             ]
           },
           {
-            "group": "Non-real-time digital human API",
+            "group": "Real-time Digital Human API",
+            "pages": [
+              "api/real-time-digital-human-api/system-character",
+              "api/real-time-digital-human-api/custom-character-creation",
+              "api/real-time-digital-human-api/editor",
+              "api/real-time-digital-human-api/function-calling",
+              "api/real-time-digital-human-api/historical-dialogue"
+            ]
+          },
+          {
+            "group": "Non-real-time Digital Human API",
             "pages": [
               "api/non-real-time-digital-human-api/editor"
             ]
           },
           {
-            "group": "Real-time digital human API",
+            "group": "Resources",
             "pages": [
-              "api/real-time-digital-human-api/system-character",
-              "api/real-time-digital-human-api/custom-character-creation",
-              "api/real-time-digital-human-api/editor",
-              "api/real-time-digital-human-api/images-and-media",
-              "api/real-time-digital-human-api/images-and-media-1"
-            ]
-          },
-          {
-            "group": "Frequently asked questions",
-            "pages": [
-              "api/frequently-asked-questions/frequently-asked-questions"
-            ]
-          },
-          {
-            "group": "Update Log",
-            "pages": [
+              "api/frequently-asked-questions/frequently-asked-questions",
               "api/update-log/update-log"
             ]
           }
