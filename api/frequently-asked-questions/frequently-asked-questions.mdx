@@ -11,7 +11,7 @@ description: "Common questions and answers about NavTalk API"
 
 **Q2: Does the License have an expiration date? Can it be reset?** **A:** The License is valid indefinitely. If you believe it has been compromised, you can reset it immediately in the console.
 
-***
+---
 
 ## **Quick Start Questions**
 
@@ -26,30 +26,25 @@ Copy
 **Q4: What are the minimum steps required for the real-time digital person to connect for the first time?** **A:**
 
 1. Establish a WebSocket connection (include the `license` and `characterName` parameters).
-
 2. Send `session.update` to configure the digital person's behavior and tone.
-
 3. Capture microphone audio and send it.
-
 4. Receive AI response text/audio stream/video stream (WebRTC).
 
 You can download our complete code and run it directly.
 
-***
+---
 
 ## **Real-time WebSocket Connection Issues**
 
 **Q5: What should I do if the WebSocket connection fails?** **A:** Please check:
 
-* Is the license valid?
-
-* Is the WebSocket address correct: `wss://api.navtalk.ai/realtime-api`?
-
-* Does Chrome allow microphone access?
+- Is the license valid?
+- Is the WebSocket address correct: `wss://api.navtalk.ai/realtime-api`?
+- Does Chrome allow microphone access?
 
 **Q6: Do I need to configure WebRTC to get the digital person’s video on the webpage?** **A:** Yes, WebRTC is the only method for displaying `video`. Please ensure that after connecting to the WebSocket, you simultaneously establish a WebRTC video channel and bind it to the video tag to play.
 
-***
+---
 
 ## **Character and Behavior Settings Questions**
 
@@ -67,29 +62,26 @@ instructions: `
 
 **Q8: Can I specify the tone of the digital person? What are the options?** **A:** Yes, you can. Set it using `voice: "nova"`, which supports the following 9 tones: (alloy, shimmer, coral, echo, ballad, ash, sage, verse).
 
-***
+---
 
 ## **Context and Memory Issues**
 
 **Q9: How can I make the digital person remember the user's history of conversations?** **A:** Two methods are supported:
 
-* Embed `messageConfig` in the `instructions` to simulate full context.
-
-* Use `conversation.item.create` to send historical messages (only supports user messages).
+- Embed `messageConfig` in the `instructions` to simulate full context.
+- Use `conversation.item.create` to send historical messages (only supports user messages).
 
 **Q10: Why can't the AI remember the previous conversation?** **A:** Please confirm:
 
-* Does `session.update` carry contextual content?
+- Does `session.update` carry contextual content?
 
 ## **Function Call Issues**
 
 **Q11: Why is there no response after configuring the function call?** **A:**
 
-* Please confirm that the `tools` parameter has been correctly registered.
-
-* Check if you are listening for the `response.function_call_arguments.done` event.
-
-* Is the backend correctly returning `function_call_output`?
+- Please confirm that the `tools` parameter has been correctly registered.
+- Check if you are listening for the `response.function_call_arguments.done` event.
+- Is the backend correctly returning `function_call_output`?
 
 **Q12: After the function call result is pushed, why is there no response from the AI?** **A:** Please ensure to execute the following after sending the result:
 
@@ -99,7 +91,7 @@ Copy
 socket.send({ type: "response.create" })
 ```
 
-***
+---
 
 ## **Media Interface Call Issues**
 
@@ -117,9 +109,7 @@ Copy
 
 **Q15: Is there a Demo page or console tool?** **A:** Yes, you can directly access:
 
-* Real-time Digital Person Experience Page: [https://console.navtalk.ai/playground/realtime\_digital\_human](https://console.navtalk.ai/playground/realtime_digital_human)
-
-* Non-real-time Video Synthesis Page: [https://console.navtalk.ai/playground/one\_shot\_synthesis](https://console.navtalk.ai/playground/one_shot_synthesis)
+- Real-time Digital Person Experience Page: https://console.navtalk.ai/playground/realtime_digital_human
+- Non-real-time Video Synthesis Page: https://console.navtalk.ai/playground/one_shot_synthesis
 
 **Q16: How can I join the developer community?** **A:** You are welcome to join the NavTalk WeChat group, Discord, or submit issues on GitHub.
-
