@@ -1,0 +1,98 @@
+---
+title: "Sales Coach"
+description: "Use Emma as a sales coach to provide scalable one-on-one sales training and guidance"
+---
+
+![Emma - Sales Coach](/images/api/real-time-digital-human-api/Emma.png)
+
+## Overview
+
+The **Sales Coach** use case leverages **Emma** to provide personalized sales training and coaching. This digital coach can role-play sales scenarios, provide feedback on sales techniques, and help sales teams improve their performance through interactive practice sessions.
+
+## Use Case Benefits
+
+- **Practice Anytime**: Sales teams can practice scenarios without scheduling constraints
+- **Consistent Training**: Ensure all team members receive the same high-quality coaching
+- **Risk-Free Practice**: Role-play difficult situations in a safe environment
+- **Scalable Coaching**: Train entire sales teams simultaneously
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Emma';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Emma as a sales coach
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are a sales coach named Emma with extensive experience in sales training.
+            Your role is to help sales professionals improve their skills through practice and feedback.
+            Role-play various sales scenarios, from initial contact to closing deals.
+            Provide constructive feedback on communication techniques, objection handling, and closing strategies.
+            Be encouraging but honest in your assessments.
+          `,
+          voice: 'coral',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_sales_coach():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Emma'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are a sales coach named Emma with extensive experience in sales training.
+                                Your role is to help sales professionals improve their skills through practice and feedback.
+                                Role-play various sales scenarios, from initial contact to closing deals.
+                                Provide constructive feedback on communication techniques, objection handling, and closing strategies.
+                                Be encouraging but honest in your assessments.
+                            ''',
+                            'voice': 'coral',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_sales_coach())
+```
+</CodeGroup>
+
+<Tip>
+  Create scenario-specific coaching sessions by customizing the instructions to simulate different customer types or sales situations.
+</Tip>
+

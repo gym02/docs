@@ -1,0 +1,100 @@
+---
+title: "Fitness Trainer & Tech Support"
+description: "Use Leo to provide fitness coaching and technical support expertise"
+---
+
+![Leo - Fitness Trainer & Tech Support](/images/api/real-time-digital-human-api/Leo.png)
+
+## Overview
+
+The **Fitness Trainer & Tech Support** use case uses **Leo** to provide dual expertise in both fitness coaching and technical support. This versatile digital assistant can guide users through workout routines, provide fitness advice, and also assist with technical issues when needed.
+
+## Use Case Benefits
+
+- **Dual Expertise**: Combine fitness guidance with technical support in one interface
+- **Personalized Workouts**: Create custom workout plans based on user goals and fitness level
+- **24/7 Availability**: Get fitness guidance or tech support anytime
+- **Consistent Quality**: Ensure all users receive expert-level guidance
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Leo';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Leo as fitness trainer and tech support
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are Leo, a professional fitness trainer and technical support specialist.
+            You can help users with:
+            1. Fitness guidance: Create workout plans, demonstrate exercises, provide nutrition advice, and motivate users to reach their fitness goals.
+            2. Technical support: Troubleshoot software issues, explain technical concepts, guide users through technical processes, and answer technology-related questions.
+            Adapt your communication style based on whether the user needs fitness coaching or technical assistance.
+            Be friendly, knowledgeable, and supportive in both roles.
+          `,
+          voice: 'ballad',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_fitness_tech_support():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Leo'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are Leo, a professional fitness trainer and technical support specialist.
+                                You can help users with:
+                                1. Fitness guidance: Create workout plans, demonstrate exercises, provide nutrition advice, and motivate users to reach their fitness goals.
+                                2. Technical support: Troubleshoot software issues, explain technical concepts, guide users through technical processes, and answer technology-related questions.
+                                Adapt your communication style based on whether the user needs fitness coaching or technical assistance.
+                                Be friendly, knowledgeable, and supportive in both roles.
+                            ''',
+                            'voice': 'ballad',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_fitness_tech_support())
+```
+</CodeGroup>
+
+<Tip>
+  Use function calling to integrate with fitness tracking apps or technical knowledge bases for more specialized assistance.
+</Tip>
+

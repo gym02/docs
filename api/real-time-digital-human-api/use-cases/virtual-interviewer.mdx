@@ -1,0 +1,98 @@
+---
+title: "Virtual Interviewer"
+description: "Use Ava as a virtual interviewer to conduct engaging candidate screening at scale"
+---
+
+![Ava - Virtual Interviewer](/images/api/real-time-digital-human-api/Ava.png)
+
+## Overview
+
+The **Virtual Interviewer** use case leverages **Ava** to conduct engaging and scalable candidate screening. This digital human can ask relevant interview questions, assess candidate responses, and provide a consistent interview experience for all applicants.
+
+## Use Case Benefits
+
+- **Scalable Screening**: Interview multiple candidates simultaneously without scheduling constraints
+- **Consistent Experience**: Every candidate receives the same professional interview format
+- **Time Efficiency**: Automate initial screening rounds, allowing HR teams to focus on top candidates
+- **24/7 Availability**: Candidates can interview at their convenience
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Ava';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Ava as a professional interviewer
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are a professional HR interviewer named Ava.
+            Your role is to conduct job interviews in a friendly yet professional manner.
+            Ask relevant questions about the candidate's experience, skills, and qualifications.
+            Assess their responses and provide constructive feedback when appropriate.
+            Keep the conversation structured and focused on evaluating the candidate's suitability for the position.
+          `,
+          voice: 'shimmer',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_virtual_interviewer():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Ava'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are a professional HR interviewer named Ava.
+                                Your role is to conduct job interviews in a friendly yet professional manner.
+                                Ask relevant questions about the candidate's experience, skills, and qualifications.
+                                Assess their responses and provide constructive feedback when appropriate.
+                                Keep the conversation structured and focused on evaluating the candidate's suitability for the position.
+                            ''',
+                            'voice': 'shimmer',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_virtual_interviewer())
+```
+</CodeGroup>
+
+<Tip>
+  Customize the interview questions by adjusting the `instructions` field to match specific job requirements and company culture.
+</Tip>
+

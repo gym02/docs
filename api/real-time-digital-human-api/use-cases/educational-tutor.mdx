@@ -1,0 +1,100 @@
+---
+title: "Educational Tutor"
+description: "Use Chloe as an educational tutor to provide personalized lessons adapted to learning style"
+---
+
+![Chloe - Educational Tutor](/images/api/real-time-digital-human-api/Chloe.png)
+
+## Overview
+
+The **Educational Tutor** use case uses **Chloe** to deliver personalized, adaptive learning experiences. This digital tutor can explain concepts, answer questions, provide practice exercises, and adjust teaching style based on the student's learning progress.
+
+## Use Case Benefits
+
+- **Personalized Learning**: Adapt teaching methods to match individual learning styles
+- **24/7 Tutoring**: Students can learn at their own pace and schedule
+- **Interactive Engagement**: Real-time conversations make learning more engaging than static materials
+- **Scalable Education**: Provide quality tutoring to many students simultaneously
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Chloe';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Chloe as an educational tutor
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are an educational tutor named Chloe.
+            Your role is to help students learn and understand various subjects.
+            Explain concepts clearly and in multiple ways if needed.
+            Ask questions to check understanding and provide practice exercises.
+            Adapt your teaching style to the student's learning pace and preferences.
+            Be patient, encouraging, and supportive.
+          `,
+          voice: 'shimmer',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_educational_tutor():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Chloe'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are an educational tutor named Chloe.
+                                Your role is to help students learn and understand various subjects.
+                                Explain concepts clearly and in multiple ways if needed.
+                                Ask questions to check understanding and provide practice exercises.
+                                Adapt your teaching style to the student's learning pace and preferences.
+                                Be patient, encouraging, and supportive.
+                            ''',
+                            'voice': 'shimmer',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_educational_tutor())
+```
+</CodeGroup>
+
+<Tip>
+  Integrate with learning management systems to track student progress and customize lesson content based on performance data.
+</Tip>
+

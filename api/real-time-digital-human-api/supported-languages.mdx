@@ -3,26 +3,9 @@ title: "Supported Languages"
 description: "Complete list of languages supported by NavTalk Real-time Digital Human API"
 ---
 
-## Supported Languages
+NavTalk Real-time Digital Human API supports **60+ languages** for multilingual conversations. NavTalk can **automatically detect** the user's input language and respond in the same language **without any code configuration**. The system intelligently recognizes the user's language and automatically switches responses accordingly—all happening seamlessly during the conversation with no additional programming required.
 
-NavTalk Real-time Digital Human API supports **60+ languages** for multilingual conversations. The system features intelligent automatic language detection and switching.
-
-### Automatic Language Detection and Switching
-
-NavTalk can **automatically detect** the user's input language and respond in the same language **without any code configuration**. The system intelligently recognizes the user's language and automatically switches responses accordingly—all happening seamlessly during the conversation with no additional programming required.
-
-When you don't specify a language in the `instructions`, NavTalk will:
-- Automatically detect the language of each user input
-- Respond in the detected language automatically
-- Switch between languages in real-time as the user changes languages during the conversation
-
-This means users can speak in multiple languages within a single conversation, and NavTalk will automatically adapt.
-
-## Language Configuration Methods
-
-### Method 1: Automatic Detection (Recommended)
-
-Don't specify a language in instructions - NavTalk will automatically detect and match the user's input language:
+**Automatic Detection (Recommended)**: Don't specify a language in instructions - NavTalk will automatically detect and match the user's input language:
 
 <CodeGroup>
 ```javascript JavaScript
@@ -54,9 +37,7 @@ await websocket.send(json.dumps(session_config))
 ```
 </CodeGroup>
 
-### Method 2: Explicit Language Setting
-
-Specify the desired response language in the instructions:
+**Explicit Language Setting**: Specify the desired response language in the instructions:
 
 <CodeGroup>
 ```javascript JavaScript

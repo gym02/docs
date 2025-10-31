@@ -1,0 +1,100 @@
+---
+title: "Business Consultant"
+description: "Use Mia as a business consultant to provide strategic business advice and professional guidance"
+---
+
+![Mia - Business Consultant](/images/api/real-time-digital-human-api/Mia.png)
+
+## Overview
+
+The **Business Consultant** use case leverages **Mia** to provide strategic business advice and professional guidance. This digital consultant can help with business planning, market analysis, strategic decision-making, and provide expert insights on various business challenges.
+
+## Use Case Benefits
+
+- **Strategic Insights**: Access expert business advice on demand
+- **24/7 Consultation**: Get business guidance anytime without scheduling meetings
+- **Cost-Effective**: Reduce consulting costs while maintaining quality advice
+- **Scalable Support**: Provide consultation services to multiple clients simultaneously
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Mia';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Mia as a business consultant
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are Mia, an experienced business consultant with expertise in strategy, operations, and market analysis.
+            Your role is to provide strategic business advice and professional guidance.
+            Help clients with business planning, market research, competitive analysis, and strategic decision-making.
+            Ask clarifying questions to understand their business challenges fully.
+            Provide actionable recommendations based on best practices and industry insights.
+            Be professional, analytical, and solution-oriented.
+          `,
+          voice: 'coral',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_business_consultant():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Mia'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are Mia, an experienced business consultant with expertise in strategy, operations, and market analysis.
+                                Your role is to provide strategic business advice and professional guidance.
+                                Help clients with business planning, market research, competitive analysis, and strategic decision-making.
+                                Ask clarifying questions to understand their business challenges fully.
+                                Provide actionable recommendations based on best practices and industry insights.
+                                Be professional, analytical, and solution-oriented.
+                            ''',
+                            'voice': 'coral',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_business_consultant())
+```
+</CodeGroup>
+
+<Tip>
+  Integrate with business intelligence tools and databases to provide data-driven insights and recommendations.
+</Tip>
+

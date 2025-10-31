@@ -52,12 +52,23 @@
                   "api/real-time-digital-human-api/quick-start/webrtc-connection"
                 ]
               },
+              "api/real-time-digital-human-api/supported-languages",
+              "api/real-time-digital-human-api/historical-dialogue",
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "api/real-time-digital-human-api/use-cases/virtual-interviewer",
+                  "api/real-time-digital-human-api/use-cases/educational-tutor",
+                  "api/real-time-digital-human-api/use-cases/sales-coach",
+                  "api/real-time-digital-human-api/use-cases/fitness-tech-support",
+                  "api/real-time-digital-human-api/use-cases/business-consultant",
+                  "api/real-time-digital-human-api/use-cases/research-assistant"
+                ]
+              },
               "api/real-time-digital-human-api/system-character",
               "api/real-time-digital-human-api/custom-character-creation",
               "api/real-time-digital-human-api/editor",
-              "api/real-time-digital-human-api/supported-languages",
-              "api/real-time-digital-human-api/function-calling",
-              "api/real-time-digital-human-api/historical-dialogue"
+              "api/real-time-digital-human-api/function-calling"
             ]
           },
           {

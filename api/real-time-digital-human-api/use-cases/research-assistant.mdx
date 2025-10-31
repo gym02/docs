@@ -1,0 +1,100 @@
+---
+title: "Research Assistant"
+description: "Use Sophia as a research assistant for information gathering and research analysis"
+---
+
+![Sophia - Research Assistant](/images/api/real-time-digital-human-api/Sophia.png)
+
+## Overview
+
+The **Research Assistant** use case uses **Sophia** to help with information gathering, research analysis, and knowledge discovery. This digital assistant can search for information, analyze data, synthesize findings, and present research in a clear and organized manner.
+
+## Use Case Benefits
+
+- **Efficient Research**: Quickly gather and analyze information from multiple sources
+- **24/7 Research Support**: Get research assistance anytime
+- **Comprehensive Analysis**: Synthesize complex information into actionable insights
+- **Knowledge Organization**: Structure research findings for easy reference
+
+## Implementation
+
+<CodeGroup>
+```javascript JavaScript
+const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const license = 'your-license-key';
+const characterName = 'navtalk.Sophia';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const socket = new WebSocket(websocketUrlWithParams);
+
+// Configure Sophia as a research assistant
+socket.onmessage = (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      const sessionConfig = {
+        type: 'session.update',
+        session: {
+          instructions: `
+            You are Sophia, a thorough and analytical research assistant.
+            Your role is to help with information gathering, research analysis, and knowledge discovery.
+            Search for relevant information, analyze data, identify patterns, and synthesize findings.
+            Present research in a clear, organized, and well-structured manner.
+            Cite sources when providing information and verify facts.
+            Be methodical, detail-oriented, and objective in your analysis.
+          `,
+          voice: 'shimmer',
+          // ... other session parameters
+        }
+      };
+      socket.send(JSON.stringify(sessionConfig));
+    }
+  }
+};
+```
+
+```python Python
+import asyncio
+import websockets
+import json
+from urllib.parse import quote
+
+async def connect_research_assistant():
+    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    license = 'your-license-key'
+    character_name = 'navtalk.Sophia'
+    
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    
+    async with websockets.connect(websocket_url_with_params) as websocket:
+        async for message in websocket:
+            if isinstance(message, str):
+                data = json.loads(message)
+                
+                if data.get('type') == 'session.created':
+                    session_config = {
+                        'type': 'session.update',
+                        'session': {
+                            'instructions': '''
+                                You are Sophia, a thorough and analytical research assistant.
+                                Your role is to help with information gathering, research analysis, and knowledge discovery.
+                                Search for relevant information, analyze data, identify patterns, and synthesize findings.
+                                Present research in a clear, organized, and well-structured manner.
+                                Cite sources when providing information and verify facts.
+                                Be methodical, detail-oriented, and objective in your analysis.
+                            ''',
+                            'voice': 'shimmer',
+                            # ... other session parameters
+                        }
+                    }
+                    await websocket.send(json.dumps(session_config))
+
+asyncio.run(connect_research_assistant())
+```
+</CodeGroup>
+
+<Tip>
+  Use function calling to integrate with search APIs, databases, and knowledge bases for more comprehensive research capabilities.
+</Tip>
+

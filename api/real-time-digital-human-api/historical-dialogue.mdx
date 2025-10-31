@@ -1,19 +1,121 @@
 ---
-title: "Historical Dialogue"
-description: "Manage conversation context and multi-turn dialogue memory"
+title: "Maintaining Conversation History"
+description: "Learn how to maintain conversation history and context across sessions using NavTalk Real-time Digital Human API"
 ---
 
-1. [Real-time digital human API](/api/real-time-digital-human-api)
+## Maintaining Conversation History Across Sessions
 
-In a real-time digital human system, the character's behavior, tone, knowledge structure, and multi-turn dialogue "memory" are controlled through two mechanisms:
+NavTalk supports maintaining conversation history across multiple sessions, allowing the digital human to remember previous conversations and maintain context continuity. Follow these steps to implement persistent conversation history:
 
-## 1. **Conversation Item Creation Message** (Unidirectional User Memory)
+<Steps>
+<Step title="Store Conversation History">
+Save each conversation message to persistent storage as it occurs:
 
-The system supports building context by sending historical user messages one by one, but this method has significant limitations:
+<CodeGroup>
+```javascript JavaScript
+// Save conversation history to localStorage
+async function appendRealtimeChatHistory(role, content) {
+  // Get existing history from storage
+  let history = localStorage.getItem("realtimeChatHistory");
+  let realtimeChatHistory = history ? JSON.parse(history) : [];
+  
+  // Add new message
+  realtimeChatHistory.push({ role, content });
+  
+  // Save back to storage
+  localStorage.setItem("realtimeChatHistory", JSON.stringify(realtimeChatHistory));
+}
 
-Copy
-
+// Call this function when receiving user transcription
+socket.onmessage = async (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    // Save user message when transcription completes
+    if (data.type === 'conversation.item.input_audio_transcription.completed') {
+      await appendRealtimeChatHistory("user", data.transcript);
+    }
+    
+    // Save AI response when complete
+    if (data.type === 'response.audio_transcript.done') {
+      await appendRealtimeChatHistory("assistant", data.transcript);
+    }
+  }
+};
 ```
+
+```python Python
+import json
+import os
+
+def save_conversation_history(role, content, history_file="conversation_history.json"):
+    """Save conversation message to file"""
+    # Load existing history
+    if os.path.exists(history_file):
+        with open(history_file, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+    else:
+        history = []
+    
+    # Add new message
+    history.append({"role": role, "content": content})
+    
+    # Save back to file
+    with open(history_file, 'w', encoding='utf-8') as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+# Call when receiving messages
+async def handle_messages(websocket):
+    async for message in websocket:
+        if isinstance(message, str):
+            data = json.loads(message)
+            
+            if data.get('type') == 'conversation.item.input_audio_transcription.completed':
+                save_conversation_history("user", data.get('transcript'))
+            
+            elif data.get('type') == 'response.audio_transcript.done':
+                save_conversation_history("assistant", data.get('transcript'))
+```
+</CodeGroup>
+</Step>
+
+<Step title="Load History on Session Start">
+When establishing a new WebSocket connection, load the stored history and send it to the server:
+
+<CodeGroup>
+```javascript JavaScript
+async function sendSessionUpdate() {
+  // Load conversation history from storage
+  const history = localStorage.getItem("realtimeChatHistory");
+  const conversationHistory = history ? JSON.parse(history) : [];
+  
+  // Send session configuration
+  const sessionConfig = {
+    type: "session.update",
+    session: {
+      instructions: "You are a helpful assistant.",
+      turn_detection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 500
+      },
+      voice: "cedar",
+      temperature: 1,
+      max_response_output_tokens: 4096,
+      modalities: ["text", "audio"],
+      input_audio_format: "pcm16",
+      output_audio_format: "pcm16",
+      input_audio_transcription: {
+        model: "whisper-1"
+      }
+    }
+  };
+  
+  // Send session update first
+  socket.send(JSON.stringify(sessionConfig));
+  
+  // Send each historical message
 conversationHistory.forEach((msg) => {
   if (msg.role === "user") {
     const messageConfig = {
@@ -21,67 +123,182 @@ conversationHistory.forEach((msg) => {
       item: {
         type: "message",
         role: "user",
-        content: [{ type: "input_text", text: msg.content }]
-      }
-    };
+          content: [
+            {
+              type: "input_text",
+              text: msg.content
+            }
+          ]
+        }
+      };
+      
+      // Send user messages from history
     socket.send(JSON.stringify(messageConfig));
+      console.log("Sent historical message:", msg.content);
+    }
+  });
+}
+
+// Call this after receiving session.created
+socket.onmessage = async (event) => {
+  if (typeof event.data === 'string') {
+    const data = JSON.parse(event.data);
+    
+    if (data.type === 'session.created') {
+      console.log("Session created, sending history.");
+      await sendSessionUpdate();
+    }
+    
+    if (data.type === 'session.updated') {
+      console.log("Session updated. Ready to receive audio.");
+      // Start recording audio here
+    }
   }
+};
+```
+
+```python Python
+import json
+
+async def send_session_update(websocket):
+    """Send session configuration with conversation history"""
+    # Load conversation history
+    history_file = "conversation_history.json"
+    if os.path.exists(history_file):
+        with open(history_file, 'r', encoding='utf-8') as f:
+            conversation_history = json.load(f)
+    else:
+        conversation_history = []
+    
+    # Send session configuration
+    session_config = {
+        "type": "session.update",
+        "session": {
+            "instructions": "You are a helpful assistant.",
+            "turn_detection": {
+                "type": "server_vad",
+                "threshold": 0.5,
+                "prefix_padding_ms": 300,
+                "silence_duration_ms": 500
+            },
+            "voice": "cedar",
+            "temperature": 1,
+            "max_response_output_tokens": 4096,
+            "modalities": ["text", "audio"],
+            "input_audio_format": "pcm16",
+            "output_audio_format": "pcm16",
+            "input_audio_transcription": {
+                "model": "whisper-1"
+            }
+        }
+    }
+    
+    await websocket.send(json.dumps(session_config))
+    
+    # Send historical messages
+    for msg in conversation_history:
+        if msg["role"] == "user":
+            message_config = {
+                "type": "conversation.item.create",
+                "item": {
+                    "type": "message",
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": msg["content"]
+                        }
+                    ]
+                }
+            }
+            await websocket.send(json.dumps(message_config))
+            print(f"Sent historical message: {msg['content']}")
+
+# Handle session creation
+async def handle_messages(websocket):
+    async for message in websocket:
+        if isinstance(message, str):
+            data = json.loads(message)
+            
+            if data.get('type') == 'session.created':
+                await send_session_update(websocket)
+            
+            elif data.get('type') == 'session.updated':
+                print("Session updated. Ready to receive audio.")
+```
+</CodeGroup>
+</Step>
+
+<Step title="Restore Conversation Display">
+When the page loads, restore the conversation history display for the user:
+
+<CodeGroup>
+```javascript JavaScript
+// Restore conversation history display on page load
+async function initConversationHistory() {
+  // Load history from storage
+  const historyStr = localStorage.getItem("realtimeChatHistory");
+  const realtimeChatHistory = historyStr ? JSON.parse(historyStr) : [];
+  
+  // Render each historical message in the UI
+  if (realtimeChatHistory && realtimeChatHistory.length > 0) {
+    realtimeChatHistory.forEach(item => {
+      appendMessageToUI(item.role, item.content);
+    });
+    
+    // Scroll to bottom to show latest messages
+    const chatContainer = document.querySelector('.chat-container');
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }
+}
+
+function appendMessageToUI(role, content) {
+  const container = document.createElement('div');
+  container.classList.add('message', role === 'user' ? 'message-user' : 'message-assistant');
+  
+  const contentDiv = document.createElement('div');
+  contentDiv.classList.add('message-content');
+  contentDiv.textContent = content;
+  
+  container.appendChild(contentDiv);
+  
+  const chatContainer = document.querySelector('.chat-container');
+  if (chatContainer) {
+    chatContainer.appendChild(container);
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  initConversationHistory();
 });
 ```
 
-**Limitations:**
+```python Python
+# For Python web applications, restore history when rendering the page
+def load_conversation_history():
+    """Load and return conversation history"""
+    history_file = "conversation_history.json"
+    if os.path.exists(history_file):
+        with open(history_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
 
-* AI-generated historical messages cannot be embedded.
-
-* The system will not automatically associate with the context of the previous dialogue (e.g., whether AI has already answered).
-
-* It is recommended to use this in conjunction with prompt injection, and it is only for supplementing user behavior.
-
-The inability to inject AI-generated historical messages is a known bug in the OpenAI Realtime API and not a bug within this system.
-
-## 2. **System Instructions Injection for Context**
-
-By using the `instructions` field in `session.update`, role definitions and historical context descriptions can be injected. This way, `${messageConfig}` can fully retain the dialogue history between the user and AI, which helps to:
-
-* Maintain semantic coherence.
-
-* Support the AI's continuous understanding and memory.
-
-* Support ongoing control of the AI's tone and behavior.
-
-Copy
-
+# In your web framework (Flask/Django/FastAPI), pass history to template
+@app.route('/')
+def index():
+    history = load_conversation_history()
+    return render_template('index.html', conversation_history=history)
 ```
-const instructions = `
-You are a gentle and patient emotional companion assistant, skilled at listening and guiding.
-Please respond in ${userLanguage}.
-Welcome message: "${activeCharacter.greeting}"
+</CodeGroup>
+</Step>
+</Steps>
 
-Historical dialogue:
-User: I wasn't feeling very well yesterday.
-AI: What happened? Can you tell me about it?
-User: I had an argument with my friend...
+## Important Notes
 
-When the user requests services like image generation, real-time weather queries, etc., it automatically triggers function calls.
-
-Current context: ${messageConfig}
-`;
-
-const sessionConfig = {
-  type: "session.update",
-  session: {
-    instructions,
-    /* other session configuration */
-  }
-};
-socket.send(JSON.stringify(sessionConfig));
-```
-
-**Note:**
-
-* The instructions should not be too long (recommended to keep it within 2000 tokens).
-
-* For large-scale context, a summary integration should be performed.
-
-* The system's prompt length will directly affect cost consumption; longer system prompts will result in higher per-minute conversation costs.
+<Warning>
+  When sending historical messages via `conversation.item.create`, only user messages can be sent. AI-generated historical messages cannot be embedded this way.
+</Warning>
 
