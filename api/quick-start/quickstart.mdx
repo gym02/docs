@@ -1,159 +1,214 @@
 ---
 title: "Introduction"
-description: "Learn about NavTalk platform architecture and core capabilities"
+description: "Discover NavTalk - Next-generation digital human infrastructure powered by real-time audio processing"
 ---
 
 <Hero
-  title="Welcome to NavTalk"
-  subtitle="Build intelligent digital humans with cutting-edge AI technology. Create lifelike virtual characters with natural voices, expressions, and conversational abilities."
+  title="NavTalk: Next-Generation Digital Human Infrastructure"
+  subtitle="Transforming GPT-realtime with human-like presence. Experience the fastest response and interruption handling in digital human technology."
 />
 
 ## What is NavTalk?
 
-**NavTalk is a revolutionary real-time virtual digital human construction platform** that integrates the latest cutting-edge artificial intelligence technologies. It provides developers with an end-to-end complete solution and significantly lowers the barriers to developing high-quality digital humans, truly realizing an intelligent human-machine interaction experience that is **"what you see is what you get."**
+**NavTalk is a next-generation digital human infrastructure** that brings human-like visual presence to GPT-realtime conversations. Unlike traditional digital human systems that rely on multi-step text conversion processes, NavTalk revolutionizes real-time interaction by implementing a direct audio-to-audio processing pipeline, delivering unprecedented response speed and natural conversation flow.
 
-By deeply integrating three core modules—**computer vision, voice interaction, and intelligent decision-making systems**—NavTalk creates digital entities with **highly human-like expressive capabilities**. Our platform equips digital humans with the ability to handle complex conversations, make dynamic decisions, and deliver real-time multimodal outputs.
+Traditional digital human systems follow a **speech-to-text-to-speech-to-video** pipeline:
+
+```
+User Input → Speech-to-Text (STT) → Text Processing (LLM) 
+→ Text-to-Speech (TTS) → Video Rendering
+```
+
+**NavTalk's breakthrough approach** uses a **speech-to-speech-to-video** pipeline:
+
+```
+User Input → Speech-to-Speech → Video Rendering
+```
+
+By eliminating the text conversion steps (STT and TTS), NavTalk processes audio signals directly through GPT-realtime, dramatically reducing latency and achieving **the fastest response and interruption handling speeds** among all known digital human products.
 
 <CardGroup cols={3}>
   <Card
-    title="Intelligent Customer Service"
-    icon="headset"
-    href="/api/real-time-digital-human-api/system-character"
+    title="Ultra-Low Latency"
+    icon="bolt"
   >
-    24/7 virtual assistants with natural conversation flow
+    Direct audio processing eliminates cumulative text conversion delays, achieving sub-500ms end-to-end response times
   </Card>
   <Card
-    title="Educational Training"
-    icon="graduation-cap"
-    href="/api/real-time-digital-human-api/system-character"
+    title="Natural Interruptions"
+    icon="microphone"
   >
-    Interactive teaching assistants and training simulations
+    Real-time audio processing enables seamless interruption detection and handling, supporting natural conversation patterns
   </Card>
   <Card
-    title="Brand Marketing"
-    icon="bullhorn"
-    href="/api/non-real-time-digital-human-api/editor"
+    title="GPT-Realtime Powered"
+    icon="robot"
   >
-    Engaging brand ambassadors and marketing content
+    Native integration with GPT-realtime provides intelligent audio responses with human-like visual presence
+  </Card>
+  <Card
+    title="Real-time Rendering"
+    icon="video"
+  >
+    Instant audio-to-video rendering with frame-accurate lip synchronization and emotion-driven facial expressions
+  </Card>
+  <Card
+    title="Preserved Audio Fidelity"
+    icon="waveform"
+  >
+    Maintains full audio richness including voice tone, emotion, and natural rhythm throughout the entire pipeline
+  </Card>
+  <Card
+    title="Easy Integration"
+    icon="plug"
+  >
+    Simple API design with minimal setup required. Get started in minutes with comprehensive documentation and examples
   </Card>
 </CardGroup>
 
-## Five-Layer Technology Stack
+## Developer Guide
 
-The NavTalk platform adopts a **five-layer technology architecture**, with each layer designed around the three core requirements of "real-time performance, multimodality, and low latency":
+Get started quickly by exploring our comprehensive documentation sections:
 
-<AccordionGroup>
-  <Accordion title="💬 Interaction Layer" icon="comments">
-    <ul>
-      <li><strong>Dual-channel parallel interaction:</strong> Supports simultaneous voice and text input</li>
-      <li><strong>End-to-end audio streaming:</strong> Ensures natural conversation rhythm</li>
-      <li><strong>High concurrency support:</strong> Guarantees voice interaction stability under heavy load</li>
-    </ul>
-  </Accordion>
-
-  <Accordion title="🧠 Cognitive Layer" icon="brain">
-    <ul>
-      <li><strong>Large Language Model powered:</strong> Core decision-making hub using GPT technology</li>
-      <li><strong>Multi-turn dialogue:</strong> Supports context retention, intent recognition, and emotional understanding</li>
-      <li><strong>Intelligent reasoning:</strong> Knowledge reasoning and proactive dialogue strategy engine</li>
-    </ul>
-  </Accordion>
-
-  <Accordion title="🔄 Synchronization Layer" icon="arrows-rotate">
-    <ul>
-      <li><strong>Millisecond-level sync:</strong> Synchronized audio-video-animation output</li>
-      <li><strong>Precision lip-sync:</strong> Based on timestamp and phoneme alignment</li>
-      <li><strong>Real-time compensation:</strong> Frame compensation and latency correction for seamless experience</li>
-    </ul>
-  </Accordion>
-
-  <Accordion title="📡 Transmission Layer" icon="satellite">
-    <ul>
-      <li><strong>Low-latency network:</strong> Optimized audio and video distribution</li>
-      <li><strong>WebRTC protocol:</strong> Industry-standard real-time communication</li>
-      <li><strong>Network adaptation:</strong> Jitter resistance and weak network optimization</li>
-    </ul>
-  </Accordion>
-</AccordionGroup>
-
-## Core Capabilities
-
-<Columns cols={2}>
+<CardGroup cols={3}>
   <Card
-    title="🎭 Multimodal Character Building"
-    icon="user-circle"
+    title="Getting Started"
+    icon="rocket"
+    href="/api/quick-start/quickstart"
   >
-    <ul>
-      <li><strong>Predefined Library:</strong> Over 10 character models for business, education, healthcare, entertainment</li>
-      <li><strong>Custom Characters:</strong> Create from a single photo or video clip</li>
-      <li><strong>Style Control:</strong> Customizable emotional styles and expressiveness</li>
-    </ul>
+    Learn the basics of NavTalk and understand our revolutionary architecture
   </Card>
-
-  <Card
-    title="🗣 Intelligent Voice Interaction"
-    icon="microphone"
-  >
-    <ul>
-      <li><strong>50+ Languages:</strong> Real-time recognition with 95%+ accuracy</li>
-      <li><strong>8 Voice Tones:</strong> Diverse voice synthesis options</li>
-      <li><strong>&lt;2s Response:</strong> Average Q&A time approaching natural conversation</li>
-    </ul>
-  </Card>
-
-  <Card
-    title="👄 Precise Lip Sync"
-    icon="face-smile"
-  >
-    <ul>
-      <li><strong>Wav2Lip Architecture:</strong> Hybrid model combining facial keypoints with speech-driven animation</li>
-      <li><strong>1080P Output:</strong> Super-resolution rendering preserving micro-expressions</li>
-      <li><strong>Real-time Rendering:</strong> Second-level response lip sync animation</li>
-    </ul>
-  </Card>
-
-  <Card
-    title="🧠 AI Dialogue Engine"
-    icon="robot"
-  >
-    <ul>
-      <li><strong>Enterprise Integration:</strong> Connect knowledge bases, CRM, FAQ systems</li>
-      <li><strong>Intent Recognition:</strong> Context and behavior-based understanding</li>
-      <li><strong>Function Calling:</strong> Trigger external APIs during conversations</li>
-    </ul>
-  </Card>
-</Columns>
-
-## Quick Links
-
-<CardGroup cols={2}>
   <Card
     title="Real-time Digital Human API"
     icon="bolt"
     href="/api/real-time-digital-human-api/system-character"
   >
-    Build interactive, real-time conversational digital humans
+    Build interactive real-time conversational digital humans with WebSocket support
   </Card>
   <Card
     title="Non-real-time Digital Human API"
     icon="film"
     href="/api/non-real-time-digital-human-api/editor"
   >
-    Generate high-quality digital human videos for content creation
+    Generate high-quality digital human videos for content creation and batch processing
+  </Card>
+  <Card
+    title="Resources"
+    icon="book"
+    href="/api/frequently-asked-questions/frequently-asked-questions"
+  >
+    Frequently asked questions, update logs, and additional resources
+  </Card>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/introduction"
+  >
+    Complete API endpoint documentation with interactive examples
   </Card>
 </CardGroup>
 
-## Ready to Get Started?
+## Use Cases
+
+Explore our preset digital characters in various application scenarios. Click on any card to see implementation code examples.
+
+<CardGroup cols={3}>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-alex"
+  >
+    <img src="/images/api/real-time-digital-human-api/Alex.png" alt="Alex - AI Customer Service Agent" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>AI Customer Service</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Alex** - A professional customer service agent providing 24/7 support with natural conversation flow.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-ava"
+  >
+    <img src="/images/api/real-time-digital-human-api/Ava.png" alt="Ava - Virtual Interviewer" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Virtual Interviewer</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Ava** - An intelligent interviewer that conducts engaging candidate screening at scale.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-chloe"
+  >
+    <img src="/images/api/real-time-digital-human-api/Chloe.png" alt="Chloe - Educational Tutor" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Educational Tutor</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Chloe** - A personalized tutor offering customized lessons adapted to your learning style.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-emma"
+  >
+    <img src="/images/api/real-time-digital-human-api/Emma.png" alt="Emma - Sales Coach" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Sales Coach</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Emma** - A sales coach providing scalable one-on-one sales training and guidance.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-ethan"
+  >
+    <img src="/images/api/real-time-digital-human-api/Ethan.png" alt="Ethan - Healthcare Consultant" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Healthcare Consultant</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Ethan** - A healthcare advisor offering consultation on general health questions.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-leo"
+  >
+    <img src="/images/api/real-time-digital-human-api/Leo.png" alt="Leo - Fitness & Tech Support" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Fitness Trainer & Tech Support</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Leo** - A versatile assistant providing both fitness coaching and technical support expertise.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-lily"
+  >
+    <img src="/images/api/real-time-digital-human-api/Lily.png" alt="Lily - Language Teacher" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Language Teacher</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Lily** - A language instructor providing immersive conversational practice and learning.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-mia"
+  >
+    <img src="/images/api/real-time-digital-human-api/Mia.png" alt="Mia - Business Consultant" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Business Consultant</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Mia** - A business consultant offering strategic advice and professional guidance.</p>
+    </div>
+  </Card>
+  <Card
+    href="/api/real-time-digital-human-api/system-character#code-example-sophia"
+  >
+    <img src="/images/api/real-time-digital-human-api/Sophia.png" alt="Sophia - Research Assistant" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
+    <div style={{ padding: '20px' }}>
+      <h3 style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Research Assistant</h3>
+      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>**Sophia** - A friendly AI research assistant helping with information gathering and analysis.</p>
+    </div>
+  </Card>
+</CardGroup>
+
+## Get Started
+
+Ready to experience the fastest digital human technology available?
 
 <Card
-  title="Start Building Now"
+  title="Start Building with NavTalk"
   icon="rocket"
   href="https://console.navtalk.ai/login#/dashboard"
   horizontal
 >
-  Register your account and create your first digital human in minutes. Access our dashboard, get your API keys, and start integrating NavTalk into your applications.
+  Create your account, get API access, and integrate NavTalk into your applications in minutes. Begin building with our comprehensive documentation and sample code.
 </Card>
 
 <Tip>
-  New to NavTalk? Check out our [complete sample project](https://github.com/navtalk/Sample) on GitHub to see full implementation examples with pre-configured demos.
+  Check out our [complete sample project](https://github.com/navtalk/Sample) to see NavTalk's speech-to-speech pipeline in action with full implementation examples and best practices.
 </Tip>
