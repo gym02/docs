@@ -1,0 +1,34 @@
+---
+title: "response.audio_transcript.delta"
+description: "Streaming text chunks as AI generates response"
+---
+
+Triggered for each incremental text chunk as the AI generates its response. This event is sent multiple times during response generation. Handle this event to display AI responses in real-time as they're generated.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"response.audio_transcript.delta"` for this event.
+</ResponseField>
+
+<ResponseField name="delta" type="string">
+The new text chunk to append to the accumulated response.
+
+**Example**: `"Hello there"`
+</ResponseField>
+
+<ResponseField name="response_id" type="string">
+Unique identifier for this response. Used to track concurrent responses.
+
+**Example**: `"resp-123456"`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "response.audio_transcript.delta",
+  "delta": "Hello there",
+  "response_id": "resp-123456"
+}
+```
+</ResponseExample>

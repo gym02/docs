@@ -1,0 +1,34 @@
+---
+title: "response.audio_transcript.done"
+description: "Complete text response finished"
+---
+
+Triggered when the AI has finished generating the complete text response. Handle this event to save the complete response to conversation history.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"response.audio_transcript.done"` for this event.
+</ResponseField>
+
+<ResponseField name="transcript" type="string">
+The complete transcribed text of the AI response.
+
+**Example**: `"Hello there! How can I help you today?"`
+</ResponseField>
+
+<ResponseField name="response_id" type="string">
+Unique identifier for this response. Matches the `response_id` from delta events.
+
+**Example**: `"resp-123456"`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "response.audio_transcript.done",
+  "transcript": "Hello there! How can I help you today?",
+  "response_id": "resp-123456"
+}
+```
+</ResponseExample>

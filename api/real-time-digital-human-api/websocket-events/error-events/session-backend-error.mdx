@@ -1,0 +1,27 @@
+---
+title: "session.backend.error"
+description: "Backend error event"
+---
+
+Triggered when a backend error occurs during the session. Handle this event to log errors for debugging and show user-friendly error messages.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"session.backend.error"` for this event.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+Error message from the backend describing the issue.
+
+**Example**: `"Service temporarily unavailable. Please try again in a moment."`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "session.backend.error",
+  "message": "Service temporarily unavailable. Please try again in a moment."
+}
+```
+</ResponseExample>

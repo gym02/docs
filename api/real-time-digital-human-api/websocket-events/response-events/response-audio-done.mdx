@@ -1,0 +1,20 @@
+---
+title: "response.audio.done"
+description: "Audio generation completed"
+---
+
+Triggered when the AI has finished generating all audio for the response. Handle this event to reset audio playback flags and prepare for the next user interaction.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"response.audio.done"` for this event.
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "response.audio.done"
+}
+```
+</ResponseExample>

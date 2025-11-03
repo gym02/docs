@@ -58,11 +58,45 @@
                 "group": "WebSocket Events",
                 "pages": [
                   "api/real-time-digital-human-api/websocket-events",
-                  "api/real-time-digital-human-api/websocket-events/session-events",
-                  "api/real-time-digital-human-api/websocket-events/input-events",
-                  "api/real-time-digital-human-api/websocket-events/response-events",
-                  "api/real-time-digital-human-api/websocket-events/function-call-events",
-                  "api/real-time-digital-human-api/websocket-events/error-events"
+                  {
+                    "group": "Session Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/session-events/session-created",
+                      "api/real-time-digital-human-api/websocket-events/session-events/session-updated"
+                    ]
+                  },
+                  {
+                    "group": "Input Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/input-events/input-audio-buffer-speech-started",
+                      "api/real-time-digital-human-api/websocket-events/input-events/input-audio-buffer-speech-stopped",
+                      "api/real-time-digital-human-api/websocket-events/input-events/conversation-item-input-audio-transcription-completed"
+                    ]
+                  },
+                  {
+                    "group": "Response Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/response-events/response-audio-transcript-delta",
+                      "api/real-time-digital-human-api/websocket-events/response-events/response-audio-transcript-done",
+                      "api/real-time-digital-human-api/websocket-events/response-events/response-audio-delta",
+                      "api/real-time-digital-human-api/websocket-events/response-events/response-audio-done"
+                    ]
+                  },
+                  {
+                    "group": "Function Call Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/function-call-events/response-function-call-arguments-done"
+                    ]
+                  },
+                  {
+                    "group": "Error Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/error-events/session-gpu-full",
+                      "api/real-time-digital-human-api/websocket-events/error-events/session-insufficient-balance",
+                      "api/real-time-digital-human-api/websocket-events/error-events/session-connection-limit-exceeded",
+                      "api/real-time-digital-human-api/websocket-events/error-events/session-backend-error"
+                    ]
+                  }
                 ]
               },
               {

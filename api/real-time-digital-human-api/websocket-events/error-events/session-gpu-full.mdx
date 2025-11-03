@@ -1,0 +1,20 @@
+---
+title: "session.gpu_full"
+description: "GPU resources exhausted error"
+---
+
+Triggered when GPU resources are exhausted on the server. Handle this event to inform users that the service is temporarily unavailable and suggest retrying later.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"session.gpu_full"` for this event.
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "session.gpu_full"
+}
+```
+</ResponseExample>

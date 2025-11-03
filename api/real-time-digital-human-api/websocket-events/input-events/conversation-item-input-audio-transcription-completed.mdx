@@ -1,0 +1,27 @@
+---
+title: "conversation.item.input_audio_transcription.completed"
+description: "User speech transcription completed event"
+---
+
+Triggered when the user's speech has been fully transcribed. Handle this event to display the user message in your chat interface and save it to conversation history.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"conversation.item.input_audio_transcription.completed"` for this event.
+</ResponseField>
+
+<ResponseField name="transcript" type="string">
+The complete transcribed text of user speech.
+
+**Example**: `"Hello, how are you today?"`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "conversation.item.input_audio_transcription.completed",
+  "transcript": "Hello, how are you today?"
+}
+```
+</ResponseExample>

@@ -1,0 +1,34 @@
+---
+title: "response.function_call_arguments.done"
+description: "Function call request event"
+---
+
+Triggered when the AI determines that a function call is needed during the conversation. Handle this event to execute external API calls, query knowledge bases, or integrate with external systems.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"response.function_call_arguments.done"` for this event.
+</ResponseField>
+
+<ResponseField name="arguments" type="string">
+JSON string containing function call parameters.
+
+**Example**: `"{\"userInput\": \"What's the weather in Beijing?\"}"`
+</ResponseField>
+
+<ResponseField name="call_id" type="string">
+Unique identifier for this function call.
+
+**Example**: `"call-123456"`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "response.function_call_arguments.done",
+  "arguments": "{\"userInput\": \"What's the weather in Beijing?\"}",
+  "call_id": "call-123456"
+}
+```
+</ResponseExample>

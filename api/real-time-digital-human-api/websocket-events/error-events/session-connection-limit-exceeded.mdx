@@ -1,0 +1,27 @@
+---
+title: "session.connection_limit_exceeded"
+description: "Maximum concurrent connections exceeded error"
+---
+
+Triggered when the maximum number of concurrent connections is exceeded. Handle this event to inform users about the connection limit and suggest closing other active connections.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"session.connection_limit_exceeded"` for this event.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+Error message describing the connection limit.
+
+**Example**: `"Maximum concurrent connections (5) exceeded. Please close other connections and try again."`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "session.connection_limit_exceeded",
+  "message": "Maximum concurrent connections (5) exceeded. Please close other connections and try again."
+}
+```
+</ResponseExample>

@@ -1,0 +1,20 @@
+---
+title: "input_audio_buffer.speech_started"
+description: "User started speaking event"
+---
+
+Triggered when the server detects that the user has started speaking via server-side voice activity detection (VAD). Handle this event to stop any current AI response playback when the user interrupts the AI's response.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"input_audio_buffer.speech_started"` for this event.
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "input_audio_buffer.speech_started"
+}
+```
+</ResponseExample>

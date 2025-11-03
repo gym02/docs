@@ -1,0 +1,20 @@
+---
+title: "session.updated"
+description: "Session configuration accepted event"
+---
+
+Triggered after your session configuration is accepted and the session is ready to receive audio input. After receiving this event, you can start sending audio data to the WebSocket connection.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"session.updated"` for this event.
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "session.updated"
+}
+```
+</ResponseExample>

@@ -1,0 +1,27 @@
+---
+title: "response.audio.delta"
+description: "Streaming audio chunks (optional)"
+---
+
+Triggered for each audio chunk as the AI generates speech audio. This event is optional and primarily used when receiving audio via WebSocket. For most applications, WebRTC is the recommended method for audio/video streaming. Handle this event only if you're using WebSocket for audio streaming instead of WebRTC.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"response.audio.delta"` for this event.
+</ResponseField>
+
+<ResponseField name="delta" type="string">
+Base64-encoded audio chunk.
+
+**Example**: `"base64-encoded-audio-chunk"`
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "type": "response.audio.delta",
+  "delta": "base64-encoded-audio-chunk"
+}
+```
+</ResponseExample>

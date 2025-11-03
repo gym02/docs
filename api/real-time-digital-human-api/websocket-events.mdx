@@ -1,5 +1,5 @@
 ---
-title: "WebSocket Events Overview"
+title: "Overview"
 description: "Overview of all WebSocket message events in real-time digital human conversations"
 ---
 
@@ -12,38 +12,38 @@ WebSocket events are categorized into five main types:
 <CardGroup cols={2}>
   <Card
     title="Session Events"
-    icon="connection"
-    href="/api/real-time-digital-human-api/websocket-events/session-events"
+    icon="plug"
+    href="/api/real-time-digital-human-api/websocket-events/session-events/session-created"
   >
-    Connection and session lifecycle events
+    Connection and session lifecycle events (2 events)
   </Card>
   <Card
     title="Input Events"
     icon="microphone"
-    href="/api/real-time-digital-human-api/websocket-events/input-events"
+    href="/api/real-time-digital-human-api/websocket-events/input-events/input-audio-buffer-speech-started"
   >
-    User speech detection and transcription
+    User speech detection and transcription (3 events)
   </Card>
   <Card
     title="Response Events"
     icon="message"
-    href="/api/real-time-digital-human-api/websocket-events/response-events"
+    href="/api/real-time-digital-human-api/websocket-events/response-events/response-audio-transcript-delta"
   >
-    AI response generation and streaming
+    AI response generation and streaming (4 events)
   </Card>
   <Card
     title="Function Call Events"
     icon="code"
-    href="/api/real-time-digital-human-api/websocket-events/function-call-events"
+    href="/api/real-time-digital-human-api/websocket-events/function-call-events/response-function-call-arguments-done"
   >
     External function execution
   </Card>
   <Card
     title="Error Events"
     icon="warning"
-    href="/api/real-time-digital-human-api/websocket-events/error-events"
+    href="/api/real-time-digital-human-api/websocket-events/error-events/session-gpu-full"
   >
-    Error notifications and status alerts
+    Error notifications and status alerts (4 events)
   </Card>
 </CardGroup>
 
