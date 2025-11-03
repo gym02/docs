@@ -65,10 +65,8 @@
                   "api/real-time-digital-human-api/use-cases/research-assistant"
                 ]
               },
-              "api/real-time-digital-human-api/system-character",
-              "api/real-time-digital-human-api/custom-character-creation",
-              "api/real-time-digital-human-api/editor",
-              "api/real-time-digital-human-api/function-calling"
+              "api/real-time-digital-human-api/function-calling",
+              "api/real-time-digital-human-api/knowledge-base-integration"
             ]
           },
           {
