@@ -986,6 +986,14 @@
                     this.$message.error("Insufficient balance, service has stopped, please recharge!")
                     break;
 
+                case "session.connection_limit_exceeded":
+                    showErrorTip(data.message);
+                    break;
+
+                case "session.backend.error":
+                    showErrorTip(data.message);
+                    break;
+
                 default:
                     console.warn("Unhandled event type: " + data.type);
             }

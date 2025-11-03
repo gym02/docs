@@ -1,0 +1,252 @@
+---
+title: "WebSocket Events Overview"
+description: "Overview of all WebSocket message events in real-time digital human conversations"
+---
+
+When you establish a WebSocket connection with NavTalk, the server sends various event messages throughout the conversation lifecycle. This page provides an overview of all available event types and their flow.
+
+## Event Categories
+
+WebSocket events are categorized into five main types:
+
+<CardGroup cols={2}>
+  <Card
+    title="Session Events"
+    icon="connection"
+    href="/api/real-time-digital-human-api/websocket-events/session-events"
+  >
+    Connection and session lifecycle events
+  </Card>
+  <Card
+    title="Input Events"
+    icon="microphone"
+    href="/api/real-time-digital-human-api/websocket-events/input-events"
+  >
+    User speech detection and transcription
+  </Card>
+  <Card
+    title="Response Events"
+    icon="message"
+    href="/api/real-time-digital-human-api/websocket-events/response-events"
+  >
+    AI response generation and streaming
+  </Card>
+  <Card
+    title="Function Call Events"
+    icon="code"
+    href="/api/real-time-digital-human-api/websocket-events/function-call-events"
+  >
+    External function execution
+  </Card>
+  <Card
+    title="Error Events"
+    icon="warning"
+    href="/api/real-time-digital-human-api/websocket-events/error-events"
+  >
+    Error notifications and status alerts
+  </Card>
+</CardGroup>
+
+## Event Flow Overview
+
+<AccordionGroup>
+<Accordion title="Connection & Session Setup Flow">
+1. **Connect WebSocket** → Establish connection to `wss://transfer.navtalk.ai/api/realtime-api`
+2. **Receive `session.created`** → Send `session.update` with configuration
+3. **Receive `session.updated`** → Session ready, start sending audio input
+
+**Note**: If errors occur (`session.gpu_full`, `session.connection_limit_exceeded`, `session.backend.error`), handle them appropriately and inform the user.
+</Accordion>
+
+<Accordion title="User Input Flow">
+1. **User starts speaking** → Receive `input_audio_buffer.speech_started`
+   - Stop AI audio playback
+   - Clear audio queue
+2. **User continues speaking** → Keep sending audio chunks (no events)
+3. **User stops speaking** → Receive `input_audio_buffer.speech_stopped`
+4. **Transcription complete** → Receive `conversation.item.input_audio_transcription.completed`
+   - Display user message in chat
+   - Save to conversation history
+
+**Note**: If user starts speaking while AI is responding, `input_audio_buffer.speech_started` will interrupt the AI response naturally.
+</Accordion>
+
+<Accordion title="AI Response Flow">
+1. **AI starts generating** → Receive `response.audio_transcript.delta` (multiple times)
+   - Accumulate text chunks by `response_id`
+   - Render markdown in real-time
+   - Start video playback
+2. **Text complete** → Receive `response.audio_transcript.done`
+   - Save complete response to history
+3. **Audio complete** → Receive `response.audio.done`
+   - Reset playback flags
+
+**Note**: Use `response_id` to track multiple concurrent responses and accumulate `delta` chunks to build the complete message.
+</Accordion>
+
+<Accordion title="Function Call Flow">
+1. **AI determines function needed** → Receive `response.function_call_arguments.done`
+   - Parse `arguments` (JSON string) and `call_id`
+2. **Execute function** → Call external API or execute business logic
+3. **Send result** → Send `conversation.item.create` with `function_call_output`
+4. **Request AI response** → Send `response.create`
+5. **AI processes result** → Receive normal response events (`response.audio_transcript.delta`, etc.)
+
+**Note**: Always send `response.create` after sending the function call output to trigger AI processing.
+</Accordion>
+
+<Accordion title="Complete Conversation Flow">
+A typical conversation cycle:
+
+```
+Connect WebSocket
+  ↓
+session.created → Send session.update
+  ↓
+session.updated → Start recording
+  ↓
+User speaks → input_audio_buffer.speech_started → input_audio_buffer.speech_stopped
+  ↓
+conversation.item.input_audio_transcription.completed → Display user message
+  ↓
+response.audio_transcript.delta (streaming) → Display AI response
+  ↓
+response.audio_transcript.done → Save to history
+  ↓
+response.audio.done → Ready for next interaction
+```
+
+**With Function Call:**
+
+```
+[Same flow until AI determines function needed]
+  ↓
+response.function_call_arguments.done → Execute function
+  ↓
+Send function_call_output → Send response.create
+  ↓
+[Continue with normal response flow]
+```
+</Accordion>
+</AccordionGroup>
+
+## Basic Event Handler
+
+Here's a basic structure for handling WebSocket events:
+
+<CodeGroup>
+```javascript JavaScript
+socket.onmessage = async (event) => {
+  if (typeof event.data === 'string') {
+    try {
+      const data = JSON.parse(event.data);
+      await handleReceivedMessage(data);
+    } catch (e) {
+      console.error("Failed to parse JSON message:", e);
+    }
+  }
+};
+
+async function handleReceivedMessage(data) {
+  switch (data.type) {
+    // Session Events
+    case "session.created":
+      await sendSessionUpdate();
+      break;
+    case "session.updated":
+      startRecording();
+      break;
+    
+    // Input Events
+    case "input_audio_buffer.speech_started":
+      stopCurrentAudioPlayback();
+      break;
+    case "input_audio_buffer.speech_stopped":
+      // Wait for transcription
+      break;
+    case "conversation.item.input_audio_transcription.completed":
+      displayUserMessage(data.transcript);
+      break;
+    
+    // Response Events
+    case "response.audio_transcript.delta":
+      handleResponseDelta(data.delta, data.response_id);
+      break;
+    case "response.audio_transcript.done":
+      await appendChatHistory("assistant", data.transcript);
+      break;
+    case "response.audio.done":
+      isPlaying = false;
+      break;
+    
+    // Function Call Events
+    case "response.function_call_arguments.done":
+      await handleFunctionCall(data);
+      break;
+    
+    // Error Events
+    case "session.gpu_full":
+    case "session.insufficient_balance":
+    case "session.connection_limit_exceeded":
+    case "session.backend.error":
+      showError(data.message || "An error occurred");
+      break;
+    
+    default:
+      console.warn("Unhandled event type: " + data.type);
+  }
+}
+```
+
+```python Python
+async def handle_messages(websocket):
+    async for message in websocket:
+        if isinstance(message, str):
+            try:
+                data = json.loads(message)
+                await handle_received_message(data, websocket)
+            except Exception as e:
+                print(f"Failed to parse JSON message: {e}")
+
+async def handle_received_message(data, websocket):
+    event_type = data.get('type')
+    
+    # Session Events
+    if event_type == 'session.created':
+        await send_session_update(websocket)
+    elif event_type == 'session.updated':
+        start_recording()
+    
+    # Input Events
+    elif event_type == 'input_audio_buffer.speech_started':
+        stop_current_audio_playback()
+    elif event_type == 'input_audio_buffer.speech_stopped':
+        pass  # Wait for transcription
+    elif event_type == 'conversation.item.input_audio_transcription.completed':
+        display_user_message(data.get('transcript'))
+    
+    # Response Events
+    elif event_type == 'response.audio_transcript.delta':
+        await handle_response_delta(data.get('delta'), data.get('response_id'))
+    elif event_type == 'response.audio_transcript.done':
+        await append_chat_history("assistant", data.get('transcript'))
+    elif event_type == 'response.audio.done':
+        is_playing = False
+    
+    # Function Call Events
+    elif event_type == 'response.function_call_arguments.done':
+        await handle_function_call(data, websocket)
+    
+    # Error Events
+    elif event_type in ['session.gpu_full', 'session.insufficient_balance', 
+                         'session.connection_limit_exceeded', 'session.backend.error']:
+        show_error(data.get('message', 'An error occurred'))
+    
+    else:
+        print(f"Unhandled event type: {event_type}")
+```
+</CodeGroup>
+
+<Tip>
+For detailed information about each event type, click on the event category cards above or navigate to the specific event documentation pages.
+</Tip>

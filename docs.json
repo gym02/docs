@@ -55,6 +55,17 @@
               "api/real-time-digital-human-api/supported-languages",
               "api/real-time-digital-human-api/historical-dialogue",
               {
+                "group": "WebSocket Events",
+                "pages": [
+                  "api/real-time-digital-human-api/websocket-events",
+                  "api/real-time-digital-human-api/websocket-events/session-events",
+                  "api/real-time-digital-human-api/websocket-events/input-events",
+                  "api/real-time-digital-human-api/websocket-events/response-events",
+                  "api/real-time-digital-human-api/websocket-events/function-call-events",
+                  "api/real-time-digital-human-api/websocket-events/error-events"
+                ]
+              },
+              {
                 "group": "Use Cases",
                 "pages": [
                   "api/real-time-digital-human-api/use-cases/virtual-interviewer",
