@@ -147,7 +147,13 @@ Configuration for speech-to-text transcription of user input.
 
 <Expandable title="Transcription Properties">
 <ResponseField name="model" type="string">
-Transcription model. Use `"whisper-1"` for OpenAI Whisper model.
+Transcription model for speech-to-text conversion.
+
+**Supported models**:
+- `"whisper-1"`: OpenAI Whisper model (default)
+- `"gpt-4o-mini-transcribe"`: GPT-4o Mini transcription model
+- `"gpt-4o-transcribe"`: GPT-4o transcription model
+- `"gpt-4o-transcribe-diarize"`: GPT-4o transcription with speaker diarization
 
 **Example**: `"whisper-1"`
 </ResponseField>
