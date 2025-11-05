@@ -1,0 +1,119 @@
+---
+title: "Best Practices"
+description: "General techniques for effective prompt engineering with GPT-realtime models"
+---
+
+Effective prompt engineering requires attention to detail and iterative refinement. Here are essential techniques to improve your system instructions.
+
+## Iterate Continuously
+
+Small wording changes can make or break behavior. Constantly iterate and test different phrasings to optimize performance.
+
+**Example**: In one experiment, changing "inaudible" to "unintelligible" in instructions for handling noisy input significantly improved model performance.
+
+After your first attempt at a system prompt, have an LLM check it for ambiguity or conflicts.
+
+## Use Bullet Points Over Paragraphs
+
+Clear, short bullet points are better than long paragraphs. Real-time models follow concise bullet points more effectively.
+
+Long paragraphs are harder for models to parse and follow. Breaking them into bullet points makes instructions clearer:
+
+<Tabs>
+<Tab title="Paragraph (Harder to Follow)">
+```javascript
+instructions: `When you can't clearly hear the user, don't proceed. If there's background noise or you only caught part of the sentence, pause and ask them politely to repeat themselves in their preferred language, and make sure you keep the conversation in the same language as the user.`
+```
+</Tab>
+<Tab title="Bullet Points (Easier to Follow)">
+```javascript
+instructions: `## Unclear Audio
+
+- Only respond to clear audio or text.
+- If audio is unclear/partial/noisy/silent, ask for clarification in {preferred_language}.
+- Continue in the same language as the user if intelligible.`
+```
+</Tab>
+</Tabs>
+
+## Provide Example Phrases
+
+The model strongly follows example phrases. Provide short, varied examples for common conversation moments.
+
+Include sample phrases with variations so the model doesn't repeat the same responses. For example, if providing greeting examples:
+
+```javascript
+instructions: `## Greeting
+
+Sample phrases (vary, don't always reuse):
+- "Thanks for calling ACME Internet—how can I help today?"
+- "You've reached ACME Support. What's going on with your service?"
+- "Hi there—tell me what you'd like help with."`
+```
+
+## Be Precise
+
+Ambiguity and conflicting instructions degrade performance. Similar to GPT models, precision matters.
+
+- Check for vague terms and replace with specific language
+- Eliminate conflicting instructions
+- Test different wordings to find what works best
+- Use LLMs to review prompts for ambiguity and conflicts
+
+## Control Language
+
+If you see language drift, pin the output to the target language. Add a dedicated "Language" section to your prompt.
+
+**Simple language matching**:
+```javascript
+instructions: `## Language
+
+Language matching: Respond in the same language as the user unless directed otherwise.
+
+For non-English, start with the same standard accent/dialect the user uses.`
+```
+
+**English-only constraint**:
+```javascript
+instructions: `## Language
+
+- The conversation will be only in English.
+- Do not respond in any other language, even if the user asks.
+- If the user speaks another language, politely explain that support is limited to English.`
+```
+
+## Reduce Repetition
+
+Add variety rules to reduce robotic phrasing. If responses sound repetitive or mechanical, include explicit variety instructions.
+
+```javascript
+instructions: `## Variety
+
+- Do not repeat the same sentence twice. Vary your responses so it doesn't sound robotic.`
+```
+
+This is especially important when using example phrases—the model may stick too closely to them without variety instructions.
+
+## Use Capitalization for Emphasis
+
+Use CAPITALIZED text for important rules to make them stand out to the model. It's also helpful to convert non-text rules (like numeric conditions) to text before capitalizing.
+
+Convert numeric conditions to text before capitalizing. For example, instead of writing "if x > 3 escalate", write "IF MORE THAN THREE FAILURES OCCUR, ESCALATE."
+
+<Tabs>
+<Tab title="Numeric Condition">
+```javascript
+instructions: `## Rules
+
+- If [func.return_value] > 0, respond 1 to the user.`
+```
+</Tab>
+<Tab title="Text with Capitalization">
+```javascript
+instructions: `## Rules
+
+- IF [func.return_value] IS BIGGER THAN 0, RESPOND 1 TO THE USER.`
+```
+</Tab>
+</Tabs>
+

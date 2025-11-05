@@ -55,6 +55,16 @@
               "api/real-time-digital-human-api/supported-languages",
               "api/real-time-digital-human-api/historical-dialogue",
               {
+                "group": "Prompt Engineering",
+                "pages": [
+                  "api/real-time-digital-human-api/prompt-engineering/overview",
+                  "api/real-time-digital-human-api/prompt-engineering/best-practices",
+                  "api/real-time-digital-human-api/prompt-engineering/building-prompts"
+                ]
+              },
+              "api/real-time-digital-human-api/function-calling",
+              "api/real-time-digital-human-api/knowledge-base-integration",
+              {
                 "group": "WebSocket Events",
                 "pages": [
                   "api/real-time-digital-human-api/websocket-events",
@@ -109,9 +119,7 @@
                   "api/real-time-digital-human-api/use-cases/business-consultant",
                   "api/real-time-digital-human-api/use-cases/research-assistant"
                 ]
-              },
-              "api/real-time-digital-human-api/function-calling",
-              "api/real-time-digital-human-api/knowledge-base-integration"
+              }
             ]
           },
           {
