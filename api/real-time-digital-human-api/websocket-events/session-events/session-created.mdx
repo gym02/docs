@@ -14,7 +14,42 @@ Event type. Always `"session.created"` for this event.
 <ResponseExample>
 ```json Example
 {
-  "type": "session.created"
+  "type": "session.update",
+  "session": {
+    "instructions": "You are a helpful assistant.",
+    "turn_detection": {
+      "type": "server_vad",
+      "threshold": 0.5,
+      "prefix_padding_ms": 300,
+      "silence_duration_ms": 500
+    },
+    "voice": "cedar",
+    "temperature": 1,
+    "max_response_output_tokens": 4096,
+    "modalities": ["text", "audio"],
+    "input_audio_format": "pcm16",
+    "output_audio_format": "pcm16",
+    "input_audio_transcription": {
+      "model": "whisper-1"
+    }
+  },
+  "tools": [
+    {
+        "type": "function",
+        "name": "function_call_judge",
+        "description": "Are there any function calls or tasks beyond your capability...",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "userInput": {
+                    "type": "string",
+                    "description": "the user input"
+                }
+            },
+            "required": ["userInput"]
+        }
+    }
+  ]
 }
 ```
 </ResponseExample>

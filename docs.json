@@ -123,6 +123,7 @@
           {
             "group": "Resources",
             "pages": [
+              "api/resources/avatars",
               "api/frequently-asked-questions/frequently-asked-questions",
               "api/update-log/update-log"
             ]

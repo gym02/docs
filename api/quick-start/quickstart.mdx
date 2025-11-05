@@ -101,62 +101,80 @@ Get started quickly by exploring our comprehensive documentation sections:
 
 Explore our preset digital characters in various application scenarios. Click on any card to see implementation code examples.
 
-<CardGroup cols={3}>
-
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/virtual-interviewer"
-  >
-    <img src="/images/api/real-time-digital-human-api/Ava.png" alt="Ava - Virtual Interviewer" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Virtual Interviewer</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Conduct engaging candidate screening at scale.</p>
+<style>{`
+  .use-case-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+  }
+  .use-case-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .use-case-card > div:last-child {
+    flex: 1;
+  }
+  .use-case-card-link:hover .use-case-card {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 1px #8B5CF6;
+  }
+`}</style>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginTop: '32px', marginBottom: '32px', alignItems: 'stretch' }}>
+  <a href="/api/real-time-digital-human-api/use-cases/virtual-interviewer" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Ava.png" alt="Ava - Virtual Interviewer" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Virtual Interviewer</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Conduct engaging candidate screening at scale.</p>
+      </div>
     </div>
-  </Card>
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/educational-tutor"
-  >
-    <img src="/images/api/real-time-digital-human-api/Chloe.png" alt="Chloe - Educational Tutor" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Educational Tutor</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Personalized lessons adapted to your learning style.</p>
+  </a>
+  <a href="/api/real-time-digital-human-api/use-cases/educational-tutor" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Chloe.png" alt="Chloe - Educational Tutor" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Educational Tutor</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Personalized lessons adapted to your learning style.</p>
+      </div>
     </div>
-  </Card>
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/sales-coach"
-  >
-    <img src="/images/api/real-time-digital-human-api/Emma.png" alt="Emma - Sales Coach" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Sales Coach</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Scalable one-on-one sales training and guidance.</p>
+  </a>
+  <a href="/api/real-time-digital-human-api/use-cases/sales-coach" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Emma.png" alt="Emma - Sales Coach" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Sales Coach</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Scalable one-on-one sales training and guidance. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</p>
+      </div>
     </div>
-  </Card>
-
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/fitness-tech-support"
-  >
-    <img src="/images/api/real-time-digital-human-api/Leo.png" alt="Leo - Fitness & Tech Support" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Fitness Trainer & Tech Support</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Fitness coaching and technical support expertise.</p>
+  </a>
+  <a href="/api/real-time-digital-human-api/use-cases/fitness-tech-support" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Leo.png" alt="Leo - Fitness Support" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Fitness Trainer</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Fitness coaching and technical support expertise. &nbsp; &nbsp; &nbsp; &nbsp;</p>
+      </div>
     </div>
-  </Card>
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/business-consultant"
-  >
-    <img src="/images/api/real-time-digital-human-api/Mia.png" alt="Mia - Business Consultant" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Business Consultant</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Strategic business advice and professional guidance.</p>
+  </a>
+  <a href="/api/real-time-digital-human-api/use-cases/business-consultant" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Mia.png" alt="Mia - Business Consultant" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Business Consultant</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Strategic business advice and professional guidance. &nbsp; &nbsp; &nbsp; &nbsp;</p>
+      </div>
     </div>
-  </Card>
-  <Card
-    href="/api/real-time-digital-human-api/use-cases/research-assistant"
-  >
-    <img src="/images/api/real-time-digital-human-api/Sophia.png" alt="Sophia - Research Assistant" style={{ width: '100%', height: '280px', objectFit: 'cover', objectPosition: 'center', borderRadius: '8px 8px 0 0', marginBottom: '0', display: 'block' }} />
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Research Assistant</div>
-      <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Information gathering and research analysis.</p>
+  </a>
+  <a href="/api/real-time-digital-human-api/use-cases/research-assistant" className="use-case-card-link">
+    <div className="use-case-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+      <img src="/images/api/real-time-digital-human-api/Sophia.png" alt="Sophia - Research Assistant" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <div style={{ marginTop: '0', marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>Research Assistant</div>
+        <p style={{ margin: '0', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>Information gathering and research analysis. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</p>
+      </div>
     </div>
-  </Card>
-</CardGroup>
+  </a>
+</div>
 
