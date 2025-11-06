@@ -1,0 +1,221 @@
+---
+title: "Quick Start"
+description: "Generate your first digital human video in minutes with the NavTalk Non-real-time Digital Human API"
+---
+
+This guide will walk you through generating your first digital human video using the NavTalk Non-real-time Digital Human API.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+- A NavTalk account with API access
+- Your API key (obtain from the [dashboard](https://console.navtalk.ai/login#/dashboard))
+
+## Step-by-Step Process
+
+<Steps>
+<Step title="Choose Your Input Method">
+Select one of the three main categories:
+
+**Image-Driven**: Use a static image (e.g., portrait photo)  
+**Video-Driven**: Use an existing video file  
+**内置形象**: Use a built-in character (e.g., `navtalk.Leo`)
+
+For this quick start, we'll use the **内置形象 + Text (TTS)** method as it requires no additional materials.
+</Step>
+
+<Step title="Submit Generation Request">
+Send a POST request to generate your video:
+
+<CodeGroup>
+```bash curl
+curl -X POST "https://app.navtalk.ai/generate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "license": "your-api-key-here",
+    "character_name": "navtalk.Leo",
+    "content": "Hello, welcome to NavTalk. This is my first digital human video!",
+    "voice": "echo"
+  }'
+```
+```javascript JavaScript
+const API_KEY = 'your-api-key-here';
+
+const response = await fetch('https://app.navtalk.ai/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    license: API_KEY,
+    character_name: 'navtalk.Leo',
+    content: 'Hello, welcome to NavTalk. This is my first digital human video!',
+    voice: 'echo'
+  })
+});
+
+const result = await response.json();
+console.log('Task ID:', result.task_id);
+```
+```python Python
+import requests
+
+API_KEY = 'your-api-key-here'
+
+response = requests.post(
+    'https://app.navtalk.ai/generate',
+    headers={'Content-Type': 'application/json'},
+    json={
+        'license': API_KEY,
+        'character_name': 'navtalk.Leo',
+        'content': 'Hello, welcome to NavTalk. This is my first digital human video!',
+        'voice': 'echo'
+    }
+)
+
+result = response.json()
+print('Task ID:', result['task_id'])
+```
+</CodeGroup>
+
+**Response:**
+```json
+{
+  "status": "started",
+  "task_id": "14cb760f-05ac-4fd3-a82c-e841f2f005d0"
+```
+</Step>
+
+<Step title="Query Task Status">
+Use the returned `task_id` to check the processing status:
+
+<CodeGroup>
+```bash curl
+curl -X GET "https://api.navtalk.ai/query_status?license=your-api-key-here&task_id=14cb760f-05ac-4fd3-a82c-e841f2f005d0"
+```
+```javascript JavaScript
+const taskId = result.task_id;
+
+const statusResponse = await fetch(
+  `https://api.navtalk.ai/query_status?license=${API_KEY}&task_id=${taskId}`
+);
+
+const status = await statusResponse.json();
+console.log('Status:', status.status);
+
+if (status.status === 'done') {
+  console.log('Video URL:', status.video_url);
+}
+```
+```python Python
+task_id = result['task_id']
+
+status_response = requests.get(
+    f'https://api.navtalk.ai/query_status?license={API_KEY}&task_id={task_id}'
+)
+
+status = status_response.json()
+print('Status:', status['status'])
+
+if status['status'] == 'done':
+    print('Video URL:', status['video_url'])
+```
+</CodeGroup>
+
+**Response:**
+```json
+{
+  "status": "done",
+  "video_url": "https://easyaistorageaccount.blob.core.windows.net/easyai/uploadFiles/2025/05/09/xxx.mp4"
+}
+```
+
+**Status Values:**
+- `started`: Task created and processing
+- `processing`: Video composition in progress
+- `done`: Completed successfully, video URL available
+- `failed`: Generation failed, check error message
+</Step>
+
+<Step title="Access Your Video">
+Once the status is `done`, you can access your generated video using the `video_url` from the response. The video URL is publicly accessible and can be used directly in your applications:
+
+<CodeGroup>
+```javascript JavaScript
+if (status.status === 'done') {
+  const videoUrl = status.video_url;
+  console.log('Video URL:', videoUrl);
+  
+  // Use the video URL in your application
+  // For example, display in a video element:
+  const videoElement = document.createElement('video');
+  videoElement.src = videoUrl;
+  videoElement.controls = true;
+  document.body.appendChild(videoElement);
+}
+```
+```python Python
+if status['status'] == 'done':
+    video_url = status['video_url']
+    print('Video URL:', video_url)
+    
+    # Use the video URL in your application
+    # For example, save to a file or embed in HTML
+    print(f'Access your video at: {video_url}')
+```
+</CodeGroup>
+
+<Tip>
+The video URL is publicly accessible and can be embedded directly in web pages, mobile apps, or downloaded for offline use. Generation typically takes 10-30 seconds depending on video length and complexity.
+</Tip>
+</Step>
+
+</Steps>
+
+## Other Input Methods
+
+### Image + Text (TTS)
+```json
+{
+  "license": "your-api-key-here",
+  "image_url": "https://example.com/photo.jpg",
+  "content": "Welcome to NavTalk.",
+  "voice": "echo"
+}
+```
+
+### Video + Audio URL
+```json
+{
+  "license": "your-api-key-here",
+  "video_url": "https://example.com/video.mp4",
+  "audio_url": "https://example.com/audio.mp3"
+}
+```
+
+### 内置形象 + Audio URL
+```json
+{
+  "license": "your-api-key-here",
+  "character_name": "navtalk.Leo",
+  "audio_url": "https://example.com/audio.mp3"
+}
+```
+
+For all 9 supported methods, see the [API Reference](/api/non-real-time-digital-human-api/editor).
+
+## Best Practices
+
+- **Keep videos under 30 seconds** for faster processing
+- **Use clear, front-facing images/videos** for optimal results
+- **Test with short content first** before generating longer videos
+- **Handle errors gracefully** - check for `failed` status and retry if needed
+- **Store task IDs** for tracking and debugging
+
+## Next Steps
+
+- Explore all [9 calling methods](/api/non-real-time-digital-human-api/editor)
+- Learn about [voice styles](/api/non-real-time-digital-human-api/voice-styles) available for Non-real-time Digital Human API
+- Discover [advanced face control parameters](/api/non-real-time-digital-human-api/editor#advanced-face-control-parameters)
+- Create [custom avatars](/api/custom-avatar/quick-start) for your brand
+

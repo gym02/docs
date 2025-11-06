@@ -106,6 +106,20 @@ const configuration = {
 function handleOffer(message) {
   const targetId = message.targetSessionId;
   const offer = new RTCSessionDescription(message.sdp);
+  console.log("Created offer SDP:", offer);
+  try {
+      const endpoint = `https://transfer.navtalk.ai/api/webrtc/generate-ice-servers`
+      const res = await fetch(endpoint, { method: 'POST' })
+      if (res.ok) {
+          const data = await res.json()
+          const servers = data?.data?.iceServers ?? data?.iceServers
+          if (Array.isArray(servers) && servers.length > 0) {
+              configuration = { iceServers: servers }
+          }
+      }
+  } catch (e) {
+    
+  }
   
   // Create RTCPeerConnection
   peerConnection = new RTCPeerConnection(configuration);

@@ -67,7 +67,7 @@
               {
                 "group": "WebSocket Events",
                 "pages": [
-                  "api/real-time-digital-human-api/websocket-events",
+                  "api/real-time-digital-human-api/websocket-events/overview",
                   {
                     "group": "Session Events",
                     "pages": [
@@ -123,8 +123,19 @@
             ]
           },
           {
+            "group": "Custom Avatar Training",
+            "pages": [
+              "api/custom-avatar/overview",
+              "api/custom-avatar/quick-start",
+              "api/custom-avatar/reference-materials"
+            ]
+          },
+          {
             "group": "Non-real-time Digital Human API",
             "pages": [
+              "api/non-real-time-digital-human-api/overview",
+              "api/non-real-time-digital-human-api/quick-start",
+              "api/non-real-time-digital-human-api/voice-styles",
               "api/non-real-time-digital-human-api/editor"
             ]
           },
