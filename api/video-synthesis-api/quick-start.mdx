@@ -1,9 +1,9 @@
 ---
 title: "Quick Start"
-description: "Generate your first digital human video in minutes with the NavTalk Non-real-time Digital Human API"
+description: "Generate your first digital human video in minutes with the NavTalk Video Synthesis API"
 ---
 
-This guide will walk you through generating your first digital human video using the NavTalk Non-real-time Digital Human API.
+This guide will walk you through generating your first digital human video using the NavTalk Video Synthesis API.
 
 ## Prerequisites
 
@@ -172,50 +172,10 @@ The video URL is publicly accessible and can be embedded directly in web pages, 
 
 </Steps>
 
-## Other Input Methods
-
-### Image + Text (TTS)
-```json
-{
-  "license": "your-api-key-here",
-  "image_url": "https://example.com/photo.jpg",
-  "content": "Welcome to NavTalk.",
-  "voice": "echo"
-}
-```
-
-### Video + Audio URL
-```json
-{
-  "license": "your-api-key-here",
-  "video_url": "https://example.com/video.mp4",
-  "audio_url": "https://example.com/audio.mp3"
-}
-```
-
-### 内置形象 + Audio URL
-```json
-{
-  "license": "your-api-key-here",
-  "character_name": "navtalk.Leo",
-  "audio_url": "https://example.com/audio.mp3"
-}
-```
-
-For all 9 supported methods, see the [API Reference](/api/non-real-time-digital-human-api/editor).
-
-## Best Practices
-
-- **Keep videos under 30 seconds** for faster processing
-- **Use clear, front-facing images/videos** for optimal results
-- **Test with short content first** before generating longer videos
-- **Handle errors gracefully** - check for `failed` status and retry if needed
-- **Store task IDs** for tracking and debugging
-
 ## Next Steps
 
-- Explore all [9 calling methods](/api/non-real-time-digital-human-api/editor)
-- Learn about [voice styles](/api/non-real-time-digital-human-api/voice-styles) available for Non-real-time Digital Human API
-- Discover [advanced face control parameters](/api/non-real-time-digital-human-api/editor#advanced-face-control-parameters)
+- Explore all [9 calling methods](/api/video-synthesis-api/editor)
+- Learn about [voice styles](/api/video-synthesis-api/voice-styles) available for Video Synthesis API
+- Discover [advanced face control parameters](/api/video-synthesis-api/editor#advanced-face-control-parameters)
 - Create [custom avatars](/api/custom-avatar/quick-start) for your brand
 

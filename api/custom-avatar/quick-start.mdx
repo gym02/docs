@@ -144,7 +144,7 @@ Once training is complete, use your custom avatar in your applications:
 
 <CodeGroup>
 ```bash curl
-# For Non-real-time Digital Human API
+# For Video Synthesis API
 curl -X POST "https://app.navtalk.ai/generate" \
   -H "Content-Type: application/json" \
   -d '{
@@ -160,7 +160,7 @@ curl -X POST "https://app.navtalk.ai/generate" \
 const CHARACTER_NAME = status.character_name; // e.g., 'custom.my-avatar-123'
 const websocketUrl = `wss://transfer.navtalk.ai/api/realtime-api?license=${API_KEY}&characterName=${CHARACTER_NAME}`;
 
-// For Non-real-time Digital Human API
+// For Video Synthesis API
 const videoResponse = await fetch('https://app.navtalk.ai/generate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -178,7 +178,7 @@ const videoResponse = await fetch('https://app.navtalk.ai/generate', {
 character_name = status['character_name']  # e.g., 'custom.my-avatar-123'
 websocket_url = f'wss://transfer.navtalk.ai/api/realtime-api?license={API_KEY}&characterName={character_name}'
 
-# For Non-real-time Digital Human API
+# For Video Synthesis API
 response = requests.post(
     'https://app.navtalk.ai/generate',
     headers={'Content-Type': 'application/json'},

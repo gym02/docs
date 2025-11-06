@@ -64,6 +64,7 @@
               },
               "api/real-time-digital-human-api/function-calling",
               "api/real-time-digital-human-api/knowledge-base-integration",
+              "api/real-time-digital-human-api/voice-styles",
               {
                 "group": "WebSocket Events",
                 "pages": [
@@ -131,19 +132,18 @@
             ]
           },
           {
-            "group": "Non-real-time Digital Human API",
+            "group": "Video Synthesis API",
             "pages": [
-              "api/non-real-time-digital-human-api/overview",
-              "api/non-real-time-digital-human-api/quick-start",
-              "api/non-real-time-digital-human-api/voice-styles",
-              "api/non-real-time-digital-human-api/editor"
+              "api/video-synthesis-api/overview",
+              "api/video-synthesis-api/quick-start",
+              "api/video-synthesis-api/voice-styles",
+              "api/video-synthesis-api/editor"
             ]
           },
           {
             "group": "Resources",
             "pages": [
               "api/resources/avatars",
-              "api/resources/voice-styles",
               "api/frequently-asked-questions/frequently-asked-questions",
               "api/update-log/update-log"
             ]

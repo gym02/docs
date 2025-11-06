@@ -1,24 +1,23 @@
 ---
 title: "Supported Voice Styles"
-description: "Browse all available voice styles for Non-real-time Digital Human API"
+description: "Browse all available voice styles for Real-time Digital Human API"
 ---
 
-## Supported Voice Styles (Non-real-time Digital Human API)
+## Supported Voice Styles
 
-Choose from our collection of voice styles to personalize your digital human's voice in the Non-real-time Digital Human API. Each voice style has unique characteristics suited for different use cases and scenarios. Click the play button to preview each voice style.
+Choose from our collection of voice styles to personalize your digital human's voice in the Real-time Digital Human API. Each voice style has unique characteristics suited for different use cases and scenarios. Click the play button to preview each voice style.
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '24px', marginBottom: '32px' }}>
-  {['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'fable', 'onyx', 'nova'].map((voice, index) => {
-    const isNewVoice = voice === 'fable' || voice === 'onyx' || voice === 'nova';
+  {['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'cedar', 'marin'].map((voice, index) => {
+    const isNewVoice = voice === 'cedar' || voice === 'marin';
     const descriptions = {
       'alloy': 'Clear and neutral with strong balance, suitable for general conversation and neutral scenarios',
       'ash': 'Clear and precise with strong expressiveness and high versatility',
       'ballad': 'Lyrical and soft, suitable for emotionally rich and narrative content',
+      'cedar': 'Moderately warm with natural resonance, suitable for more "human-like" intonation',
       'coral': 'Passionate and bright with natural breathing, suitable for expressive or active scenarios',
       'echo': 'Deep resonance with a three-dimensional feel, suitable for contexts emphasizing "depth" or emotional layers',
-      'fable': 'Warm narrative, suitable for heartwarming stories and friendly scenarios',
-      'onyx': 'Profound drama, suitable for content requiring strong emotional expression and dramatic impact',
-      'nova': 'High energy and enthusiasm, suitable for vibrant and motivational content',
+      'marin': 'Steady and professional with high clarity, suitable for formal or business scenarios',
       'sage': 'Calm with a strong thoughtful quality, suitable for professional or instructional scenarios',
       'shimmer': 'Bright and energetic with a narrative atmosphere, suitable for storytelling or dreamy content',
       'verse': 'Strong expressiveness and flexible versatility, suitable for formal or multi-scenario applications'
@@ -53,24 +52,36 @@ Choose from our collection of voice styles to personalize your digital human's v
   })}
 </div>
 
-## How to Use
+## Accent and Dialect Support
 
-In your API request, specify the voice style in the `voice` parameter when using text-to-speech:
+You can control accents and dialects by specifying them in your `instructions` (system prompt). The model will match the accent/dialect you specify while using the selected voice style.
 
-```bash
-curl -X POST "https://app.navtalk.ai/generate" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "license": "your-api-key-here",
-    "character_name": "navtalk.Leo",
-    "content": "Welcome to NavTalk.",
-    "voice": "echo"
-  }'
+**Example: Control dialect for consistent persona**:
+```javascript
+instructions: `## Language
+
+Response only in argentine spanish.`
 ```
 
-## Notes
 
-- Voice styles are only applicable when using TTS (text-to-speech) with the `content` parameter
-- When using `audio_url` or `audio_base64`, the voice parameter is not needed
-- Choose the voice style that best matches your content's tone and intended audience
+For more details on language and dialect control, see the [Building Effective Prompts](/api/real-time-digital-human-api/prompt-engineering/building-prompts#4-limit-model-to-one-language) guide.
 
+
+## How to Use
+
+In your WebSocket connection, specify the voice style in the `session.update` message:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'session.update',
+  session: {
+    instructions: 'You are a helpful assistant.',
+    voice: 'echo', // Choose from: alloy, ash, ballad, cedar, coral, echo, marin, sage, shimmer, verse
+    // ... other configuration
+  }
+}));
+```
+
+## Note
+
+This page lists voice styles supported by the **Real-time Digital Human API**. For voice styles supported by the Video Synthesis API, see the [Video Synthesis Voice Styles](/api/video-synthesis-api/voice-styles) page.
