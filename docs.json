@@ -36,12 +36,14 @@
         "groups": [
           {
             "group": "Getting Started",
+            "icon": "rocket",
             "pages": [
               "api/quick-start/quickstart"
             ]
           },
           {
             "group": "Real-time Digital Human API",
+            "icon": "messages",
             "pages": [
               "api/real-time-digital-human-api/overview",
               {
@@ -125,6 +127,7 @@
           },
           {
             "group": "Custom Avatar Training",
+            "icon": "sparkles",
             "pages": [
               "api/custom-avatar/overview",
               "api/custom-avatar/quick-start",
@@ -133,6 +136,7 @@
           },
           {
             "group": "Video Synthesis API",
+            "icon": "video",
             "pages": [
               "api/video-synthesis-api/overview",
               "api/video-synthesis-api/quick-start",
@@ -142,6 +146,7 @@
           },
           {
             "group": "Resources",
+            "icon": "book",
             "pages": [
               "api/resources/avatars",
               "api/frequently-asked-questions/frequently-asked-questions",
@@ -155,12 +160,14 @@
         "groups": [
           {
             "group": "API documentation",
+            "icon": "book-open",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
             "group": "Endpoint examples",
+            "icon": "terminal",
             "pages": [
               "api-reference/endpoint/get",
               "api-reference/endpoint/create",
