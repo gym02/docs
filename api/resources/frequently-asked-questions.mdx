@@ -1,0 +1,133 @@
+---
+title: "FAQ"
+description: "Common questions and answers about NavTalk API"
+---
+
+
+## Account and Authentication
+
+<AccordionGroup>
+<Accordion title="How do I obtain an API Key?">
+Please visit the console at [console.navtalk.ai](https://console.navtalk.ai/login#/dashboard). After registering and logging in, you can generate your License Key on the "API Key Management" page.
+</Accordion>
+
+<Accordion title="Does the License have an expiration date? Can it be reset?">
+The License is valid indefinitely. If you believe it has been compromised, you can reset it immediately in the console.
+</Accordion>
+</AccordionGroup>
+
+## Quick Start Questions
+
+<AccordionGroup>
+<Accordion title="How can I quickly call the one-time synthesis interface?">
+Please refer to the "API Call Overview" section in the documentation. You just need to provide `video_url` and `audio_url` to generate the video. The example response format is:
+
+```json
+{
+  "status": "started",
+  "task_id": "xxxxx"
+}
+```
+</Accordion>
+
+<Accordion title="What are the minimum steps required for the real-time digital person to connect for the first time?">
+1. Establish a WebSocket connection (include the `license` and `characterName` parameters).
+2. Send `session.update` to configure the digital person's behavior and tone.
+3. Capture microphone audio and send it.
+4. Receive AI response text/audio stream/video stream (WebRTC).
+
+You can download our complete code and run it directly.
+</Accordion>
+</AccordionGroup>
+
+## Real-time WebSocket Connection Issues
+
+<AccordionGroup>
+<Accordion title="What should I do if the WebSocket connection fails?">
+Please check:
+
+- Is the license valid?
+- Is the WebSocket address correct: `wss://api.navtalk.ai/realtime-api`?
+- Does Chrome allow microphone access?
+</Accordion>
+
+<Accordion title="Do I need to configure WebRTC to get the digital person's video on the webpage?">
+Yes, WebRTC is the only method for displaying `video`. Please ensure that after connecting to the WebSocket, you simultaneously establish a WebRTC video channel and bind it to the video tag to play.
+</Accordion>
+</AccordionGroup>
+
+## Character and Behavior Settings
+
+<AccordionGroup>
+<Accordion title="How do I specify the character settings and greeting of the digital person?">
+Please set this in the `instructions` field of `session.update`, for example:
+
+```javascript
+instructions: `
+  You are a gentle psychological counselor.
+  Please respond in zh-CN.
+  Please greet with "Hello, I am your intelligent assistant."
+`
+```
+</Accordion>
+
+<Accordion title="Can I specify the tone of the digital person? What are the options?">
+Yes, you can. Set it using `voice: "nova"`, which supports the following 9 tones: `alloy`, `shimmer`, `coral`, `echo`, `ballad`, `ash`, `sage`, `verse`.
+
+See [Voice Styles](/api/real-time-digital-human-api/voice-styles) for complete descriptions and audio previews.
+</Accordion>
+</AccordionGroup>
+
+## Context and Memory Issues
+
+<AccordionGroup>
+<Accordion title="How can I make the digital person remember the user's history of conversations?">
+Two methods are supported:
+
+- Embed `messageConfig` in the `instructions` to simulate full context.
+- Use `conversation.item.create` to send historical messages (only supports user messages).
+</Accordion>
+
+<Accordion title="Why can't the AI remember the previous conversation?">
+Please confirm:
+
+- Does `session.update` carry contextual content?
+</Accordion>
+</AccordionGroup>
+
+## Function Call Issues
+
+<AccordionGroup>
+<Accordion title="Why is there no response after configuring the function call?">
+- Please confirm that the `tools` parameter has been correctly registered.
+- Check if you are listening for the `response.function_call_arguments.done` event.
+- Is the backend correctly returning `function_call_output`?
+</Accordion>
+
+<Accordion title="After the function call result is pushed, why is there no response from the AI?">
+Please ensure to execute the following after sending the result:
+
+```javascript
+socket.send({ type: "response.create" })
+```
+</Accordion>
+</AccordionGroup>
+
+## Media Interface Call Issues
+
+<AccordionGroup>
+<Accordion title="How long will it take to receive results after synthesizing video and audio?">
+Generally, it can be completed within 5 to 30 seconds. Please regularly poll the `query_status` interface until you receive:
+
+```json
+{
+  "status": "done",
+  "video_url": "xxx"
+}
+```
+</Accordion>
+
+<Accordion title="Can I upload files directly?">
+It is recommended to upload audio and video files to a public cloud and use the URL for the call. If you need to use the platform's upload feature, please log in to the console to get the upload link.
+</Accordion>
+</AccordionGroup>

@@ -149,8 +149,8 @@
             "icon": "book",
             "pages": [
               "api/resources/avatars",
-              "api/frequently-asked-questions/frequently-asked-questions",
-              "api/update-log/update-log"
+              "api/resources/frequently-asked-questions",
+              "api/resources/update-log"
             ]
           }
         ]
