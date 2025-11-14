@@ -20,13 +20,13 @@
       },
       {
         "label": "Community",
-        "href": "https://github.com/navtalk"
+        "href": "https://discord.com/invite/A9VE3zXM9p"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://console.navtalk.ai/login#/dashboard"
+      "href": "https://console.navtalk.ai/"
     }
   },
   "navigation": {
