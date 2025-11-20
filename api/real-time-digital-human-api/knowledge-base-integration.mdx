@@ -110,14 +110,14 @@ When answering user questions:
 ```
 </CodeGroup>
 
-<Tip>
+<Note>
 **Best Practices for Knowledge Base Content**:
 - Use clear headings and structure (Markdown format works well)
 - Keep sections concise and scannable
 - Include FAQs for common questions
 - Add examples for technical concepts
 - Update regularly to reflect current information
-</Tip>
+</Note>
 </Step>
 
 <Step title="Embed Knowledge Base in System Prompt">
@@ -154,9 +154,9 @@ When users ask questions, prioritize information from the knowledge base above.
 ```
 </CodeGroup>
 
-<Tip>
+<Note>
 You can load knowledge base content from files, databases, or APIs when initializing your session, then embed it in the system prompt.
-</Tip>
+</Note>
 </Step>
 
 <Step title="Configure Session with Knowledge Base">
@@ -289,12 +289,12 @@ A: Answer here
 ```
 </CodeGroup>
 
-<Info>
+<Note>
 The `instructions` field supports up to **4096 tokens** (approximately 16,000 characters) by default. For larger knowledge bases, you may need to:
 - Summarize or prioritize the most important content
 - Use function calling to query external knowledge bases for specific information
 - Structure your knowledge base to fit within the token limit
-</Info>
+</Note>
 </Step>
 
 <Step title="Optional: Combine with Function Calling for Large Knowledge Bases">
@@ -370,9 +370,9 @@ For detailed queries beyond the core knowledge base, use the function calling to
 ```
 </CodeGroup>
 
-<Tip>
+<Note>
 **Hybrid Approach**: Put your most frequently accessed knowledge in the system prompt for instant access, and use function calling to query detailed documentation or databases when needed.
-</Tip>
+</Note>
 </Step>
 </Steps>
 

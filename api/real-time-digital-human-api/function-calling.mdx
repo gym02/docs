@@ -71,9 +71,9 @@ await websocket.send(json.dumps(session_config))
 ```
 </CodeGroup>
 
-<Tip>
+<Note>
   You can define multiple functions in the `tools` array. Each function should have a unique name, clear description, and well-defined parameters.
-</Tip>
+</Note>
 </Step>
 
 <Step title="Listen for Function Call Events">
@@ -109,9 +109,19 @@ async def handle_messages(websocket):
 ```
 </CodeGroup>
 
-The `response.function_call_arguments.done` event contains:
-- **`arguments`**: The function parameters as a JSON string
-- **`call_id`**: A unique identifier for this function call (required when returning results)
+The `response.function_call_arguments.done` event contains the following properties:
+
+<ResponseField name="arguments" type="string">
+JSON string containing the function call parameters. Parse this JSON string to extract the actual parameter values.
+
+**Example**: `"{\"userInput\": \"What's the weather in Beijing?\"}"`
+</ResponseField>
+
+<ResponseField name="call_id" type="string">
+Unique identifier for this function call. **Required** when returning results - use this `call_id` when sending the function call output back to the AI.
+
+**Example**: `"call-123456"`
+</ResponseField>
 </Step>
 
 <Step title="Handle Function Calls">
@@ -338,6 +348,6 @@ async def send_function_call_result(result, call_id, websocket):
 | **IoT Control** | User says: "Turn on the lights" | Call IoT API to control devices |
 | **CRM Integration** | User asks: "Update customer status for John" | Call CRM API to update records |
 
-<Tip>
+<Note>
   Function calling allows you to extend the digital human's capabilities beyond conversation. Integrate with any REST API, database, or backend service to create powerful, context-aware applications.
-</Tip>
+</Note>

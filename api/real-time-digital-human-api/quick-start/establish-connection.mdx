@@ -76,13 +76,13 @@ asyncio.run(connect())
 ```
 </CodeGroup>
 
-  <Info>
+  <Note>
     The WebSocket connection URL requires two mandatory query parameters:
     - `license`: Your API key
     - `characterName`: The name of the digital human character you want to use
     
     Optionally, you can include `model` parameter to specify the AI model.
-  </Info>
+  </Note>
 </Step>
 
 <Step title="Step 2: Handle Session Creation and Configure Session">
@@ -274,13 +274,13 @@ async def send_session_update(websocket):
 ```
 </CodeGroup>
 
-  <Info>
+  <Note>
     The session configuration is crucial for the conversation quality. Key parameters:
     - `instructions`: Define the AI's behavior and personality
     - `turn_detection`: Controls when the AI detects you've finished speaking
     - `voice`: Selects the voice for the digital human
     - `modalities`: Must include both 'text' and 'audio' for full functionality
-  </Info>
+  </Note>
 </Step>
 
 <Step title="Step 3: Capture and Send Audio">
@@ -639,7 +639,7 @@ async def handle_messages(websocket):
 ```
 </CodeGroup>
 
-  <Info>
+  <Note>
     The API sends events in a specific sequence:
     1. `session.created` → Send configuration
     2. `session.updated` → Start sending audio
@@ -649,15 +649,15 @@ async def handle_messages(websocket):
     6. `response.audio_transcript.delta` → AI response text (streaming, multiple events)
     7. `response.audio_transcript.done` → AI response text complete
     8. `response.audio.done` → AI response audio complete
-  </Info>
+  </Note>
 </Step>
 
 <Step title="Step 5: Establish WebRTC Connection (for Video)">
   To receive the digital human's video stream, you need to establish a separate WebRTC connection. This is covered in detail in the [WebRTC Connection guide](/api/real-time-digital-human-api/quick-start/webrtc-connection).
 
-  <Info>
+  <Note>
     The WebRTC connection should be established **at the same time** as the WebSocket connection, typically right after the WebSocket connection is opened. Both connections use the same API key (`LICENSE`) as the `targetSessionId`.
-  </Info>
+  </Note>
 </Step>
 </Steps>
 

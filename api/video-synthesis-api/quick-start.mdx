@@ -130,11 +130,16 @@ if status['status'] == 'done':
 }
 ```
 
-**Status Values:**
-- `started`: Task created and processing
-- `processing`: Video composition in progress
-- `done`: Completed successfully, video URL available
-- `failed`: Generation failed, check error message
+<ResponseField name="status" type="string">
+Current status of the task. Possible values:
+
+- **`started`**: Task created and processing
+- **`processing`**: Video composition in progress
+- **`done`**: Completed successfully, video URL available
+- **`failed`**: Generation failed, check error message
+
+**Note**: When `status` is `"done"`, the `video_url` field will be present in the response.
+</ResponseField>
 </Step>
 
 <Step title="Access Your Video">
@@ -165,9 +170,9 @@ if status['status'] == 'done':
 ```
 </CodeGroup>
 
-<Tip>
+<Note>
 The video URL is publicly accessible and can be embedded directly in web pages, mobile apps, or downloaded for offline use. Generation typically takes 10-30 seconds depending on video length and complexity.
-</Tip>
+</Note>
 </Step>
 
 </Steps>
