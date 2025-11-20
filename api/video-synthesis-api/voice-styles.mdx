@@ -7,6 +7,39 @@ description: "Browse all available voice styles for Video Synthesis API"
 
 Choose from our collection of voice styles to personalize your digital human's voice in the Video Synthesis API. Each voice style has unique characteristics suited for different use cases and scenarios. Click the play button to preview each voice style.
 
+<style>{`
+  .voice-card {
+    background-color: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    .voice-card {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    .voice-card code {
+      background-color: #0f172a !important;
+      color: #e2e8f0 !important;
+    }
+    .voice-card .voice-description {
+      color: #cbd5e1 !important;
+    }
+  }
+  [data-theme="dark"] .voice-card,
+  .dark .voice-card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+  [data-theme="dark"] .voice-card code,
+  .dark .voice-card code {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+  }
+  [data-theme="dark"] .voice-card .voice-description,
+  .dark .voice-card .voice-description {
+    color: #cbd5e1 !important;
+  }
+`}</style>
+
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '24px', marginBottom: '32px' }}>
   {['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'fable', 'onyx', 'nova'].map((voice, index) => {
     const isNewVoice = voice === 'fable' || voice === 'onyx' || voice === 'nova';
@@ -24,7 +57,7 @@ Choose from our collection of voice styles to personalize your digital human's v
       'verse': 'Strong expressiveness and flexible versatility, suitable for formal or multi-scenario applications'
     };
     return (
-      <div key={voice} style={{ border: isNewVoice ? '1px solid #8B5CF6' : '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', backgroundColor: '#ffffff', position: 'relative' }}>
+      <div key={voice} className="voice-card" style={{ border: isNewVoice ? '1px solid #8B5CF6' : '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', position: 'relative' }}>
         {isNewVoice && (
           <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#8B5CF6', color: '#ffffff', fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             New
@@ -45,7 +78,7 @@ Choose from our collection of voice styles to personalize your digital human's v
           </div>
           <div style={{ width: '60px', flexShrink: 0 }}></div>
         </div>
-        <div style={{ fontSize: '14px', color: '#64748b' }}>
+        <div className="voice-description" style={{ fontSize: '14px', color: '#64748b' }}>
           {descriptions[voice]}
         </div>
       </div>

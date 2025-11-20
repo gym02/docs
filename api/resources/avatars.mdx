@@ -7,152 +7,198 @@ description: "Browse all available built-in avatar characters for your digital h
 
 Choose from our collection of built-in avatar characters to personalize your digital human experience. Each avatar is unique and ready to use in your real-time digital human API integration.
 
+<style>{`
+  .avatar-card {
+    background-color: #ffffff;
+  }
+  .avatar-card-name {
+    color: #1e293b;
+  }
+  .avatar-card-id {
+    color: #64748b;
+  }
+  @media (prefers-color-scheme: dark) {
+    .avatar-card {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+    }
+    .avatar-card > div:last-child {
+      background-color: #1e293b !important;
+      border-top-color: #475569 !important;
+    }
+    .avatar-card-name {
+      color: #ffffff !important;
+    }
+    .avatar-card-id {
+      color: #ffffff !important;
+    }
+  }
+  [data-theme="dark"] .avatar-card,
+  .dark .avatar-card {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+  }
+  [data-theme="dark"] .avatar-card > div:last-child,
+  .dark .avatar-card > div:last-child {
+    background-color: #1e293b !important;
+    border-top-color: #475569 !important;
+  }
+  [data-theme="dark"] .avatar-card-name,
+  .dark .avatar-card-name {
+    color: #ffffff !important;
+  }
+  [data-theme="dark"] .avatar-card-id,
+  .dark .avatar-card-id {
+    color: #ffffff !important;
+  }
+`}</style>
+
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px', marginTop: '32px', marginBottom: '32px' }}>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Astrid.png" alt="Astrid" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Astrid</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Astrid</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Astrid</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Astrid</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Brianna.png" alt="Brianna" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Brianna</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Brianna</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Brianna</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Brianna</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Cameron.png" alt="Cameron" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Cameron</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Cameron</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Cameron</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Cameron</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Catalina.png" alt="Catalina" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Catalina</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Catalina</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Catalina</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Catalina</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Elaine.png" alt="Elaine" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Elaine</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Elaine</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Elaine</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Elaine</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Elizabeth.png" alt="Elizabeth" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Elizabeth</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Elizabeth</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Elizabeth</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Elizabeth</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Ella.png" alt="Ella" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Ella</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Ella</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Ella</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Ella</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Emily.png" alt="Emily" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Emily</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Emily</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Emily</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Emily</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Freya.png" alt="Freya" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Freya</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Freya</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Freya</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Freya</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Gabriela.png" alt="Gabriela" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Gabriela</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Gabriela</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Gabriela</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Gabriela</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Kevin.png" alt="Kevin" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Kevin</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Kevin</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Kevin</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Kevin</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Lauren.png" alt="Lauren" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Lauren</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Lauren</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Lauren</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Lauren</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Lisa.png" alt="Lisa" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Lisa</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Lisa</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Lisa</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Lisa</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Luis.png" alt="Luis" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Luis</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Luis</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Luis</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Luis</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Luke.png" alt="Luke" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Luke</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Luke</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Luke</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Luke</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Malik.png" alt="Malik" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Malik</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Malik</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Malik</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Malik</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Mian.png" alt="Mian" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Mian</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Mian</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Mian</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Mian</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Nia.png" alt="Nia" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Nia</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Nia</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Nia</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Nia</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Samuel.png" alt="Samuel" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Samuel</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Samuel</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Samuel</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Samuel</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Sarah.png" alt="Sarah" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Sarah</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Sarah</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Sarah</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Sarah</div>
     </div>
   </div>
-  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+  <div className="avatar-card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
     <img src="https://api.navtalk.ai/uploadFiles/navtalk.Zaria.png" alt="Zaria" style={{ width: '100%', height: '280px', objectFit: 'cover', display: 'block', border: 'none', margin: 0, padding: 0, borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }} />
-    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center', backgroundColor: '#ffffff' }}>
-      <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>Zaria</div>
-      <div style={{ fontSize: '14px', color: '#64748b' }}>navtalk.Zaria</div>
+    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+      <div className="avatar-card-name" style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Zaria</div>
+      <div className="avatar-card-id" style={{ fontSize: '14px' }}>navtalk.Zaria</div>
     </div>
   </div>
 </div>
