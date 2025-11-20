@@ -7,32 +7,45 @@ description: "Learn how to establish WebSocket connections to send user audio in
 
 WebSocket connections are used to **establish connection and send user audio data** to the NavTalk API for processing. This is the primary channel for transmitting your audio input to the digital human system.
 
+The complete connection process involves **two separate connections**:
+1. **WebSocket connection** - for sending audio input and receiving text/audio responses
+2. **WebRTC connection** - for receiving video stream (see [WebRTC Connection](/api/real-time-digital-human-api/quick-start/webrtc-connection) for details)
+
 <Steps>
-<Step title="Establish WebSocket Connection">
-  First, establish a WebSocket connection to the NavTalk API with your API key and character name:
+<Step title="Step 1: Establish WebSocket Connection">
+  First, establish a WebSocket connection to the NavTalk API with your API key and character name. This connection will be used to send audio data and receive text/audio responses.
 
 <CodeGroup>
 ```javascript JavaScript
+// Configuration
 const LICENSE = 'your-api-key-here';
 const CHARACTER_NAME = 'navtalk.Leo'; // e.g., navtalk.Leo, navtalk.Alex, etc.
 const MODEL = 'gpt-realtime-mini'; // optional
 
+// Build WebSocket URL with query parameters
 const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
 const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(LICENSE)}&characterName=${encodeURIComponent(CHARACTER_NAME)}${MODEL ? '&model=' + encodeURIComponent(MODEL) : ''}`;
 
+// Create WebSocket connection
 const socket = new WebSocket(websocketUrlWithParams);
-socket.binaryType = 'arraybuffer'; // Important: set binary type for audio data
+// Important: set binary type to 'arraybuffer' for handling binary audio data
+socket.binaryType = 'arraybuffer';
 
+// Connection event handlers
 socket.onopen = () => {
   console.log('WebSocket connection established');
+  // Connection is ready, wait for session.created event
 };
 
 socket.onerror = (error) => {
   console.error('WebSocket error:', error);
+  // Handle connection errors
 };
 
 socket.onclose = (event) => {
   console.log('WebSocket connection closed', event.code, event.reason);
+  // Handle connection closure
+  // Common reasons: 'Insufficient points', normal closure, etc.
 };
 ```
 
@@ -42,10 +55,12 @@ import websockets
 from urllib.parse import quote
 import json
 
+# Configuration
 LICENSE = 'your-api-key-here'
 CHARACTER_NAME = 'navtalk.Leo'
 MODEL = 'gpt-realtime-mini'  # optional
 
+# Build WebSocket URL with query parameters
 websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
 websocket_url_with_params = f'{websocket_url}?license={quote(LICENSE)}&characterName={quote(CHARACTER_NAME)}'
 if MODEL:
@@ -55,127 +70,266 @@ async def connect():
     async with websockets.connect(websocket_url_with_params) as websocket:
         print('WebSocket connection established')
         # Handle messages here
+        await handle_messages(websocket)
 
 asyncio.run(connect())
 ```
 </CodeGroup>
+
+  <Info>
+    The WebSocket connection URL requires two mandatory query parameters:
+    - `license`: Your API key
+    - `characterName`: The name of the digital human character you want to use
+    
+    Optionally, you can include `model` parameter to specify the AI model.
+  </Info>
 </Step>
 
-<Step title="Configure Session">
-  After the connection is established, configure the session with your preferences. For detailed configuration options and parameter descriptions, see [session.created event documentation](/api/real-time-digital-human-api/websocket-events/session-events/session-created).
+<Step title="Step 2: Handle Session Creation and Configure Session">
+  After the WebSocket connection is established, the server will send a `session.created` event. You need to respond with a `session.update` message to configure the session parameters. Once the session is configured (you'll receive `session.updated`), you can start sending audio data.
 
 <CodeGroup>
 ```javascript JavaScript
+// Global variables for session management
+let socket; // WebSocket connection
+let conversationHistory = []; // Optional: store conversation history
+
 socket.onmessage = (event) => {
+  // Handle both string (JSON) and binary messages
   if (typeof event.data === 'string') {
-    const data = JSON.parse(event.data);
+    try {
+      const data = JSON.parse(event.data);
+      handleReceivedMessage(data);
+    } catch (e) {
+      console.error('Failed to parse JSON message:', e);
+    }
+  } else if (event.data instanceof ArrayBuffer) {
+    // Handle binary audio data if needed
+    handleReceivedBinaryMessage(event.data);
+  }
+};
+
+async function handleReceivedMessage(data) {
+  switch (data.type) {
+    // Step 2.1: Session created - send configuration
+    case 'session.created':
+      console.log('Session created, sending session update.');
+      await sendSessionUpdate();
+      break;
     
-    // Session created - send configuration
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: 'You are a helpful assistant.',
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500
-          },
-          voice: 'cedar', // e.g., alloy, ash, ballad, cedar, coral, echo, marin, sage, shimmer, verse
-          temperature: 1,
-          max_response_output_tokens: 4096,
-          modalities: ['text', 'audio'],
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          input_audio_transcription: {
-            model: 'whisper-1'
+    // Step 2.2: Session updated - ready to send audio
+    case 'session.updated':
+      console.log('Session updated. Ready to receive audio.');
+      // Now you can start recording and sending audio
+      startRecording();
+      break;
+    
+    // Other message types will be handled in Step 4
+    default:
+      // Handle other message types
+      break;
+  }
+}
+
+// Send session configuration
+async function sendSessionUpdate() {
+  // Session configuration
+  const sessionConfig = {
+    type: 'session.update',
+    session: {
+      // System prompt/instructions for the AI
+      instructions: 'You are a helpful assistant.',
+      
+      // Voice activity detection (VAD) settings
+      turn_detection: {
+        type: 'server_vad', // Server-side voice activity detection
+        threshold: 0.5, // VAD threshold (0.0 to 1.0)
+        prefix_padding_ms: 300, // Padding before speech starts (ms)
+        silence_duration_ms: 500 // Silence duration to detect end of speech (ms)
+      },
+      
+      // Voice selection (see available voices in documentation)
+      voice: 'cedar', // e.g., alloy, ash, ballad, cedar, coral, echo, marin, sage, shimmer, verse
+      
+      // AI model parameters
+      temperature: 1, // Creativity level (0.0 to 2.0)
+      max_response_output_tokens: 4096, // Maximum response length
+      
+      // Modalities: what types of data to exchange
+      modalities: ['text', 'audio'], // Enable both text and audio
+      
+      // Audio format specifications
+      input_audio_format: 'pcm16', // Input audio format: PCM16
+      output_audio_format: 'pcm16', // Output audio format: PCM16
+      
+      // Audio transcription settings
+      input_audio_transcription: {
+        model: 'whisper-1' // Transcription model
+      },
+      
+      // Optional: tools/function calling
+      tools: [
+        {
+          type: 'function',
+          name: 'function_call_judge',
+          description: 'Are there any function calls or tasks beyond your capability...',
+          parameters: {
+            type: 'object',
+            properties: {
+              userInput: {
+                type: 'string',
+                description: 'the user input'
+              }
+            },
+            required: ['userInput']
           }
+        }
+      ]
+    }
+  };
+  
+  // Send session configuration
+  try {
+    socket.send(JSON.stringify(sessionConfig));
+    console.log('Session configuration sent');
+  } catch (e) {
+    console.error('Error sending session update:', e);
+  }
+  
+  // Optional: Send conversation history if you have previous messages
+  // This allows the AI to maintain context across sessions
+  if (conversationHistory && conversationHistory.length > 0) {
+    conversationHistory.forEach((msg) => {
+      const messageConfig = {
+        type: 'conversation.item.create',
+        item: {
+          type: 'message',
+          role: msg.role, // 'user' or 'assistant'
+          content: [
+            {
+              type: msg.role === 'user' ? 'input_text' : 'text',
+              text: msg.content
+            }
+          ]
         }
       };
       
-      socket.send(JSON.stringify(sessionConfig));
-    }
-    
-    // Session updated - ready to send audio
-    if (data.type === 'session.updated') {
-      console.log('Session configured. Ready to send audio.');
-      startRecording();
-    }
+      try {
+        socket.send(JSON.stringify(messageConfig));
+        console.log('Sent history message:', msg.role);
+      } catch (e) {
+        console.error('Error sending history message:', e);
+      }
+    });
   }
-};
+}
 ```
 
 ```python Python
+import json
+
 async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
             
             if data.get('type') == 'session.created':
-                session_config = {
-                    'type': 'session.update',
-                    'session': {
-                        'instructions': 'You are a helpful assistant.',
-                        'turn_detection': {
-                            'type': 'server_vad',
-                            'threshold': 0.5,
-                            'prefix_padding_ms': 300,
-                            'silence_duration_ms': 500
-                        },
-                        'voice': 'cedar',
-                        'temperature': 1,
-                        'max_response_output_tokens': 4096,
-                        'modalities': ['text', 'audio'],
-                        'input_audio_format': 'pcm16',
-                        'output_audio_format': 'pcm16',
-                        'input_audio_transcription': {
-                            'model': 'whisper-1'
-                        }
-                    }
-                }
-                await websocket.send(json.dumps(session_config))
+                print('Session created, sending session update.')
+                await send_session_update(websocket)
             
             elif data.get('type') == 'session.updated':
-                print('Session configured. Ready to send audio.')
+                print('Session updated. Ready to receive audio.')
                 # Start audio recording here
+                await start_recording(websocket)
+            
+            else:
+                # Handle other message types
+                await handle_other_messages(data)
+
+async def send_session_update(websocket):
+    session_config = {
+        'type': 'session.update',
+        'session': {
+            'instructions': 'You are a helpful assistant.',
+            'turn_detection': {
+                'type': 'server_vad',
+                'threshold': 0.5,
+                'prefix_padding_ms': 300,
+                'silence_duration_ms': 500
+            },
+            'voice': 'cedar',
+            'temperature': 1,
+            'max_response_output_tokens': 4096,
+            'modalities': ['text', 'audio'],
+            'input_audio_format': 'pcm16',
+            'output_audio_format': 'pcm16',
+            'input_audio_transcription': {
+                'model': 'whisper-1'
+            }
+        }
+    }
+    
+    await websocket.send(json.dumps(session_config))
+    print('Session configuration sent')
 ```
 </CodeGroup>
+
+  <Info>
+    The session configuration is crucial for the conversation quality. Key parameters:
+    - `instructions`: Define the AI's behavior and personality
+    - `turn_detection`: Controls when the AI detects you've finished speaking
+    - `voice`: Selects the voice for the digital human
+    - `modalities`: Must include both 'text' and 'audio' for full functionality
+  </Info>
 </Step>
 
-<Step title="Capture and Send Audio">
-  Capture audio from the user's microphone and send it through the WebSocket connection:
+<Step title="Step 3: Capture and Send Audio">
+  Once you receive the `session.updated` event, you can start capturing audio from the user's microphone and sending it through the WebSocket connection. The audio must be in **PCM16 format at 24kHz sample rate, mono channel**.
 
 <CodeGroup>
 ```javascript JavaScript
+// Global variables for audio processing
 let audioContext;
 let audioProcessor;
 let audioStream;
 
 function startRecording() {
+  // Request microphone access
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
-      audioContext = new AudioContext({ sampleRate: 24000 });
+      // Create AudioContext with 24kHz sample rate (required by API)
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({ 
+        sampleRate: 24000 
+      });
       audioStream = stream;
+      
+      // Create audio source from microphone stream
       const source = audioContext.createMediaStreamSource(stream);
       
-      // Use ScriptProcessorNode to process audio chunks
+      // Create ScriptProcessorNode to process audio chunks
+      // Parameters: bufferSize (8192), inputChannels (1), outputChannels (1)
       audioProcessor = audioContext.createScriptProcessor(8192, 1, 1);
       
+      // Process audio data in real-time
       audioProcessor.onaudioprocess = (event) => {
+        // Only send if WebSocket is open
         if (socket && socket.readyState === WebSocket.OPEN) {
+          // Get audio data from input buffer (Float32Array, range -1.0 to 1.0)
           const inputBuffer = event.inputBuffer.getChannelData(0);
           
-          // Convert Float32Array to PCM16 (Int16Array)
+          // Step 3.1: Convert Float32Array to PCM16 (16-bit signed integers)
           const pcmData = floatTo16BitPCM(inputBuffer);
           
-          // Encode to base64 for JSON transmission
+          // Step 3.2: Encode PCM16 data to base64 for JSON transmission
           const base64PCM = base64EncodeAudio(new Uint8Array(pcmData));
           
-          // Send audio chunks
+          // Step 3.3: Send audio chunks (split large base64 strings into smaller chunks)
+          // Chunk size: 4096 characters to avoid message size limits
           const chunkSize = 4096;
           for (let i = 0; i < base64PCM.length; i += chunkSize) {
             const chunk = base64PCM.slice(i, i + chunkSize);
+            
+            // Send audio chunk as JSON message
             socket.send(JSON.stringify({
               type: 'input_audio_buffer.append',
               audio: chunk
@@ -184,68 +338,98 @@ function startRecording() {
         }
       };
       
+      // Connect audio processing chain
       source.connect(audioProcessor);
       audioProcessor.connect(audioContext.destination);
+      
       console.log('Recording started');
     })
     .catch(error => {
       console.error('Unable to access microphone:', error);
+      // Handle microphone access errors
     });
 }
 
 // Helper function: Convert Float32Array to 16-bit PCM
+// Input: Float32Array with values in range [-1.0, 1.0]
+// Output: ArrayBuffer containing 16-bit PCM data
 function floatTo16BitPCM(float32Array) {
-  const buffer = new ArrayBuffer(float32Array.length * 2);
+  const buffer = new ArrayBuffer(float32Array.length * 2); // 2 bytes per sample
   const view = new DataView(buffer);
   let offset = 0;
+  
   for (let i = 0; i < float32Array.length; i++, offset += 2) {
+    // Clamp value to [-1, 1] range
     let s = Math.max(-1, Math.min(1, float32Array[i]));
-    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    
+    // Convert to 16-bit signed integer
+    // Negative values: s * 0x8000 (range: -32768 to 0)
+    // Positive values: s * 0x7FFF (range: 0 to 32767)
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
   }
+  
   return buffer;
 }
 
 // Helper function: Encode audio to base64
+// Input: Uint8Array of PCM16 data
+// Output: Base64-encoded string
 function base64EncodeAudio(uint8Array) {
   let binary = '';
-  const chunkSize = 0x8000;
+  const chunkSize = 0x8000; // 32KB chunks to avoid stack overflow
+  
+  // Convert binary data to string (chunk by chunk)
   for (let i = 0; i < uint8Array.length; i += chunkSize) {
     const chunk = uint8Array.subarray(i, i + chunkSize);
     binary += String.fromCharCode.apply(null, chunk);
   }
+  
+  // Encode to base64
   return btoa(binary);
 }
 
+// Stop recording and cleanup
 function stopRecording() {
+  // Disconnect audio processor
   if (audioProcessor) {
     audioProcessor.disconnect();
+    audioProcessor = null;
   }
+  
+  // Stop all audio tracks
   if (audioStream) {
     audioStream.getTracks().forEach(track => track.stop());
+    audioStream = null;
   }
+  
+  // Close WebSocket connection
   if (socket) {
     socket.close();
   }
+  
+  console.log('Recording stopped');
 }
 ```
 
 ```python Python
 import pyaudio
 import base64
-import struct
+import asyncio
+import json
 
-CHUNK = 8192
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 24000
+# Audio configuration (must match API requirements)
+CHUNK = 8192  # Buffer size
+FORMAT = pyaudio.paInt16  # 16-bit PCM
+CHANNELS = 1  # Mono
+RATE = 24000  # 24kHz sample rate
 
 audio = pyaudio.PyAudio()
 
 def audio_callback(in_data, frame_count, time_info, status):
-    # Convert to base64
+    # Convert PCM16 bytes to base64
     audio_base64 = base64.b64encode(in_data).decode('utf-8')
     
-    # Send audio chunks
+    # Send audio chunks (split into smaller chunks)
     chunk_size = 4096
     for i in range(0, len(audio_base64), chunk_size):
         chunk = audio_base64[i:i + chunk_size]
@@ -253,94 +437,227 @@ def audio_callback(in_data, frame_count, time_info, status):
             'type': 'input_audio_buffer.append',
             'audio': chunk
         }
+        # Send asynchronously
         asyncio.create_task(websocket.send(json.dumps(message)))
     
     return (None, pyaudio.paContinue)
 
-stream = audio.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK,
-                    stream_callback=audio_callback)
-
-stream.start_stream()
+async def start_recording(websocket):
+    stream = audio.open(
+        format=FORMAT,
+        channels=CHANNELS,
+        rate=RATE,
+        input=True,
+        frames_per_buffer=CHUNK,
+        stream_callback=audio_callback
+    )
+    
+    stream.start_stream()
+    print('Recording started')
 ```
 </CodeGroup>
 
   <Warning>
-    The API expects **PCM16 audio at 24kHz sample rate, mono channel**. Make sure your audio processing matches these specifications.
+    **Critical Audio Requirements:**
+    - **Format**: PCM16 (16-bit signed integers)
+    - **Sample Rate**: 24kHz (24000 Hz)
+    - **Channels**: Mono (1 channel)
+    - **Encoding**: Base64 for JSON transmission
+    
+    Make sure your audio processing matches these specifications exactly, otherwise the API may reject the audio data.
   </Warning>
 </Step>
 
-<Step title="Handle Response Messages">
-  Process incoming messages from the API, including transcriptions and response events:
+<Step title="Step 4: Handle Response Messages">
+  Process incoming messages from the API. The WebSocket connection will send various event types including transcriptions, AI responses, and status updates.
 
 <CodeGroup>
 ```javascript JavaScript
-socket.onmessage = (event) => {
-  if (typeof event.data === 'string') {
-    const data = JSON.parse(event.data);
+// Enhanced message handler with all event types
+async function handleReceivedMessage(data) {
+  switch (data.type) {
+    // Session events (handled in Step 2)
+    case 'session.created':
+      await sendSessionUpdate();
+      break;
     
-    switch (data.type) {
-      // User speech transcribed
-      case 'conversation.item.input_audio_transcription.completed':
-        console.log('User said:', data.transcript);
-        // Display user message in UI
-        break;
+    case 'session.updated':
+      console.log('Session updated. Ready to receive audio.');
+      startRecording();
+      break;
+    
+    // User speech detection events
+    case 'input_audio_buffer.speech_started':
+      console.log('Speech started detected by server.');
+      // User started speaking - you might want to stop any current audio playback
+      stopCurrentAudioPlayback();
+      break;
+    
+    case 'input_audio_buffer.speech_stopped':
+      console.log('Speech stopped detected by server.');
+      // User stopped speaking - server will process the audio
+      break;
+    
+    // User transcription events
+    case 'conversation.item.input_audio_transcription.completed':
+      console.log('Received transcription:', data.transcript);
+      // Display user message in UI
+      displayUserMessage(data.transcript);
+      // Save to conversation history
+      await saveToHistory('user', data.transcript);
+      break;
+    
+    // AI response text stream (streaming)
+    case 'response.audio_transcript.delta':
+      // This event fires multiple times as the AI generates text
+      const transcript = data.delta; // Incremental text chunk
+      const responseId = data.response_id; // Unique ID for this response
       
-      // AI response text stream
-      case 'response.audio_transcript.delta':
-        console.log('AI response chunk:', data.delta);
-        // Display AI response text in UI (streaming)
-        break;
+      // Accumulate text chunks (you may need to buffer incomplete content)
+      accumulateResponseText(responseId, transcript);
       
-      // AI response completed
-      case 'response.audio_transcript.done':
-        console.log('AI response complete:', data.transcript);
-        break;
-      
-      // Server detected user started speaking
-      case 'input_audio_buffer.speech_started':
-        console.log('User started speaking');
-        break;
-      
-      // Server detected user stopped speaking
-      case 'input_audio_buffer.speech_stopped':
-        console.log('User stopped speaking');
-        break;
-    }
-  } else if (event.data instanceof ArrayBuffer) {
-    // Handle binary audio data (if needed)
-    handleReceivedBinaryMessage(event.data);
+      // Display streaming text in UI
+      displayAIResponseStream(responseId, transcript);
+      break;
+    
+    // AI response text completed
+    case 'response.audio_transcript.done':
+      console.log('AI response complete:', data.transcript);
+      // Display final text
+      displayAIResponseComplete(data.transcript);
+      // Save to conversation history
+      await saveToHistory('assistant', data.transcript);
+      break;
+    
+    // AI response audio stream (if you're receiving audio via WebSocket)
+    case 'response.audio.delta':
+      // Handle audio delta if needed
+      if (data.delta) {
+        // Process audio chunk
+        handleAudioChunk(data.delta);
+      }
+      break;
+    
+    // AI response audio completed
+    case 'response.audio.done':
+      console.log('Audio response complete.');
+      // Handle audio completion
+      break;
+    
+    // Function call events
+    case 'response.function_call_arguments.done':
+      console.log('Function call received:', data);
+      await handleFunctionCall(data);
+      break;
+    
+    // Error events
+    case 'session.gpu_full':
+      console.error('GPU resources are full. Please try again later!');
+      break;
+    
+    case 'session.insufficient_balance':
+      console.error('Insufficient balance, service has stopped, please recharge!');
+      break;
+    
+    case 'session.connection_limit_exceeded':
+      console.error('Connection limit exceeded:', data.message);
+      break;
+    
+    case 'session.backend.error':
+      console.error('Backend error:', data.message);
+      break;
+    
+    default:
+      console.warn('Unhandled event type:', data.type);
   }
-};
+}
+
+// Helper function to accumulate streaming text
+let responseBuffers = new Map();
+
+function accumulateResponseText(responseId, delta) {
+  if (!responseBuffers.has(responseId)) {
+    responseBuffers.set(responseId, '');
+  }
+  const current = responseBuffers.get(responseId);
+  responseBuffers.set(responseId, current + delta);
+}
+
+// Handle binary messages (if any)
+function handleReceivedBinaryMessage(arrayBuffer) {
+  // Process binary audio data if needed
+  console.log('Received binary message:', arrayBuffer.byteLength, 'bytes');
+}
 ```
 
 ```python Python
 async def handle_messages(websocket):
+    response_buffers = {}  # Store streaming text buffers
+    
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            
             message_type = data.get('type')
             
-            if message_type == 'conversation.item.input_audio_transcription.completed':
-                print('User said:', data.get('transcript'))
+            if message_type == 'session.created':
+                await send_session_update(websocket)
             
-            elif message_type == 'response.audio_transcript.delta':
-                print('AI response chunk:', data.get('delta'))
-            
-            elif message_type == 'response.audio_transcript.done':
-                print('AI response complete:', data.get('transcript'))
+            elif message_type == 'session.updated':
+                print('Session updated. Ready to receive audio.')
+                await start_recording(websocket)
             
             elif message_type == 'input_audio_buffer.speech_started':
-                print('User started speaking')
+                print('Speech started detected by server.')
             
             elif message_type == 'input_audio_buffer.speech_stopped':
-                print('User stopped speaking')
+                print('Speech stopped detected by server.')
+            
+            elif message_type == 'conversation.item.input_audio_transcription.completed':
+                transcript = data.get('transcript')
+                print('Received transcription:', transcript)
+                # Display and save user message
+            
+            elif message_type == 'response.audio_transcript.delta':
+                response_id = data.get('response_id')
+                delta = data.get('delta')
+                # Accumulate streaming text
+                if response_id not in response_buffers:
+                    response_buffers[response_id] = ''
+                response_buffers[response_id] += delta
+                # Display streaming text
+            
+            elif message_type == 'response.audio_transcript.done':
+                transcript = data.get('transcript')
+                print('AI response complete:', transcript)
+                # Display final text
+            
+            elif message_type == 'response.audio.done':
+                print('Audio response complete.')
+            
+            elif message_type == 'session.insufficient_balance':
+                print('Insufficient balance, service has stopped, please recharge!')
 ```
 </CodeGroup>
+
+  <Info>
+    The API sends events in a specific sequence:
+    1. `session.created` → Send configuration
+    2. `session.updated` → Start sending audio
+    3. `input_audio_buffer.speech_started` → User starts speaking
+    4. `input_audio_buffer.speech_stopped` → User stops speaking
+    5. `conversation.item.input_audio_transcription.completed` → User speech transcribed
+    6. `response.audio_transcript.delta` → AI response text (streaming, multiple events)
+    7. `response.audio_transcript.done` → AI response text complete
+    8. `response.audio.done` → AI response audio complete
+  </Info>
+</Step>
+
+<Step title="Step 5: Establish WebRTC Connection (for Video)">
+  To receive the digital human's video stream, you need to establish a separate WebRTC connection. This is covered in detail in the [WebRTC Connection guide](/api/real-time-digital-human-api/quick-start/webrtc-connection).
+
+  <Info>
+    The WebRTC connection should be established **at the same time** as the WebSocket connection, typically right after the WebSocket connection is opened. Both connections use the same API key (`LICENSE`) as the `targetSessionId`.
+  </Info>
 </Step>
 </Steps>
 
