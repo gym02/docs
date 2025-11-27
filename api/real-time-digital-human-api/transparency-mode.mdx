@@ -1,0 +1,20 @@
+---
+title: "Transparency Mode"
+description: "Use the Real-time Digital Human API in transparency mode where the avatar mirrors each speaker turn without generating AI replies."
+---
+
+## Transparency Mode
+
+Set `model=transparency` when connecting to `wss://transfer.navtalk.ai/api/realtime-api`. The only event you receive is `session.session_id`, which provides the proxy session ID that backs both the WebSocket and WebRTC streams. No AI response is generated; the avatar simply mirrors whatever the user says.
+
+```json
+{
+  "type": "input_audio_buffer.append",
+  "audio": "x//z//X/JQAwA/"
+}
+```
+
+Just push PCM16 audio chunks like above—the server marks them as received and the WebRTC channel plays the spoken turn. As soon as you get `session.session_id`, open `wss://transfer.navtalk.ai/api/webrtc?userId={session_id}` and send `{ type: 'create', targetSessionId: 'target-{session_id}' }`. The avatar will animate the user's sentence without any AI reasoning.
+
+Use transparency mode for mirror demos, caption QA, or scripted playback. Close the transparency session and reconnect without `model=transparency` when you want to resume normal AI replies.
+

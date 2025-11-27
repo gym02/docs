@@ -13,9 +13,9 @@ WebSocket events are categorized into five main types:
   <Card
     title="Session Events"
     icon="plug"
-    href="/api/real-time-digital-human-api/websocket-events/session-events/session-created"
+    href="/api/real-time-digital-human-api/websocket-events/session-events/session-session-id"
   >
-    Connection and session lifecycle events (2 events)
+    Connection and session lifecycle events (3 events)
   </Card>
   <Card
     title="Input Events"
@@ -72,6 +72,7 @@ All these components together form a real-time session. You will use client even
 <AccordionGroup>
 <Accordion title="Connection & Session Setup Flow">
 1. **Connect WebSocket** → Establish connection to `wss://transfer.navtalk.ai/api/realtime-api`
+2. **Receive `session.session_id`** → Capture the proxy session ID for WebRTC signaling (see [session.session_id](../session-events/session-session-id))
 2. **Receive `session.created`** → Send `session.update` with configuration
 3. **Receive `session.updated`** → Session ready, start sending audio input
 
@@ -170,6 +171,9 @@ socket.onmessage = async (event) => {
 async function handleReceivedMessage(data) {
   switch (data.type) {
     // Session Events
+    case "session.session_id":
+      console.log("Received session.session_id:", data.session_id);
+      break;
     case "session.created":
       await sendSessionUpdate();
       break;
@@ -232,6 +236,9 @@ async def handle_received_message(data, websocket):
     event_type = data.get('type')
     
     # Session Events
+    if event_type == 'session.session_id':
+        print('Received session.session_id:', data.get('session_id'))
+        return
     if event_type == 'session.created':
         await send_session_update(websocket)
     elif event_type == 'session.updated':

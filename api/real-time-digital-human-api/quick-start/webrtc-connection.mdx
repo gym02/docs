@@ -13,12 +13,15 @@ WebRTC connections are used to **receive the returned audio and video data** fro
 
 <CodeGroup>
 ```javascript JavaScript
-const LICENSE = 'your-api-key-here'; // Use the same API key as WebSocket connection
+const LICENSE = 'your-api-key-here'; // Use the same API key as the WebSocket connection
 const webrtcUrl = 'transfer.navtalk.ai';
-const targetSessionId = LICENSE; // Usually your API key or session ID
+
+// Wait until you receive the `session.session_id` event (see WebSocket guide) and capture `sessionId`.
+const sessionId = 'REPLACE_WITH_SESSION_ID'; // e.g., data.session_id
+const targetSessionId = `target-${sessionId}`; // This must match the session the WebRTC signaling server is preparing
 
 // Connect to WebRTC signaling WebSocket
-const resultSocket = new WebSocket(`wss://${webrtcUrl}/api/webrtc?userId=${targetSessionId}`);
+const resultSocket = new WebSocket(`wss://${webrtcUrl}/api/webrtc?userId=${sessionId}`);
 
 resultSocket.onopen = () => {
   console.log('WebRTC signaling connection established');
@@ -52,6 +55,8 @@ resultSocket.onclose = (event) => {
 };
 ```
 
+> **Note:** Because WebRTC now relies on the same server-side session as your WebSocket conversation, wait for `session.session_id` before opening the signaling socket. Use that ID as the `userId` query parameter and send `targetSessionId: "target-${sessionId}"` when you issue the `{ type: 'create' }` message. This keeps the video stream synchronized with the audio session managed by the WebSocket.
+
 ```python Python
 import asyncio
 import websockets
@@ -59,10 +64,11 @@ import json
 
 LICENSE = 'your-api-key-here'
 webrtc_url = 'transfer.navtalk.ai'
-target_session_id = LICENSE
+session_id = 'REPLACE_WITH_SESSION_ID'  # Received from session.session_id event
+target_session_id = f'target-{session_id}'
 
 async def connect_webrtc_signaling():
-    uri = f'wss://{webrtc_url}/api/webrtc?userId={target_session_id}'
+    uri = f'wss://{webrtc_url}/api/webrtc?userId={session_id}'
     
     async with websockets.connect(uri) as websocket:
         print('WebRTC signaling connection established')

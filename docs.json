@@ -67,6 +67,7 @@
               "api/real-time-digital-human-api/function-calling",
               "api/real-time-digital-human-api/knowledge-base-integration",
               "api/real-time-digital-human-api/voice-styles",
+              "api/real-time-digital-human-api/transparency-mode",
               {
                 "group": "WebSocket Events",
                 "pages": [
@@ -74,6 +75,7 @@
                   {
                     "group": "Session Events",
                     "pages": [
+                      "api/real-time-digital-human-api/websocket-events/session-events/session-session-id",
                       "api/real-time-digital-human-api/websocket-events/session-events/session-created",
                       "api/real-time-digital-human-api/websocket-events/session-events/session-updated"
                     ]
