@@ -1,0 +1,290 @@
+---
+title: "Camera Recognition"
+description: "Enable real-time camera recognition to let AI analyze and respond to visual input from the user's camera"
+---
+
+The Real-time Digital Human API supports real-time camera recognition, allowing the AI to analyze visual input from the user's camera and respond accordingly. This enables use cases such as object recognition, scene analysis, gesture detection, and visual Q&A.
+
+## Camera Recognition
+
+<Steps>
+<Step title="Request Camera Access">
+Request camera permissions and start the video stream:
+
+<CodeGroup>
+```javascript JavaScript
+// Data definitions
+let cameraStream = null;
+let cameraEnabled = false;
+let cameraCaptureInterval = null;
+const cameraCaptureIntervalMs = 2000;
+let socket = null;
+let calling = false;
+
+async function startCamera() {
+  try {
+    const constraints = {
+      video: { 
+        width: 640, 
+        height: 360, 
+        frameRate: 15 
+      }
+    };
+    
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraEnabled = true;
+    
+    // Display camera preview
+    if (cameraPreviewVideo) {
+      cameraPreviewVideo.srcObject = cameraStream;
+      await cameraPreviewVideo.play();
+    }
+    
+    // Start capturing if WebSocket is already connected
+    if (calling && socket?.readyState === WebSocket.OPEN) {
+      startCameraCapture();
+    }
+  } catch (error) {
+    console.error("Unable to access camera:", error);
+    cameraEnabled = false;
+  }
+}
+```
+
+```python Python
+import cv2
+
+class CameraRecognition:
+    def __init__(self, websocket):
+        self.websocket = websocket
+        self.camera_enabled = False
+        self.camera_capture_interval_ms = 2000
+        self.capture_task = None
+        self.camera = None
+    
+    async def start_camera(self):
+        """Start camera capture"""
+        try:
+            self.camera = cv2.VideoCapture(0)
+            self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+            self.camera.set(cv2.CAP_PROP_FPS, 15)
+            
+            if not self.camera.isOpened():
+                raise Exception("Failed to open camera")
+            
+            self.camera_enabled = True
+            
+            # Start capturing if WebSocket is connected
+            if self.websocket and not self.websocket.closed:
+                await self.start_camera_capture()
+        except Exception as e:
+            print(f"Unable to access camera: {e}")
+            self.camera_enabled = False
+```
+</CodeGroup>
+
+<Note>
+Camera permissions are required from the user. Make sure to request permissions appropriately and handle cases where the user denies access.
+</Note>
+</Step>
+
+<Step title="Start Periodic Frame Capture">
+After the WebSocket connection is established, start capturing frames periodically:
+
+<CodeGroup>
+```javascript JavaScript
+function startCameraCapture() {
+  if (!calling || socket?.readyState !== WebSocket.OPEN) {
+    return;
+  }
+  
+  if (cameraCaptureInterval) {
+    clearInterval(cameraCaptureInterval);
+  }
+  
+  // Send first frame immediately
+  captureFrameAndSend();
+  
+  // Then capture periodically (every 2 seconds)
+  cameraCaptureInterval = setInterval(() => {
+    if (cameraEnabled && socket?.readyState === WebSocket.OPEN) {
+      captureFrameAndSend();
+    }
+  }, cameraCaptureIntervalMs);
+}
+```
+
+```python Python
+import asyncio
+
+async def start_camera_capture(self):
+    """Start periodic frame capture"""
+    if self.capture_task:
+        self.capture_task.cancel()
+    
+    # Send first frame immediately
+    await self.capture_frame_and_send()
+    
+    # Then capture periodically
+    async def capture_loop():
+        while self.camera_enabled and not self.websocket.closed:
+            await asyncio.sleep(self.camera_capture_interval_ms / 1000)
+            if self.camera_enabled:
+                await self.capture_frame_and_send()
+    
+    self.capture_task = asyncio.create_task(capture_loop())
+```
+</CodeGroup>
+</Step>
+
+<Step title="Capture Frame and Send to AI">
+Capture video frames, convert them to base64-encoded images, and send them to the AI via WebSocket:
+
+<CodeGroup>
+```javascript JavaScript
+function captureFrameAndSend() {
+  const video = cameraPreviewVideo;
+  
+  if (!video || !cameraStream || !socket || 
+      socket.readyState !== WebSocket.OPEN || 
+      video.readyState < 2) {
+    return;
+  }
+  
+  // Create canvas and capture frame
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 360;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // Convert to base64
+  canvas.toBlob(async (blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const imageUrl = `data:${blob.type};base64,${base64}`;
+    
+    // Send to AI via WebSocket
+    const event = {
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [{ 
+          type: "input_image", 
+          image_url: imageUrl 
+        }]
+      }
+    };
+    
+    socket.send(JSON.stringify(event));
+  }, "image/jpeg", 0.7); // JPEG quality: 0.7
+}
+```
+
+```python Python
+import base64
+import json
+from io import BytesIO
+from PIL import Image
+
+async def capture_frame_and_send(self):
+    """Capture frame and send to AI"""
+    if not self.camera or not self.camera_enabled:
+        return
+    
+    ret, frame = self.camera.read()
+    if not ret:
+        return
+    
+    # Convert OpenCV frame to PIL Image
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(frame_rgb)
+    
+    # Convert to base64
+    buffer = BytesIO()
+    pil_image.save(buffer, format='JPEG', quality=70)
+    image_bytes = buffer.getvalue()
+    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+    image_url = f"data:image/jpeg;base64,{base64_image}"
+    
+    # Send to AI via WebSocket
+    event = {
+        "type": "conversation.item.create",
+        "item": {
+            "type": "message",
+            "role": "user",
+            "content": [{
+                "type": "input_image",
+                "image_url": image_url
+            }]
+        }
+    }
+    
+    await self.websocket.send(json.dumps(event))
+```
+</CodeGroup>
+
+<Note>
+**Best Practices**:
+- Use JPEG quality of 0.7 (70%) to reduce payload size while maintaining reasonable image quality
+- Resolution of 640x360 is sufficient for most use cases and reduces bandwidth requirements
+- Capture interval of 2-3 seconds balances real-time responsiveness and bandwidth usage
+</Note>
+</Step>
+
+<Step title="Stop Camera">
+Release camera resources when done:
+
+<CodeGroup>
+```javascript JavaScript
+function stopCamera() {
+  cameraEnabled = false;
+  
+  if (cameraCaptureInterval) {
+    clearInterval(cameraCaptureInterval);
+    cameraCaptureInterval = null;
+  }
+  
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  
+  if (cameraPreviewVideo) {
+    cameraPreviewVideo.srcObject = null;
+  }
+}
+
+// Toggle camera
+async function toggleCamera() {
+  if (cameraEnabled) {
+    stopCamera();
+  } else {
+    await startCamera();
+  }
+}
+```
+
+```python Python
+async def stop_camera(self):
+    """Stop camera capture"""
+    self.camera_enabled = False
+    
+    if self.capture_task:
+        self.capture_task.cancel()
+        self.capture_task = None
+    
+    if self.camera:
+        self.camera.release()
+        self.camera = None
+```
+</CodeGroup>
+
+<Warning>
+Always call `stopCamera()` to release camera resources when the session ends or the component is unmounted. Failing to do so may prevent other applications from accessing the camera.
+</Warning>
+</Step>
+</Steps>
+

@@ -65,6 +65,7 @@
                 ]
               },
               "api/real-time-digital-human-api/function-calling",
+              "api/real-time-digital-human-api/camera-recognition",
               "api/real-time-digital-human-api/knowledge-base-integration",
               "api/real-time-digital-human-api/voice-styles",
               "api/real-time-digital-human-api/transparency-mode",
