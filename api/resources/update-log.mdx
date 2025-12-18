@@ -11,6 +11,72 @@ toc:
 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', marginBottom: '1rem' }}>
 <div style={{ minWidth: '160px', flexShrink: 0 }}>
 <div style={{ padding: '0.25rem 0.5rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: '500', backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', display: 'inline-block', marginBottom: '0.75rem' }}>
+December 20
+</div>
+<div style={{ fontSize: '0.875rem', color: '#64748b' }}>
+<span style={{ display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: '500', backgroundColor: '#f1f5f9' }}>2025</span>
+</div>
+</div>
+<div style={{ flex: 1 }}>
+<Tabs>
+<Tab title="Real-time Digital Human API">
+**New Features**
+
+* **Unified WebSocket Connection**: Merged two separate WebSocket connections into a single unified connection (`wss://transfer.navtalk.ai/wss/v2/realtime-chat`).
+* **Intelligent Parameter Configuration**: Simplified connection parameters with default value mechanism. Only `license` and `name` are required; `model` is optional.
+* **Custom Event Encapsulation**: All event types now use custom event encapsulation with `NavTalkMessageType` constants.
+
+**Enhancements**
+
+* **Response Speed Optimization**: Achieved industry-leading response latency of approximately **200ms** through model and system optimization.
+* **Simplified Session Configuration**: Session configuration now passed via URL query parameters instead of messages.
+
+<Warning>
+This is a **breaking change**. The new API (v2) is not backward compatible with the old version (v1). Please refer to the [Migration Guide](/api/real-time-digital-human-api/migration-guide) for detailed migration instructions.
+</Warning>
+</Tab>
+
+<Tab title="Video Synthesis API">
+**New Features**
+
+No features were added in this release.
+
+**Enhancements**
+
+No enhancements were made in this release.
+</Tab>
+
+<Tab title="Voice Styles">
+**New Features**
+
+No features were added in this release.
+
+**Enhancements**
+
+No enhancements were made in this release.
+</Tab>
+
+<Tab title="Others">
+**New Features**
+
+* **Avatar Sharing and Import**: Added Avatar sharing and import features with sharing links or codes.
+* **Data Reporting Features**: Added conversation record report and recharge record report with filtering capabilities.
+* **API Integration Features**: Added conversation record query API and Webhook message notification.
+
+**Enhancements**
+
+* **Account Security**: Optimized login logic, verification code mechanism, and email verification.
+* **Documentation Updates**: Updated all documentation to reflect the new unified WebSocket connection architecture.
+</Tab>
+</Tabs>
+</div>
+</div>
+</div>
+
+<div className="update-container" style={{ marginBottom: '2rem' }}>
+<div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', marginBottom: '1rem' }}>
+<div style={{ minWidth: '160px', flexShrink: 0 }}>
+<div style={{ padding: '0.25rem 0.5rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: '500', backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6', display: 'inline-block', marginBottom: '0.75rem' }}>
 November 6
 </div>
 <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
