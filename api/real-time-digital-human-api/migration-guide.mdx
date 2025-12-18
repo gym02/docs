@@ -611,23 +611,23 @@ socket.send(JSON.stringify({
 
 ## Event Type Comparison Table
 
-| Old Version (v1) | New Version (v2) Constant | New Version (v2) String Value |
-|------------|----------------|-------------------|
-| `session.created` | `NavTalkMessageType.REALTIME_SESSION_CREATED` | `realtime.session.created` |
-| `session.updated` | `NavTalkMessageType.REALTIME_SESSION_UPDATED` | `realtime.session.updated` |
-| `session.session_id` | `NavTalkMessageType.CONNECTED_SUCCESS` | `conversation.connected.success` (contains `data.sessionId` and `data.iceServers`) |
-| `input_audio_buffer.speech_started` | `NavTalkMessageType.REALTIME_SPEECH_STARTED` | `realtime.input_audio_buffer.speech_started` |
-| `input_audio_buffer.speech_stopped` | `NavTalkMessageType.REALTIME_SPEECH_STOPPED` | `realtime.input_audio_buffer.speech_stopped` |
-| `conversation.item.input_audio_transcription.completed` | `NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED` | `realtime.conversation.item.input_audio_transcription.completed` |
-| `response.audio_transcript.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA` | `realtime.response.audio_transcript.delta` |
-| `response.audio.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA` | `realtime.response.audio.delta` |
-| `response.audio_transcript.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE` | `realtime.response.audio_transcript.done` |
-| `response.audio.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE` | `realtime.response.audio.done` |
-| `response.function_call_arguments.done` | `NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE` | `realtime.response.function_call_arguments.done` |
-| `input_audio_buffer.append` | `NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND` | `realtime.input_audio_buffer.append` |
-| WebRTC `offer` | `NavTalkMessageType.WEB_RTC_OFFER` | `webrtc.signaling.offer` |
-| WebRTC `answer` | `NavTalkMessageType.WEB_RTC_ANSWER` | `webrtc.signaling.answer` |
-| WebRTC `iceCandidate` | `NavTalkMessageType.WEB_RTC_ICE_CANDIDATE` | `webrtc.signaling.iceCandidate` |
+| Old Version (v1) | New Version (v2) String Value | New Version (v2) Constant |
+|------------|-------------------|----------------|
+| `session.created` | `realtime.session.created` | `NavTalkMessageType.REALTIME_SESSION_CREATED` |
+| `session.updated` | `realtime.session.updated` | `NavTalkMessageType.REALTIME_SESSION_UPDATED` |
+| `session.session_id` | `conversation.connected.success` (contains `data.sessionId` and `data.iceServers`) | `NavTalkMessageType.CONNECTED_SUCCESS` |
+| `input_audio_buffer.speech_started` | `realtime.input_audio_buffer.speech_started` | `NavTalkMessageType.REALTIME_SPEECH_STARTED` |
+| `input_audio_buffer.speech_stopped` | `realtime.input_audio_buffer.speech_stopped` | `NavTalkMessageType.REALTIME_SPEECH_STOPPED` |
+| `conversation.item.input_audio_transcription.completed` | `realtime.conversation.item.input_audio_transcription.completed` | `NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED` |
+| `response.audio_transcript.delta` | `realtime.response.audio_transcript.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA` |
+| `response.audio.delta` | `realtime.response.audio.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA` |
+| `response.audio_transcript.done` | `realtime.response.audio_transcript.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE` |
+| `response.audio.done` | `realtime.response.audio.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE` |
+| `response.function_call_arguments.done` | `realtime.response.function_call_arguments.done` | `NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE` |
+| `input_audio_buffer.append` | `realtime.input_audio_buffer.append` | `NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND` |
+| WebRTC `offer` | `webrtc.signaling.offer` | `NavTalkMessageType.WEB_RTC_OFFER` |
+| WebRTC `answer` | `webrtc.signaling.answer` | `NavTalkMessageType.WEB_RTC_ANSWER` |
+| WebRTC `iceCandidate` | `webrtc.signaling.iceCandidate` | `NavTalkMessageType.WEB_RTC_ICE_CANDIDATE` |
 
 ## Important Notes
 
