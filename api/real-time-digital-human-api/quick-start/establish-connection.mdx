@@ -7,24 +7,48 @@ description: "Learn how to establish WebSocket connections to send user audio in
 
 WebSocket connections are used to **establish connection and send user audio data** to the NavTalk API for processing. This is the primary channel for transmitting your audio input to the digital human system.
 
-The complete connection process involves **two separate connections**:
-1. **WebSocket connection** - for sending audio input and receiving text/audio responses
-2. **WebRTC connection** - for receiving video stream (see [WebRTC Connection](/api/real-time-digital-human-api/quick-start/webrtc-connection) for details)
+The complete connection process involves **one unified WebSocket connection** that handles:
+1. **Real-time API communication** - for sending audio input and receiving text/audio responses
+2. **WebRTC signaling** - for establishing video stream (WebRTC signaling messages are sent through the same WebSocket connection)
 
 <Steps>
 <Step title="Step 1: Establish WebSocket Connection">
-  First, establish a WebSocket connection to the NavTalk API with your API key and character name. This connection will be used to send audio data and receive text/audio responses.
+  First, establish a unified WebSocket connection to the NavTalk API with your API key and character name. This single connection will be used for all communication including audio data, text/audio responses, and WebRTC signaling.
 
 <CodeGroup>
 ```javascript JavaScript
+// Define event type constants
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    CONNECTED_FAIL: "conversation.connected.fail",
+    CONNECTED_CLOSE: "conversation.connected.close",
+    INSUFFICIENT_BALANCE: "conversation.connected.insufficient_balance",
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    REALTIME_SPEECH_STARTED: "realtime.input_audio_buffer.speech_started",
+    REALTIME_SPEECH_STOPPED: "realtime.input_audio_buffer.speech_stopped",
+    REALTIME_CONVERSATION_ITEM_COMPLETED: "realtime.conversation.item.input_audio_transcription.completed",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA: "realtime.response.audio_transcript.delta",
+    REALTIME_RESPONSE_AUDIO_DELTA: "realtime.response.audio.delta",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE: "realtime.response.audio_transcript.done",
+    REALTIME_RESPONSE_AUDIO_DONE: "realtime.response.audio.done",
+    REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
+    REALTIME_INPUT_AUDIO_BUFFER_APPEND: "realtime.input_audio_buffer.append",
+    REALTIME_INPUT_TEXT: "realtime.input_text",
+    REALTIME_INPUT_IMAGE: "realtime.input_image"
+});
+
 // Configuration
 const LICENSE = 'your-api-key-here';
 const CHARACTER_NAME = 'navtalk.Leo'; // e.g., navtalk.Leo, navtalk.Alex, etc.
 const MODEL = 'gpt-realtime-mini'; // optional
 
 // Build WebSocket URL with query parameters
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(LICENSE)}&characterName=${encodeURIComponent(CHARACTER_NAME)}${MODEL ? '&model=' + encodeURIComponent(MODEL) : ''}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(LICENSE)}&name=${encodeURIComponent(CHARACTER_NAME)}${MODEL ? '&model=' + encodeURIComponent(MODEL) : ''}`;
 
 // Create WebSocket connection
 const socket = new WebSocket(websocketUrlWithParams);
@@ -34,7 +58,7 @@ socket.binaryType = 'arraybuffer';
 // Connection event handlers
 socket.onopen = () => {
   console.log('WebSocket connection established');
-  // Connection is ready, wait for session.created event
+  // Connection is ready, wait for session.session_id and session.created events
 };
 
 socket.onerror = (error) => {
@@ -61,8 +85,8 @@ CHARACTER_NAME = 'navtalk.Leo'
 MODEL = 'gpt-realtime-mini'  # optional
 
 # Build WebSocket URL with query parameters
-websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
-websocket_url_with_params = f'{websocket_url}?license={quote(LICENSE)}&characterName={quote(CHARACTER_NAME)}'
+websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
+websocket_url_with_params = f'{websocket_url}?license={quote(LICENSE)}&name={quote(CHARACTER_NAME)}'
 if MODEL:
     websocket_url_with_params += f'&model={quote(MODEL)}'
 
@@ -79,9 +103,11 @@ asyncio.run(connect())
   <Note>
     The WebSocket connection URL requires two mandatory query parameters:
     - `license`: Your API key
-    - `characterName`: The name of the digital human character you want to use
+    - `name`: The name of the digital human character you want to use (note: parameter name changed from `characterName` to `name`)
     
     Optionally, you can include `model` parameter to specify the AI model.
+    
+    This unified connection handles both real-time API communication and WebRTC signaling, eliminating the need for a separate WebRTC WebSocket connection.
   </Note>
 </Step>
 
@@ -110,15 +136,50 @@ socket.onmessage = (event) => {
 };
 
 async function handleReceivedMessage(data) {
+  // Extract data from nested structure if present
+  const nav_data = data.data || data;
+  
   switch (data.type) {
-    // Step 2.1: Session created - send configuration
-    case 'session.created':
-      console.log('Session created, sending session update.');
+    // Connection events
+    case NavTalkMessageType.CONNECTED_SUCCESS:
+      console.log('WebSocket connection successful');
+      // Extract sessionId and iceServers from data
+      if (nav_data && nav_data.sessionId) {
+        const sessionId = nav_data.sessionId;
+        console.log('Received session ID:', sessionId);
+        // Store sessionId for WebRTC signaling (see Step 5)
+        // Store iceServers for WebRTC configuration
+        if (nav_data.iceServers) {
+          configuration.iceServers = nav_data.iceServers;
+          console.log('ICE servers configured:', configuration.iceServers);
+        }
+      }
+      break;
+    
+    case NavTalkMessageType.CONNECTED_FAIL:
+      const errorMessage = data.message || 'Unknown error';
+      console.error('Connection failed:', errorMessage);
+      // Handle connection failure
+      break;
+    
+    case NavTalkMessageType.CONNECTED_CLOSE:
+      console.log('Connection closed:', data.message || 'Normal closure');
+      // Handle connection closure
+      break;
+    
+    case NavTalkMessageType.INSUFFICIENT_BALANCE:
+      console.error('Insufficient balance, service has stopped, please recharge!');
+      // Handle insufficient balance
+      break;
+    
+    // Step 2.1: Session created - send conversation history
+    case NavTalkMessageType.REALTIME_SESSION_CREATED:
+      console.log('Session created, sending conversation history.');
       await sendSessionUpdate();
       break;
     
     // Step 2.2: Session updated - ready to send audio
-    case 'session.updated':
+    case NavTalkMessageType.REALTIME_SESSION_UPDATED:
       console.log('Session updated. Ready to receive audio.');
       // Now you can start recording and sending audio
       startRecording();
@@ -131,83 +192,24 @@ async function handleReceivedMessage(data) {
   }
 }
 
-// Send session configuration
+// Send conversation history (session configuration is handled via URL parameters)
 async function sendSessionUpdate() {
-  // Session configuration
-  const sessionConfig = {
-    type: 'session.update',
-    session: {
-      // System prompt/instructions for the AI
-      instructions: 'You are a helpful assistant.',
-      
-      // Voice activity detection (VAD) settings
-      turn_detection: {
-        type: 'server_vad', // Server-side voice activity detection
-        threshold: 0.5, // VAD threshold (0.0 to 1.0)
-        prefix_padding_ms: 300, // Padding before speech starts (ms)
-        silence_duration_ms: 500 // Silence duration to detect end of speech (ms)
-      },
-      
-      // Voice selection (see available voices in documentation)
-      voice: 'cedar', // e.g., alloy, ash, ballad, cedar, coral, echo, marin, sage, shimmer, verse
-      
-      // AI model parameters
-      temperature: 1, // Creativity level (0.0 to 2.0)
-      max_response_output_tokens: 4096, // Maximum response length
-      
-      // Modalities: what types of data to exchange
-      modalities: ['text', 'audio'], // Enable both text and audio
-      
-      // Audio format specifications
-      input_audio_format: 'pcm16', // Input audio format: PCM16
-      output_audio_format: 'pcm16', // Output audio format: PCM16
-      
-      // Audio transcription settings
-      input_audio_transcription: {
-        model: 'whisper-1' // Transcription model
-      },
-      
-      // Optional: tools/function calling
-      tools: [
-        {
-          type: 'function',
-          name: 'function_call_judge',
-          description: 'Are there any function calls or tasks beyond your capability...',
-          parameters: {
-            type: 'object',
-            properties: {
-              userInput: {
-                type: 'string',
-                description: 'the user input'
-              }
-            },
-            required: ['userInput']
-          }
-        }
-      ]
-    }
-  };
+  // Get conversation history from storage
+  const history = localStorage.getItem('realtimeChatHistory');
+  const conversationHistory = history ? JSON.parse(history) : [];
   
-  // Send session configuration
-  try {
-    socket.send(JSON.stringify(sessionConfig));
-    console.log('Session configuration sent');
-  } catch (e) {
-    console.error('Error sending session update:', e);
-  }
-  
-  // Optional: Send conversation history if you have previous messages
-  // This allows the AI to maintain context across sessions
-  if (conversationHistory && conversationHistory.length > 0) {
-    conversationHistory.forEach((msg) => {
+  // Send each item in history
+  // Note: Only send user messages, assistant messages are handled by the server
+  conversationHistory.forEach((msg) => {
+    if (msg.role === 'user') {
       const messageConfig = {
         type: 'conversation.item.create',
         item: {
           type: 'message',
-          role: msg.role, // 'user' or 'assistant'
+          role: msg.role,
           content: [
             {
-              type: msg.role === 'user' ? 'input_text' : 'text',
+              type: 'input_text',
               text: msg.content
             }
           ]
@@ -220,8 +222,8 @@ async function sendSessionUpdate() {
       } catch (e) {
         console.error('Error sending history message:', e);
       }
-    });
-  }
+    }
+  });
 }
 ```
 
@@ -232,12 +234,37 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
+            nav_data = data.get('data', data)
             
-            if data.get('type') == 'session.created':
-                print('Session created, sending session update.')
+            message_type = data.get('type')
+            
+            # Connection events
+            if message_type == 'conversation.connected.success':
+                print('WebSocket connection successful')
+                if nav_data and nav_data.get('sessionId'):
+                    session_id = nav_data['sessionId']
+                    print('Received session ID:', session_id)
+                    # Store sessionId for WebRTC signaling
+                    if nav_data.get('iceServers'):
+                        configuration['iceServers'] = nav_data['iceServers']
+                        print('ICE servers configured')
+            
+            elif message_type == 'conversation.connected.fail':
+                error_message = data.get('message', 'Unknown error')
+                print(f'Connection failed: {error_message}')
+            
+            elif message_type == 'conversation.connected.close':
+                print('Connection closed:', data.get('message', 'Normal closure'))
+            
+            elif message_type == 'conversation.connected.insufficient_balance':
+                print('Insufficient balance, service has stopped, please recharge!')
+            
+            # Session events
+            elif message_type == 'realtime.session.created':
+                print('Session created, sending conversation history.')
                 await send_session_update(websocket)
             
-            elif data.get('type') == 'session.updated':
+            elif message_type == 'realtime.session.updated':
                 print('Session updated. Ready to receive audio.')
                 # Start audio recording here
                 await start_recording(websocket)
@@ -247,39 +274,39 @@ async def handle_messages(websocket):
                 await handle_other_messages(data)
 
 async def send_session_update(websocket):
-    session_config = {
-        'type': 'session.update',
-        'session': {
-            'instructions': 'You are a helpful assistant.',
-            'turn_detection': {
-                'type': 'server_vad',
-                'threshold': 0.5,
-                'prefix_padding_ms': 300,
-                'silence_duration_ms': 500
-            },
-            'voice': 'cedar',
-            'temperature': 1,
-            'max_response_output_tokens': 4096,
-            'modalities': ['text', 'audio'],
-            'input_audio_format': 'pcm16',
-            'output_audio_format': 'pcm16',
-            'input_audio_transcription': {
-                'model': 'whisper-1'
-            }
-        }
-    }
+    # Get conversation history from storage
+    # In Python, you might use a database or file storage
+    conversation_history = []  # Load from your storage
     
-    await websocket.send(json.dumps(session_config))
-    print('Session configuration sent')
+    # Send each user message in history
+    for msg in conversation_history:
+        if msg['role'] == 'user':
+            message_config = {
+                'type': 'conversation.item.create',
+                'item': {
+                    'type': 'message',
+                    'role': msg['role'],
+                    'content': [
+                        {
+                            'type': 'input_text',
+                            'text': msg['content']
+                        }
+                    ]
+                }
+            }
+            
+            try:
+                await websocket.send(json.dumps(message_config))
+                print('Sent history message:', msg['role'])
+            except Exception as e:
+                print(f'Error sending history message: {e}')
 ```
 </CodeGroup>
 
   <Note>
-    The session configuration is crucial for the conversation quality. Key parameters:
-    - `instructions`: Define the AI's behavior and personality
-    - `turn_detection`: Controls when the AI detects you've finished speaking
-    - `voice`: Selects the voice for the digital human
-    - `modalities`: Must include both 'text' and 'audio' for full functionality
+    In the new unified API, session configuration (voice, model, etc.) is handled via URL query parameters when establishing the WebSocket connection. The `sendSessionUpdate()` function is only used to send conversation history for context.
+    
+    The conversation history allows the AI to maintain context across sessions. Only user messages need to be sent; assistant messages are handled by the server.
   </Note>
 </Step>
 
@@ -331,8 +358,8 @@ function startRecording() {
             
             // Send audio chunk as JSON message
             socket.send(JSON.stringify({
-              type: 'input_audio_buffer.append',
-              audio: chunk
+              type: NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND,
+              data: { audio: chunk }
             }));
           }
         }
@@ -434,8 +461,8 @@ def audio_callback(in_data, frame_count, time_info, status):
     for i in range(0, len(audio_base64), chunk_size):
         chunk = audio_base64[i:i + chunk_size]
         message = {
-            'type': 'input_audio_buffer.append',
-            'audio': chunk
+            'type': 'realtime.input_audio_buffer.append',
+            'data': { 'audio': chunk }
         }
         # Send asynchronously
         asyncio.create_task(websocket.send(json.dumps(message)))
@@ -470,110 +497,143 @@ async def start_recording(websocket):
 
 <Step title="Step 4: Handle Response Messages">
   Process incoming messages from the API. The WebSocket connection will send various event types including transcriptions, AI responses, and status updates.
-<Note>
-    Before `session.created` arrives, you will always receive a `session.session_id` event. Capture the `session_id` value as soon as it arrives because you must reuse it later when opening the WebRTC signaling socket. Treat this value as an opaque ID generated by the proxy session.
+  <Note>
+    When the WebSocket connection is established, you will receive a `conversation.connected.success` event. This event contains:
+    - `data.sessionId`: The session ID you must use for WebRTC signaling
+    - `data.iceServers`: ICE server configuration for WebRTC
+    
+    Capture the `sessionId` value as soon as it arrives because you must reuse it later for WebRTC signaling.
   </Note>
 
 <CodeGroup>
 ```javascript JavaScript
 // Enhanced message handler with all event types
 async function handleReceivedMessage(data) {
+  // Extract data from nested structure if present
+  const nav_data = data.data || data;
+  
   switch (data.type) {
-    // Session events (handled in Step 2)
-    case 'session.created':
-      await sendSessionUpdate();
-      break;
-
-    case 'session.session_id':
-      console.log('Received proxy session ID:', data.session_id);
-      // Store this ID for later WebRTC signaling (see Step 5)
-      // You can also reuse it as `targetSessionId = target-${session_id}` when creating the WebRTC connection
+    // Connection events
+    case NavTalkMessageType.CONNECTED_SUCCESS:
+      console.log('WebSocket connection successful');
+      // Extract sessionId and iceServers from data
+      if (nav_data && nav_data.sessionId) {
+        const sessionId = nav_data.sessionId;
+        console.log('Received session ID:', sessionId);
+        // Store sessionId for WebRTC signaling (see Step 5)
+        // Store iceServers for WebRTC configuration
+        if (nav_data.iceServers) {
+          configuration.iceServers = nav_data.iceServers;
+          console.log('ICE servers configured:', configuration.iceServers);
+        }
+      }
       break;
     
-    case 'session.updated':
+    case NavTalkMessageType.CONNECTED_FAIL:
+      const errorMessage = data.message || 'Unknown error';
+      console.error('Connection failed:', errorMessage);
+      break;
+    
+    case NavTalkMessageType.CONNECTED_CLOSE:
+      console.log('Connection closed:', data.message || 'Normal closure');
+      break;
+    
+    case NavTalkMessageType.INSUFFICIENT_BALANCE:
+      console.error('Insufficient balance, service has stopped, please recharge!');
+      break;
+    
+    // Session events (handled in Step 2)
+    case NavTalkMessageType.REALTIME_SESSION_CREATED:
+      await sendSessionUpdate();
+      break;
+    
+    case NavTalkMessageType.REALTIME_SESSION_UPDATED:
       console.log('Session updated. Ready to receive audio.');
       startRecording();
       break;
     
     // User speech detection events
-    case 'input_audio_buffer.speech_started':
+    case NavTalkMessageType.REALTIME_SPEECH_STARTED:
       console.log('Speech started detected by server.');
       // User started speaking - you might want to stop any current audio playback
       stopCurrentAudioPlayback();
       break;
     
-    case 'input_audio_buffer.speech_stopped':
+    case NavTalkMessageType.REALTIME_SPEECH_STOPPED:
       console.log('Speech stopped detected by server.');
       // User stopped speaking - server will process the audio
       break;
     
     // User transcription events
-    case 'conversation.item.input_audio_transcription.completed':
-      console.log('Received transcription:', data.transcript);
+    case NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED:
+      const transcript = nav_data.content ?? nav_data.transcript ?? data.transcript;
+      console.log('Received transcription:', transcript);
       // Display user message in UI
-      displayUserMessage(data.transcript);
+      displayUserMessage(transcript);
       // Save to conversation history
-      await saveToHistory('user', data.transcript);
+      await saveToHistory('user', transcript);
       break;
     
     // AI response text stream (streaming)
-    case 'response.audio_transcript.delta':
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
       // This event fires multiple times as the AI generates text
-      const transcript = data.delta; // Incremental text chunk
-      const responseId = data.response_id; // Unique ID for this response
+      const deltaTranscript = nav_data.content ?? nav_data.delta ?? data.delta; // Incremental text chunk
+      const responseId = nav_data.id ?? nav_data.response_id ?? data.response_id; // Unique ID for this response
       
       // Accumulate text chunks (you may need to buffer incomplete content)
-      accumulateResponseText(responseId, transcript);
+      accumulateResponseText(responseId, deltaTranscript);
       
       // Display streaming text in UI
-      displayAIResponseStream(responseId, transcript);
+      displayAIResponseStream(responseId, deltaTranscript);
       break;
     
     // AI response text completed
-    case 'response.audio_transcript.done':
-      console.log('AI response complete:', data.transcript);
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
+      const finalTranscript = nav_data.content ?? nav_data.transcript ?? data.transcript;
+      console.log('AI response complete:', finalTranscript);
       // Display final text
-      displayAIResponseComplete(data.transcript);
+      displayAIResponseComplete(finalTranscript);
       // Save to conversation history
-      await saveToHistory('assistant', data.transcript);
+      await saveToHistory('assistant', finalTranscript);
       break;
     
     // AI response audio stream (if you're receiving audio via WebSocket)
-    case 'response.audio.delta':
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:
       // Handle audio delta if needed
-      if (data.delta) {
+      if (nav_data.delta ?? data.delta) {
         // Process audio chunk
-        handleAudioChunk(data.delta);
+        handleAudioChunk(nav_data.delta ?? data.delta);
       }
       break;
     
     // AI response audio completed
-    case 'response.audio.done':
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE:
       console.log('Audio response complete.');
       // Handle audio completion
       break;
     
     // Function call events
-    case 'response.function_call_arguments.done':
-      console.log('Function call received:', data);
-      await handleFunctionCall(data);
+    case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
+      console.log('Function call received:', nav_data);
+      await handleFunctionCall(nav_data);
+      break;
+    
+    // WebRTC signaling events (handled in Step 5)
+    case NavTalkMessageType.WEB_RTC_OFFER:
+      handleOffer(nav_data);
+      break;
+    
+    case NavTalkMessageType.WEB_RTC_ANSWER:
+      handleAnswer(nav_data);
+      break;
+    
+    case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
+      handleIceCandidate(nav_data);
       break;
     
     // Error events
-    case 'session.gpu_full':
-      console.error('GPU resources are full. Please try again later!');
-      break;
-    
-    case 'session.insufficient_balance':
+    case NavTalkMessageType.INSUFFICIENT_BALANCE:
       console.error('Insufficient balance, service has stopped, please recharge!');
-      break;
-    
-    case 'session.connection_limit_exceeded':
-      console.error('Connection limit exceeded:', data.message);
-      break;
-    
-    case 'session.backend.error':
-      console.error('Backend error:', data.message);
       break;
     
     default:
@@ -656,23 +716,30 @@ async def handle_messages(websocket):
 
   <Note>
     The API sends events in a specific sequence:
-    1. `session.session_id` → The server sends the proxy session ID that you must use to authorize your WebRTC signaling connection
-    2. `session.created` → Send configuration
-    3. `session.updated` → Start sending audio
-    4. `input_audio_buffer.speech_started` → User starts speaking
-    5. `input_audio_buffer.speech_stopped` → User stops speaking
-    6. `conversation.item.input_audio_transcription.completed` → User speech transcribed
-    7. `response.audio_transcript.delta` → AI response text (streaming, multiple events)
-    8. `response.audio_transcript.done` → AI response text complete
-    9. `response.audio.done` → AI response audio complete
+    1. `conversation.connected.success` → Connection established, contains `sessionId` and `iceServers` for WebRTC
+    2. `realtime.session.created` → Send conversation history
+    3. `realtime.session.updated` → Start sending audio
+    4. `realtime.input_audio_buffer.speech_started` → User starts speaking
+    5. `realtime.input_audio_buffer.speech_stopped` → User stops speaking
+    6. `realtime.conversation.item.input_audio_transcription.completed` → User speech transcribed
+    7. `realtime.response.audio_transcript.delta` → AI response text (streaming, multiple events)
+    8. `realtime.response.audio_transcript.done` → AI response text complete
+    9. `realtime.response.audio.done` → AI response audio complete
+    
+    Note: Event data may be nested in a `data` field. Always check both `data.data` and `data` when accessing event properties.
   </Note>
 </Step>
 
 <Step title="Step 5: Establish WebRTC Connection (for Video)">
-  To receive the digital human's video stream, you need to establish a separate WebRTC connection. This is covered in detail in the [WebRTC Connection guide](/api/real-time-digital-human-api/quick-start/webrtc-connection).
+  To receive the digital human's video stream, WebRTC signaling messages are sent through the same unified WebSocket connection. This is covered in detail in the [WebRTC Connection guide](/api/real-time-digital-human-api/quick-start/webrtc-connection).
 
   <Note>
-    As soon as you receive the `session.session_id` event on the WebSocket channel, you may open the WebRTC signaling socket. Use that session ID as the `userId` query parameter and set `targetSessionId = "target-{session_id}"` in the `{ type: 'create' }` message so the video connection binds to that proxy session.
+    In the new unified API, WebRTC signaling (offer, answer, ICE candidates) is handled through the same WebSocket connection using event types:
+    - `webrtc.signaling.offer` - Receive WebRTC offer
+    - `webrtc.signaling.answer` - Send WebRTC answer
+    - `webrtc.signaling.iceCandidate` - Exchange ICE candidates
+    
+    No separate WebRTC WebSocket connection is needed.
   </Note>
 </Step>
 </Steps>

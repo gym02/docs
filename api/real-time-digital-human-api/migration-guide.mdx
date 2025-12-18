@@ -1,0 +1,647 @@
+---
+title: "Migration Guide: v1 to v2"
+description: "Guide for migrating from the old WebSocket API (v1) to the new unified WebSocket API (v2)"
+---
+
+This guide explains how to migrate from the old WebSocket API (v1) to the new unified WebSocket API (v2). The main changes in v2 include: using a single unified WebSocket connection and event name encapsulation.
+
+## Overview of Major Changes
+
+### 1. Number of WebSocket Connections
+
+**Old Version (v1)**:
+- Requires two separate WebSocket connections
+  - Real-time API connection: `wss://transfer.navtalk.ai/api/realtime-api`
+  - WebRTC signaling connection: `wss://transfer.navtalk.ai/api/webrtc`
+
+**New Version (v2)**:
+- Only one unified WebSocket connection is needed
+  - Unified connection: `wss://transfer.navtalk.ai/wss/v2/realtime-chat`
+  - WebRTC signaling is also sent through the same connection
+
+### 2. Connection URL and Parameters
+
+**Old Version (v1)**:
+```javascript
+const websocketUrl = "wss://transfer.navtalk.ai/api/realtime-api";
+const websocketUrlWithParams = `${websocketUrl}?license=${LICENSE}&characterName=${CHARACTER_NAME}&model=${MODEL}`;
+```
+
+**New Version (v2)**:
+```javascript
+const websocketUrl = "wss://transfer.navtalk.ai/wss/v2/realtime-chat";
+const websocketUrlWithParams = `${websocketUrl}?license=${LICENSE}&name=${CHARACTER_NAME}&model=${MODEL}`;
+```
+
+<Note>
+Note the following changes:
+- URL path changed from `/api/realtime-api` to `/wss/v2/realtime-chat`
+- Parameter name changed from `characterName` to `name`
+</Note>
+
+### 3. Event Name Encapsulation
+
+**Old Version (v1)**:
+Directly using raw event type strings:
+
+```javascript
+switch (data.type) {
+    case "session.created":
+        // Handle session creation
+        break;
+    case "session.updated":
+        // Handle session update
+        break;
+    case "input_audio_buffer.speech_started":
+        // Handle speech start
+        break;
+    // ... other events
+}
+```
+
+**New Version (v2)**:
+Using encapsulated event type constants:
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    CONNECTED_FAIL: "conversation.connected.fail",
+    CONNECTED_CLOSE: "conversation.connected.close",
+    INSUFFICIENT_BALANCE: "conversation.connected.insufficient_balance",
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    REALTIME_SPEECH_STARTED: "realtime.input_audio_buffer.speech_started",
+    REALTIME_SPEECH_STOPPED: "realtime.input_audio_buffer.speech_stopped",
+    REALTIME_CONVERSATION_ITEM_COMPLETED: "realtime.conversation.item.input_audio_transcription.completed",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA: "realtime.response.audio_transcript.delta",
+    REALTIME_RESPONSE_AUDIO_DELTA: "realtime.response.audio.delta",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE: "realtime.response.audio_transcript.done",
+    REALTIME_RESPONSE_AUDIO_DONE: "realtime.response.audio.done",
+    REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
+    REALTIME_INPUT_AUDIO_BUFFER_APPEND: "realtime.input_audio_buffer.append",
+    REALTIME_INPUT_TEXT: "realtime.input_text",
+    REALTIME_INPUT_IMAGE: "realtime.input_image",
+    UNKNOWN_TYPE: "unknow"
+});
+
+switch (data.type) {
+    case NavTalkMessageType.REALTIME_SESSION_CREATED:
+        // Handle session creation
+        break;
+    case NavTalkMessageType.REALTIME_SESSION_UPDATED:
+        // Handle session update
+        break;
+    case NavTalkMessageType.REALTIME_SPEECH_STARTED:
+        // Handle speech start
+        break;
+    // ... other events
+}
+```
+
+### 4. WebRTC Signaling Message Format
+
+**Old Version (v1)**:
+Sending signaling through a separate WebRTC WebSocket:
+
+```javascript
+// Establish separate WebRTC signaling connection
+const signalingUrl = `wss://transfer.navtalk.ai/api/webrtc?userId=${proxySessionId}`;
+resultSocket = new WebSocket(signalingUrl);
+
+// Send offer
+resultSocket.send(JSON.stringify({
+    type: 'offer',
+    targetSessionId: targetSessionId,
+    sdp: pc.localDescription
+}));
+
+// Send answer
+resultSocket.send(JSON.stringify({
+    type: 'answer',
+    targetSessionId: targetSessionId,
+    sdp: peerConnectionA.localDescription
+}));
+
+// Send ICE candidate
+resultSocket.send(JSON.stringify({
+    type: 'iceCandidate',
+    targetSessionId: targetSessionId,
+    candidate: event.candidate
+}));
+```
+
+**New Version (v2)**:
+Sending signaling through the unified WebSocket using encapsulated event types:
+
+```javascript
+// Send offer
+function sendOfferMessage(sdp) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_OFFER,
+        data: { sdp: sdp }
+    };
+    socket.send(JSON.stringify(message));
+}
+
+// Send answer
+function sendAnswerMessage(sdp) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ANSWER,
+        data: { sdp: sdp }
+    };
+    socket.send(JSON.stringify(message));
+}
+
+// Send ICE candidate
+function sendIceMessage(candidate) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ICE_CANDIDATE,
+        data: { candidate: candidate }
+    };
+    socket.send(JSON.stringify(message));
+}
+```
+
+### 5. Connection Events and Session ID
+
+**Old Version (v1)**:
+Using `session.session_id` event to get session ID:
+
+```javascript
+case "session.session_id":
+    const sessionId = data.session_id;
+    // Use sessionId for WebRTC connection
+    break;
+```
+
+**New Version (v2)**:
+The `session.session_id` event has been removed and replaced with the `conversation.connected.success` event, which is sent immediately upon successful connection and contains the session ID and ICE server configuration:
+
+```javascript
+case NavTalkMessageType.CONNECTED_SUCCESS:
+    const nav_data = data.data;
+    const sessionId = nav_data.sessionId;
+    const iceServers = nav_data.iceServers;
+    // Use sessionId for WebRTC connection
+    // Use iceServers to configure WebRTC
+    break;
+```
+
+<Note>
+The new version also adds other connection events:
+- `conversation.connected.success` - Connection successful
+- `conversation.connected.fail` - Connection failed
+- `conversation.connected.close` - Connection closed
+- `conversation.connected.insufficient_balance` - Insufficient balance
+</Note>
+
+### 6. Message Data Structure
+
+**Old Version (v1)**:
+Event data is directly at the message root level:
+
+```javascript
+// Received message format
+{
+    type: "session.created",
+    sessionId: "...",
+    // Other fields directly at root level
+}
+```
+
+**New Version (v2)**:
+Event data is encapsulated in the `data` field:
+
+```javascript
+// Received message format
+{
+    type: "realtime.session.created",
+    data: {
+        // Actual data is here
+    }
+}
+
+// When processing messages
+const nav_data = data.data; // Get actual data
+switch (data.type) {
+    case NavTalkMessageType.REALTIME_SESSION_CREATED:
+        // Use nav_data to access data
+        break;
+}
+```
+
+### 7. Session Configuration
+
+**Old Version (v1)**:
+Need to send `session.update` message to configure session parameters (voice, instructions, turn_detection, etc.):
+
+```javascript
+const sessionConfig = {
+    type: 'session.update',
+    session: {
+        instructions: 'You are a helpful assistant.',
+        voice: 'cedar',
+        turn_detection: { ... },
+        // ... other configuration
+    }
+};
+socket.send(JSON.stringify(sessionConfig));
+```
+
+**New Version (v2)**:
+Session configuration is passed through WebSocket connection URL query parameters (voice, model, etc.). The `sendSessionUpdate()` function is only used to send conversation history:
+
+```javascript
+async function sendSessionUpdate() {
+    const history = localStorage.getItem('realtimeChatHistory');
+    const conversationHistory = history ? JSON.parse(history) : [];
+    
+    // Only send user message history
+    conversationHistory.forEach((msg) => {
+        if (msg.role === 'user') {
+            const messageConfig = {
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: msg.role,
+                    content: [{ type: 'input_text', text: msg.content }]
+                }
+            };
+            socket.send(JSON.stringify(messageConfig));
+        }
+    });
+}
+```
+
+### 8. Audio Sending Format
+
+**Old Version (v1)**:
+```javascript
+socket.send(JSON.stringify({ 
+    type: "input_audio_buffer.append", 
+    audio: chunk 
+}));
+```
+
+**New Version (v2)**:
+```javascript
+socket.send(JSON.stringify({ 
+    type: NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND, 
+    data: { audio: chunk } 
+}));
+```
+
+<Warning>
+In the new version, audio data must be encapsulated in the `data.audio` field, not directly in the root-level `audio` field.
+</Warning>
+
+## Complete Migration Steps
+
+### Step 1: Update WebSocket Connection URL
+
+**Old Version (v1):**
+
+```javascript
+const websocketUrl = "wss://transfer.navtalk.ai/api/realtime-api";
+const websocketUrlWithParams = `${websocketUrl}?license=${LICENSE}&characterName=${CHARACTER_NAME}&model=${MODEL}`;
+```
+
+**New Version (v2):**
+
+```javascript
+const websocketUrl = "wss://transfer.navtalk.ai/wss/v2/realtime-chat";
+const websocketUrlWithParams = `${websocketUrl}?license=${LICENSE}&name=${CHARACTER_NAME}&model=${MODEL}`;
+```
+
+### Step 2: Add Event Type Constant Definitions
+
+Add the `NavTalkMessageType` object definition at the beginning of your code (refer to the complete list above).
+
+### Step 3: Remove Separate WebRTC WebSocket Connection
+
+Delete all code related to the separate WebRTC WebSocket connection:
+- Remove `resultSocket` creation and connection logic
+- Remove `setupSignalingSocketIfReady()` function (if it exists)
+- Remove separate WebRTC WebSocket message handling logic
+
+### Step 4: Update Event Handling Logic
+
+Update the message handler function to replace all event types with the new version's event types and add connection event handling.
+
+**Old Version (v1) Event Types:**
+
+```javascript
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case "session.session_id":
+            // Purpose: Get session ID for WebRTC connection
+            // Action: Get sessionId from data.session_id and store it
+            break;
+        
+        case "session.created":
+            // Purpose: Session creation completed
+            // Action: Call sendSessionUpdate() to send session configuration
+            break;
+        
+        case "session.updated":
+            // Purpose: Session configuration completed, ready to send audio
+            // Action: Call startRecording() to start recording
+            break;
+        
+        case "input_audio_buffer.speech_started":
+            // Purpose: User speech detected
+            // Action: Stop current audio playback, clear audio queue
+            break;
+        
+        case "input_audio_buffer.speech_stopped":
+            // Purpose: User speech stopped
+            // Action: Can show user input indicator
+            break;
+        
+        case "conversation.item.input_audio_transcription.completed":
+            // Purpose: User speech transcription completed
+            // Action: Get transcript from data.transcript, display user message, save to history
+            break;
+        
+        case "response.audio_transcript.delta":
+            // Purpose: AI response text streaming update (incremental)
+            // Action: Get incremental text from data.delta, get response ID from data.response_id, accumulate and display streaming text
+            break;
+        
+        case "response.audio_transcript.done":
+            // Purpose: AI response text completed
+            // Action: Get complete text from data.transcript, display final response, save to history
+            break;
+        
+        case "response.audio.delta":
+            // Purpose: AI response audio streaming update (incremental)
+            // Action: Get audio data from data.delta and process it
+            break;
+        
+        case "response.audio.done":
+            // Purpose: AI response audio completed
+            // Action: Mark audio playback as complete
+            break;
+        
+        case "response.function_call_arguments.done":
+            // Purpose: Function call arguments received
+            // Action: Get function call arguments from data, execute function call, return result
+            break;
+        
+        case "session.insufficient_balance":
+            // Purpose: Insufficient balance
+            // Action: Show error message, stop service
+            break;
+    }
+}
+```
+
+**New Version (v2) Event Types:**
+
+```javascript
+async function handleReceivedMessage(data) {
+    // Extract data: new version data may be encapsulated in data.data
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        // ======================== Connection Events ====================
+        case NavTalkMessageType.CONNECTED_SUCCESS:
+            // Purpose: WebSocket connection successful, contains session ID and ICE server configuration
+            // Action: Get sessionId from nav_data.sessionId and store it (for WebRTC), get ICE server configuration from nav_data.iceServers
+            break;
+        
+        case NavTalkMessageType.CONNECTED_FAIL:
+            // Purpose: WebSocket connection failed
+            // Action: Get error message from data.message, show error notification
+            break;
+        
+        case NavTalkMessageType.CONNECTED_CLOSE:
+            // Purpose: WebSocket connection closed
+            // Action: Get close reason from data.message, cleanup resources
+            break;
+        
+        case NavTalkMessageType.INSUFFICIENT_BALANCE:
+            // Purpose: Insufficient balance
+            // Action: Show error message, stop service
+            break;
+        
+        // ======================== Session Events ====================
+        case NavTalkMessageType.REALTIME_SESSION_CREATED:
+            // Purpose: Session creation completed
+            // Action: Call sendSessionUpdate() to send conversation history (no longer send session configuration)
+            break;
+        
+        case NavTalkMessageType.REALTIME_SESSION_UPDATED:
+            // Purpose: Session configuration completed, ready to send audio
+            // Action: Call startRecording() to start recording
+            break;
+        
+        // ======================== User Speech Detection Events ====================
+        case NavTalkMessageType.REALTIME_SPEECH_STARTED:
+            // Purpose: User speech detected
+            // Action: Stop current audio playback, clear audio queue, reset playback state
+            break;
+        
+        case NavTalkMessageType.REALTIME_SPEECH_STOPPED:
+            // Purpose: User speech stopped
+            // Action: Can show user input indicator
+            break;
+        
+        // ======================== User Transcription Events ====================
+        case NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED:
+            // Purpose: User speech transcription completed
+            // Action: Get transcript from nav_data.content or nav_data.transcript, display user message, save to history
+            break;
+        
+        // ======================== AI Response Events ====================
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
+            // Purpose: AI response text streaming update (incremental)
+            // Action: Get incremental text from nav_data.content or nav_data.delta, get response ID from nav_data.id or nav_data.response_id, accumulate and display streaming text
+            break;
+        
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
+            // Purpose: AI response text completed
+            // Action: Get complete text from nav_data.content or nav_data.transcript, display final response, save to history
+            break;
+        
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:
+            // Purpose: AI response audio streaming update (incremental)
+            // Action: Get audio data from nav_data.delta and process it
+            break;
+        
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE:
+            // Purpose: AI response audio completed
+            // Action: Mark audio playback as complete, reset playback state
+            break;
+        
+        // ======================== Function Call Events ====================
+        case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
+            // Purpose: Function call arguments received
+            // Action: Get function call arguments from nav_data, execute function call, return result
+            break;
+        
+        // ======================== WebRTC Signaling Events ====================
+        case NavTalkMessageType.WEB_RTC_OFFER:
+            // Purpose: Received WebRTC offer
+            // Action: Get SDP from nav_data.sdp, create RTCPeerConnection, set remote description, create answer and send
+            break;
+        
+        case NavTalkMessageType.WEB_RTC_ANSWER:
+            // Purpose: Received WebRTC answer
+            // Action: Get SDP from nav_data.sdp, set remote description
+            break;
+        
+        case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
+            // Purpose: Received WebRTC ICE candidate
+            // Action: Get candidate from nav_data.candidate, add to RTCPeerConnection
+            break;
+    }
+}
+```
+
+### Step 5: Update Session Configuration Sending
+
+Remove sending `session.update` messages. Session configuration is now passed through URL parameters. The `sendSessionUpdate()` function is only used to send conversation history.
+
+**Old Version (v1):**
+
+```javascript
+async function sendSessionUpdate() {
+    const sessionConfig = {
+        type: 'session.update',
+        session: {
+            instructions: '...',
+            voice: 'cedar',
+            // ... extensive configuration
+        }
+    };
+    socket.send(JSON.stringify(sessionConfig));
+    // Send history messages...
+}
+```
+
+**New Version (v2):**
+
+```javascript
+async function sendSessionUpdate() {
+    const history = localStorage.getItem('realtimeChatHistory');
+    const conversationHistory = history ? JSON.parse(history) : [];
+    
+    // Only send user messages
+    conversationHistory.forEach((msg) => {
+        if (msg.role === 'user') {
+            const messageConfig = {
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: msg.role,
+                    content: [{ type: 'input_text', text: msg.content }]
+                }
+            };
+            socket.send(JSON.stringify(messageConfig));
+        }
+    });
+}
+```
+
+### Step 6: Update Message Data Access
+
+If message data is encapsulated in the `data` field, update data access methods.
+
+**Old Version (v1):**
+
+```javascript
+const sessionId = data.sessionId;
+const transcript = data.transcript;
+```
+
+**New Version (v2):**
+
+```javascript
+const nav_data = data.data;
+const sessionId = nav_data.sessionId ?? data.sessionId; // Compatibility handling
+const transcript = nav_data.transcript ?? data.transcript;
+```
+
+### Step 7: Update WebRTC Signaling Sending
+
+Change all WebRTC signaling messages to be sent through the unified WebSocket using new event types.
+
+**Old Version (v1):**
+
+```javascript
+resultSocket.send(JSON.stringify({
+    type: 'offer',
+    targetSessionId: targetSessionId,
+    sdp: pc.localDescription
+}));
+```
+
+**New Version (v2):**
+
+```javascript
+socket.send(JSON.stringify({
+    type: NavTalkMessageType.WEB_RTC_OFFER,
+    data: { sdp: pc.localDescription }
+}));
+```
+
+### Step 8: Update Audio Sending Format
+
+**Old Version (v1):**
+
+```javascript
+socket.send(JSON.stringify({ 
+    type: "input_audio_buffer.append", 
+    audio: chunk 
+}));
+```
+
+**New Version (v2):**
+
+```javascript
+socket.send(JSON.stringify({ 
+    type: NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND, 
+    data: { audio: chunk } 
+}));
+```
+
+## Event Type Comparison Table
+
+| Old Version (v1) | New Version (v2) Constant | New Version (v2) String Value |
+|------------|----------------|-------------------|
+| `session.created` | `NavTalkMessageType.REALTIME_SESSION_CREATED` | `realtime.session.created` |
+| `session.updated` | `NavTalkMessageType.REALTIME_SESSION_UPDATED` | `realtime.session.updated` |
+| `session.session_id` | `NavTalkMessageType.CONNECTED_SUCCESS` | `conversation.connected.success` (contains `data.sessionId` and `data.iceServers`) |
+| `input_audio_buffer.speech_started` | `NavTalkMessageType.REALTIME_SPEECH_STARTED` | `realtime.input_audio_buffer.speech_started` |
+| `input_audio_buffer.speech_stopped` | `NavTalkMessageType.REALTIME_SPEECH_STOPPED` | `realtime.input_audio_buffer.speech_stopped` |
+| `conversation.item.input_audio_transcription.completed` | `NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED` | `realtime.conversation.item.input_audio_transcription.completed` |
+| `response.audio_transcript.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA` | `realtime.response.audio_transcript.delta` |
+| `response.audio.delta` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA` | `realtime.response.audio.delta` |
+| `response.audio_transcript.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE` | `realtime.response.audio_transcript.done` |
+| `response.audio.done` | `NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE` | `realtime.response.audio.done` |
+| `response.function_call_arguments.done` | `NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE` | `realtime.response.function_call_arguments.done` |
+| `input_audio_buffer.append` | `NavTalkMessageType.REALTIME_INPUT_AUDIO_BUFFER_APPEND` | `realtime.input_audio_buffer.append` |
+| WebRTC `offer` | `NavTalkMessageType.WEB_RTC_OFFER` | `webrtc.signaling.offer` |
+| WebRTC `answer` | `NavTalkMessageType.WEB_RTC_ANSWER` | `webrtc.signaling.answer` |
+| WebRTC `iceCandidate` | `NavTalkMessageType.WEB_RTC_ICE_CANDIDATE` | `webrtc.signaling.iceCandidate` |
+
+## Important Notes
+
+<Warning>
+1. **Backward Compatibility**: The new version API is not backward compatible with the old version. You must complete all migration steps according to this guide.
+2. **Data Field Access**: Some message data may be encapsulated in `data.data`. Adjust access methods according to the actual message structure.
+3. **WebRTC Connection**: In the new version, WebRTC signaling is sent through the unified WebSocket. A separate WebRTC WebSocket connection is no longer needed.
+</Warning>
+
+<Note>
+If you encounter issues during migration, check:
+- Whether all event types have been updated to the new constants
+- Whether message data access is correct (whether `data.data` is used)
+- Whether WebRTC signaling is sent through the unified WebSocket
+- Whether the audio sending format is correct (whether data is encapsulated in `data.audio`)
+</Note>
+

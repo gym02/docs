@@ -7,92 +7,122 @@ description: "Learn how to establish WebRTC connections to receive audio and vid
 
 WebRTC connections are used to **receive the returned audio and video data** from the NavTalk API. After processing your audio input via WebSocket, the digital human's audio and video responses are delivered through WebRTC for optimal streaming performance.
 
+<Note>
+In the new unified API, WebRTC signaling messages (offer, answer, ICE candidates) are sent through the same WebSocket connection used for real-time API communication. You no longer need a separate WebRTC WebSocket connection.
+</Note>
+
 <Steps>
-<Step title="Establish WebRTC Signaling Connection">
-  Connect to the WebRTC signaling server using WebSocket. This server handles the WebRTC offer/answer exchange:
+<Step title="Handle WebRTC Signaling Through Unified WebSocket">
+  In the new unified API, WebRTC signaling messages are sent and received through the same WebSocket connection used for real-time API communication. You need to handle WebRTC events in your message handler:
 
 <CodeGroup>
 ```javascript JavaScript
-const LICENSE = 'your-api-key-here'; // Use the same API key as the WebSocket connection
-const webrtcUrl = 'transfer.navtalk.ai';
+// Define event type constants (should be defined at the top of your file)
+const NavTalkMessageType = Object.freeze({
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    // ... other event types
+});
 
-// Wait until you receive the `session.session_id` event (see WebSocket guide) and capture `sessionId`.
-const sessionId = 'REPLACE_WITH_SESSION_ID'; // e.g., data.session_id
-const targetSessionId = `target-${sessionId}`; // This must match the session the WebRTC signaling server is preparing
-
-// Connect to WebRTC signaling WebSocket
-const resultSocket = new WebSocket(`wss://${webrtcUrl}/api/webrtc?userId=${sessionId}`);
-
-resultSocket.onopen = () => {
-  console.log('WebRTC signaling connection established');
+// In your message handler (same socket used for real-time API)
+async function handleReceivedMessage(data) {
+  const nav_data = data.data || data;
   
-  // Send create message to initiate WebRTC connection
-  const message = {
-    type: 'create',
-    targetSessionId: targetSessionId
-  };
-  resultSocket.send(JSON.stringify(message));
-};
-
-resultSocket.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  
-  if (message.type === 'offer') {
-    handleOffer(message);
-  } else if (message.type === 'answer') {
-    handleAnswer(message);
-  } else if (message.type === 'iceCandidate') {
-    handleIceCandidate(message);
+  switch (data.type) {
+    // ... other event handlers ...
+    
+    // WebRTC signaling events
+    case NavTalkMessageType.WEB_RTC_OFFER:
+      handleOffer(nav_data);
+      break;
+    
+    case NavTalkMessageType.WEB_RTC_ANSWER:
+      handleAnswer(nav_data);
+      break;
+    
+    case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
+      handleIceCandidate(nav_data);
+      break;
   }
-};
+}
 
-resultSocket.onerror = (error) => {
-  console.error('WebRTC signaling error:', error);
-};
+// Helper functions to send WebRTC signaling messages
+function sendOfferMessage(sdp) {
+  const message = {
+    type: NavTalkMessageType.WEB_RTC_OFFER,
+    data: { sdp: sdp }
+  };
+  socket.send(JSON.stringify(message));
+}
 
-resultSocket.onclose = (event) => {
-  console.log('WebRTC signaling connection closed:', event.code, event.reason);
-};
+function sendAnswerMessage(sdp) {
+  const message = {
+    type: NavTalkMessageType.WEB_RTC_ANSWER,
+    data: { sdp: sdp }
+  };
+  socket.send(JSON.stringify(message));
+}
+
+function sendIceMessage(candidate) {
+  const message = {
+    type: NavTalkMessageType.WEB_RTC_ICE_CANDIDATE,
+    data: { candidate: candidate }
+  };
+  socket.send(JSON.stringify(message));
+}
 ```
-
-> **Note:** Because WebRTC now relies on the same server-side session as your WebSocket conversation, wait for `session.session_id` before opening the signaling socket. Use that ID as the `userId` query parameter and send `targetSessionId: "target-${sessionId}"` when you issue the `{ type: 'create' }` message. This keeps the video stream synchronized with the audio session managed by the WebSocket.
 
 ```python Python
-import asyncio
-import websockets
-import json
+# In your message handler (same websocket used for real-time API)
+async def handle_messages(websocket):
+    async for message in websocket:
+        if isinstance(message, str):
+            data = json.loads(message)
+            nav_data = data.get('data', data)
+            
+            message_type = data.get('type')
+            
+            if message_type == 'webrtc.signaling.offer':
+                await handle_offer(nav_data, websocket)
+            elif message_type == 'webrtc.signaling.answer':
+                await handle_answer(nav_data)
+            elif message_type == 'webrtc.signaling.iceCandidate':
+                await handle_ice_candidate(nav_data)
+            # ... other event handlers ...
 
-LICENSE = 'your-api-key-here'
-webrtc_url = 'transfer.navtalk.ai'
-session_id = 'REPLACE_WITH_SESSION_ID'  # Received from session.session_id event
-target_session_id = f'target-{session_id}'
+# Helper functions to send WebRTC signaling messages
+async def send_offer_message(websocket, sdp):
+    message = {
+        'type': 'webrtc.signaling.offer',
+        'data': { 'sdp': sdp }
+    }
+    await websocket.send(json.dumps(message))
 
-async def connect_webrtc_signaling():
-    uri = f'wss://{webrtc_url}/api/webrtc?userId={session_id}'
-    
-    async with websockets.connect(uri) as websocket:
-        print('WebRTC signaling connection established')
-        
-        # Send create message
-        message = {
-            'type': 'create',
-            'targetSessionId': target_session_id
-        }
-        await websocket.send(json.dumps(message))
-        
-        # Handle messages
-        async for msg in websocket:
-            data = json.loads(msg)
-            if data.get('type') == 'offer':
-                await handle_offer(data, websocket)
-            elif data.get('type') == 'answer':
-                await handle_answer(data)
-            elif data.get('type') == 'iceCandidate':
-                await handle_ice_candidate(data)
+async def send_answer_message(websocket, sdp):
+    message = {
+        'type': 'webrtc.signaling.answer',
+        'data': { 'sdp': sdp }
+    }
+    await websocket.send(json.dumps(message))
 
-asyncio.run(connect_webrtc_signaling())
+async def send_ice_message(websocket, candidate):
+    message = {
+        'type': 'webrtc.signaling.iceCandidate',
+        'data': { 'candidate': candidate }
+    }
+    await websocket.send(json.dumps(message))
 ```
 </CodeGroup>
+
+<Note>
+**Important**: WebRTC signaling is now integrated into the unified WebSocket connection. You no longer need to:
+- Create a separate WebRTC WebSocket connection
+- Use `sessionId` as `userId` query parameter
+- Send `{ type: 'create', targetSessionId: ... }` message
+
+Instead, WebRTC offer/answer/ICE candidate messages are automatically handled through the same WebSocket connection using the event types shown above.
+</Note>
 </Step>
 
 <Step title="Handle WebRTC Offer">
@@ -110,72 +140,60 @@ const configuration = {
 };
 
 function handleOffer(message) {
-  const targetId = message.targetSessionId;
   const offer = new RTCSessionDescription(message.sdp);
-  console.log("Created offer SDP:", offer);
-  try {
-      const endpoint = `https://transfer.navtalk.ai/api/webrtc/generate-ice-servers`
-      const res = await fetch(endpoint, { method: 'POST' })
-      if (res.ok) {
-          const data = await res.json()
-          const servers = data?.data?.iceServers ?? data?.iceServers
-          if (Array.isArray(servers) && servers.length > 0) {
-              configuration = { iceServers: servers }
-          }
+  console.log("Received offer SDP:", offer);
+  
+  // Fetch ICE servers configuration
+  fetch('https://transfer.navtalk.ai/api/webrtc/generate-ice-servers', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      const servers = data?.data?.iceServers ?? data?.iceServers;
+      if (Array.isArray(servers) && servers.length > 0) {
+        configuration.iceServers = servers;
       }
-  } catch (e) {
-    
-  }
-  
-  // Create RTCPeerConnection
-  peerConnection = new RTCPeerConnection(configuration);
-  
-  // Set remote description
-  peerConnection.setRemoteDescription(offer)
-    .then(() => peerConnection.createAnswer())
-    .then(answer => peerConnection.setLocalDescription(answer))
-    .then(() => {
-      // Send answer back to server
-      const responseMessage = {
-        type: 'answer',
-        targetSessionId: targetId,
-        sdp: peerConnection.localDescription
+      
+      // Create RTCPeerConnection
+      peerConnection = new RTCPeerConnection(configuration);
+      
+      // Set remote description
+      peerConnection.setRemoteDescription(offer)
+        .then(() => peerConnection.createAnswer())
+        .then(answer => peerConnection.setLocalDescription(answer))
+        .then(() => {
+          // Send answer back to server through unified WebSocket
+          sendAnswerMessage(peerConnection.localDescription);
+        })
+        .catch(err => console.error('Error handling offer:', err));
+      
+      // Handle incoming tracks (audio/video)
+      peerConnection.ontrack = (event) => {
+        console.log('Received remote track:', event);
+        const remoteVideo = document.getElementById('character-video');
+        if (remoteVideo) {
+          remoteVideo.srcObject = event.streams[0];
+          remoteVideo.play().catch(e => console.error('Video play failed:', e));
+        }
       };
-      resultSocket.send(JSON.stringify(responseMessage));
+      
+      // Handle ICE candidates
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          // Send ICE candidate through unified WebSocket
+          sendIceMessage(event.candidate);
+        }
+      };
+      
+      // Monitor connection state
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', peerConnection.iceConnectionState);
+        if (peerConnection.iceConnectionState === 'connected') {
+          console.log('WebRTC connection fully established!');
+        } else if (peerConnection.iceConnectionState === 'failed') {
+          console.log('ICE connection failed');
+        }
+      };
     })
-    .catch(err => console.error('Error handling offer:', err));
-  
-  // Handle incoming tracks (audio/video)
-  peerConnection.ontrack = (event) => {
-    console.log('Received remote track:', event);
-    const remoteVideo = document.getElementById('character-video');
-    if (remoteVideo) {
-      remoteVideo.srcObject = event.streams[0];
-      remoteVideo.play().catch(e => console.error('Video play failed:', e));
-    }
-  };
-  
-  // Handle ICE candidates
-  peerConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      const message = {
-        type: 'iceCandidate',
-        targetSessionId: targetId,
-        candidate: event.candidate
-      };
-      resultSocket.send(JSON.stringify(message));
-    }
-  };
-  
-  // Monitor connection state
-  peerConnection.oniceconnectionstatechange = () => {
-    console.log('ICE connection state:', peerConnection.iceConnectionState);
-    if (peerConnection.iceConnectionState === 'connected') {
-      console.log('WebRTC connection fully established!');
-    } else if (peerConnection.iceConnectionState === 'failed') {
-      console.log('ICE connection failed');
-    }
-  };
+    .catch(err => console.error('Error fetching ICE servers:', err));
 }
 ```
 
@@ -187,7 +205,6 @@ function handleOffer(message) {
 async def handle_offer(message, websocket):
     from aiortc import RTCPeerConnection, RTCSessionDescription
     
-    target_id = message['targetSessionId']
     offer = RTCSessionDescription(sdp=message['sdp']['sdp'], type=message['sdp']['type'])
     
     pc = RTCPeerConnection()
@@ -202,31 +219,21 @@ async def handle_offer(message, websocket):
     answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
     
-    # Send answer
-    response = {
-        'type': 'answer',
-        'targetSessionId': target_id,
-        'sdp': {
-            'sdp': pc.localDescription.sdp,
-            'type': pc.localDescription.type
-        }
-    }
-    await websocket.send(json.dumps(response))
+    # Send answer through unified WebSocket
+    await send_answer_message(websocket, {
+        'sdp': pc.localDescription.sdp,
+        'type': pc.localDescription.type
+    })
     
     # Handle ICE candidates
     @pc.on('icecandidate')
     def on_ice_candidate(candidate):
         if candidate:
-            ice_message = {
-                'type': 'iceCandidate',
-                'targetSessionId': target_id,
-                'candidate': {
-                    'candidate': candidate.candidate,
-                    'sdpMid': candidate.sdpMid,
-                    'sdpMLineIndex': candidate.sdpMLineIndex
-                }
-            }
-            asyncio.create_task(websocket.send(json.dumps(ice_message)))
+            await send_ice_message(websocket, {
+                'candidate': candidate.candidate,
+                'sdpMid': candidate.sdpMid,
+                'sdpMLineIndex': candidate.sdpMLineIndex
+            })
 ```
 </CodeGroup>
 </Step>
@@ -239,9 +246,11 @@ async def handle_offer(message, websocket):
 function handleIceCandidate(message) {
   const candidate = new RTCIceCandidate(message.candidate);
   
-  peerConnection.addIceCandidate(candidate)
-    .then(() => console.log('ICE candidate added successfully'))
-    .catch(err => console.error('Error adding ICE candidate:', err));
+  if (peerConnection) {
+    peerConnection.addIceCandidate(candidate)
+      .then(() => console.log('ICE candidate added successfully'))
+      .catch(err => console.error('Error adding ICE candidate:', err));
+  }
 }
 ```
 
@@ -253,8 +262,9 @@ async def handle_ice_candidate(message):
         sdpMid=candidate_info['sdpMid'],
         sdpMLineIndex=candidate_info['sdpMLineIndex']
     )
-    await pc.addIceCandidate(candidate)
-    print('ICE candidate added successfully')
+    if pc:
+        await pc.addIceCandidate(candidate)
+        print('ICE candidate added successfully')
 ```
 </CodeGroup>
 </Step>

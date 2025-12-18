@@ -46,6 +46,7 @@
             "icon": "messages",
             "pages": [
               "api/real-time-digital-human-api/overview",
+              "api/real-time-digital-human-api/migration-guide",
               {
                 "group": "Quick Start",
                 "pages": [
