@@ -1,5 +1,5 @@
 ---
-title: "response.audio_transcript.done"
+title: "realtime.response.audio_transcript.done"
 description: "Complete text response finished"
 ---
 
@@ -8,17 +8,27 @@ Triggered when the AI has finished generating the complete text response. Handle
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"response.audio_transcript.done"` for this event.
+Event type. Always `"realtime.response.audio_transcript.done"` for this event.
 </ResponseField>
 
-<ResponseField name="transcript" type="string">
+<ResponseField name="data" type="object">
+Event data object containing response information.
+</ResponseField>
+
+<ResponseField name="data.content" type="string">
 The complete transcribed text of the AI response.
 
 **Example**: `"Hello there! How can I help you today?"`
 </ResponseField>
 
-<ResponseField name="response_id" type="string">
-Unique identifier for this response. Matches the `response_id` from delta events.
+<ResponseField name="data.transcript" type="string">
+Alternative field name for the complete transcript. May be present for compatibility.
+
+**Example**: `"Hello there! How can I help you today?"`
+</ResponseField>
+
+<ResponseField name="data.id" type="string">
+Unique identifier for this response. Matches the `id` from delta events.
 
 **Example**: `"resp-123456"`
 </ResponseField>
@@ -26,9 +36,35 @@ Unique identifier for this response. Matches the `response_id` from delta events
 <ResponseExample>
 ```json Example
 {
-  "type": "response.audio_transcript.done",
-  "transcript": "Hello there! How can I help you today?",
-  "response_id": "resp-123456"
+  "type": "realtime.response.audio_transcript.done",
+  "data": {
+    "content": "Hello there! How can I help you today?",
+    "id": "resp-123456"
+  }
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE: "realtime.response.audio_transcript.done",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
+            const transcript = nav_data.content || nav_data.transcript;
+            console.log("Received transcription: " + transcript);
+            
+            // Save to history
+            await appendRealtimeChatHistory("assistant", transcript);
+            break;
+    }
+}
+```
+

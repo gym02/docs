@@ -1,0 +1,84 @@
+---
+title: "webrtc.signaling.offer"
+description: "WebRTC offer signaling event"
+---
+
+Triggered when a WebRTC offer is received through the unified WebSocket connection. WebRTC signaling is sent through the same WebSocket connection as other events, eliminating the need for a separate WebRTC signaling connection.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"webrtc.signaling.offer"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object containing WebRTC offer information.
+</ResponseField>
+
+<ResponseField name="data.sdp" type="object">
+The SDP (Session Description Protocol) offer object. This is an RTCSessionDescription object that needs to be set as the remote description.
+
+**Example**: 
+```json
+{
+  "type": "offer",
+  "sdp": "v=0\r\no=- 123456789 123456789 IN IP4 0.0.0.0\r\n..."
+}
+```
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "webrtc.signaling.offer",
+  "data": {
+    "sdp": {
+      "type": "offer",
+      "sdp": "v=0\r\no=- 123456789 123456789 IN IP4 0.0.0.0\r\n..."
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    // ... other event types
+});
+
+function sendAnswerMessage(sdp) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ANSWER,
+        data: { sdp: sdp }
+    };
+    socket.send(JSON.stringify(message));
+}
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.WEB_RTC_OFFER:
+            const offer = new RTCSessionDescription(nav_data.sdp);
+            peerConnection = new RTCPeerConnection(configuration);
+            
+            await peerConnection.setRemoteDescription(offer);
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            // Send answer through unified WebSocket
+            sendAnswerMessage(peerConnection.localDescription);
+            break;
+    }
+}
+```
+
+<Note>
+All WebRTC signaling (offer, answer, ICE candidates) is sent through the unified WebSocket connection using the encapsulated event types. There is no need for a separate WebRTC signaling WebSocket connection.
+</Note>
+

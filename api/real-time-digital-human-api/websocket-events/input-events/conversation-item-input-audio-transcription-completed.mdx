@@ -1,5 +1,5 @@
 ---
-title: "conversation.item.input_audio_transcription.completed"
+title: "realtime.conversation.item.input_audio_transcription.completed"
 description: "User speech transcription completed event"
 ---
 
@@ -8,11 +8,21 @@ Triggered when the user's speech has been fully transcribed. Handle this event t
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"conversation.item.input_audio_transcription.completed"` for this event.
+Event type. Always `"realtime.conversation.item.input_audio_transcription.completed"` for this event.
 </ResponseField>
 
-<ResponseField name="transcript" type="string">
+<ResponseField name="data" type="object">
+Event data object containing transcription information.
+</ResponseField>
+
+<ResponseField name="data.content" type="string">
 The complete transcribed text of user speech.
+
+**Example**: `"Hello, how are you today?"`
+</ResponseField>
+
+<ResponseField name="data.transcript" type="string">
+Alternative field name for the transcribed text. May be present for compatibility.
 
 **Example**: `"Hello, how are you today?"`
 </ResponseField>
@@ -20,8 +30,37 @@ The complete transcribed text of user speech.
 <ResponseExample>
 ```json Example
 {
-  "type": "conversation.item.input_audio_transcription.completed",
-  "transcript": "Hello, how are you today?"
+  "type": "realtime.conversation.item.input_audio_transcription.completed",
+  "data": {
+    "content": "Hello, how are you today?"
+  }
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_CONVERSATION_ITEM_COMPLETED: "realtime.conversation.item.input_audio_transcription.completed",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED:
+            const transcript = nav_data.content || nav_data.transcript;
+            console.log("Received transcription: " + transcript);
+            
+            // Display user message
+            displayUserMessage(transcript);
+            
+            // Save to history
+            await appendRealtimeChatHistory("user", transcript);
+            break;
+    }
+}
+```
+

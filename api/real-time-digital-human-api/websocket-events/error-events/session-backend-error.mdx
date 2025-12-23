@@ -1,14 +1,18 @@
 ---
-title: "session.backend.error"
+title: "conversation.connected.backend_error"
 description: "Backend error event"
 ---
 
-Triggered when a backend error occurs during the session. Handle this event to log errors for debugging and show user-friendly error messages.
+Triggered when a backend error occurs during connection setup or during an active session. Handle this event to log errors for debugging and show user-friendly error messages.
 
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"session.backend.error"` for this event.
+Event type. Always `"conversation.connected.backend_error"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
 </ResponseField>
 
 <ResponseField name="message" type="string">
@@ -20,8 +24,34 @@ Error message from the backend describing the issue.
 <ResponseExample>
 ```json Example
 {
-  "type": "session.backend.error",
+  "type": "conversation.connected.backend_error",
+  "data": {},
   "message": "Service temporarily unavailable. Please try again in a moment."
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_BACKEND_ERROR: "conversation.connected.backend_error",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_BACKEND_ERROR:
+            const errorMessage = data.message || "A backend error occurred";
+            console.error("Backend error:", errorMessage);
+            showError(errorMessage);
+            // Log error for debugging
+            stopRecording();
+            break;
+    }
+}
+```
+
+<Warning>
+When this event is received, a backend error has occurred. You should log the error for debugging purposes while showing user-friendly messages to end users.
+</Warning>

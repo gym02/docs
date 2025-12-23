@@ -1,5 +1,5 @@
 ---
-title: "input_audio_buffer.speech_started"
+title: "realtime.input_audio_buffer.speech_started"
 description: "User started speaking event"
 ---
 
@@ -8,13 +8,43 @@ Triggered when the server detects that the user has started speaking via server-
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"input_audio_buffer.speech_started"` for this event.
+Event type. Always `"realtime.input_audio_buffer.speech_started"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "input_audio_buffer.speech_started"
+  "type": "realtime.input_audio_buffer.speech_started",
+  "data": {}
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_SPEECH_STARTED: "realtime.input_audio_buffer.speech_started",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_SPEECH_STARTED:
+            console.log("Speech started detected by server.");
+            stopCurrentAudioPlayback();
+            audioQueue = [];
+            isPlaying = false;
+            playVideo = false;
+            break;
+    }
+}
+```
+
+<Note>
+When the user starts speaking while the AI is responding, this event will interrupt the AI response naturally. You should stop audio playback and clear the audio queue to ensure a smooth user experience.
+</Note>

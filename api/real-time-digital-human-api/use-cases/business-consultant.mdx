@@ -20,35 +20,35 @@ The **Business Consultant** use case leverages **Mia** to provide strategic busi
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
+
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
 const license = 'your-license-key';
 const characterName = 'navtalk.Mia';
+const voice = 'coral';
+const model = 'gpt-realtime';
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
 // Configure Mia as a business consultant
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are Mia, an experienced business consultant with expertise in strategy, operations, and market analysis.
-            Your role is to provide strategic business advice and professional guidance.
-            Help clients with business planning, market research, competitive analysis, and strategic decision-making.
-            Ask clarifying questions to understand their business challenges fully.
-            Provide actionable recommendations based on best practices and industry insights.
-            Be professional, analytical, and solution-oriented.
-          `,
-          voice: 'coral',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };

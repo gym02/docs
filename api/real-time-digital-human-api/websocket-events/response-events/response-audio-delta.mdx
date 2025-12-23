@@ -1,5 +1,5 @@
 ---
-title: "response.audio.delta"
+title: "realtime.response.audio.delta"
 description: "Streaming audio chunks (optional)"
 ---
 
@@ -8,10 +8,14 @@ Triggered for each audio chunk as the AI generates speech audio. This event is o
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"response.audio.delta"` for this event.
+Event type. Always `"realtime.response.audio.delta"` for this event.
 </ResponseField>
 
-<ResponseField name="delta" type="string">
+<ResponseField name="data" type="object">
+Event data object containing audio information.
+</ResponseField>
+
+<ResponseField name="data.delta" type="string">
 Base64-encoded audio chunk.
 
 **Example**: `"base64-encoded-audio-chunk"`
@@ -20,8 +24,36 @@ Base64-encoded audio chunk.
 <ResponseExample>
 ```json Example
 {
-  "type": "response.audio.delta",
-  "delta": "base64-encoded-audio-chunk"
+  "type": "realtime.response.audio.delta",
+  "data": {
+    "delta": "base64-encoded-audio-chunk"
+  }
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_RESPONSE_AUDIO_DELTA: "realtime.response.audio.delta",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:
+            if (nav_data.delta) {
+                // Process audio chunk
+                processAudioChunk(nav_data.delta);
+            }
+            break;
+    }
+}
+```
+
+<Note>
+For most applications, WebRTC is recommended for audio/video streaming.
+</Note>

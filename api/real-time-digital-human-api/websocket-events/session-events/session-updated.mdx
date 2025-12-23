@@ -1,20 +1,47 @@
 ---
-title: "session.updated"
-description: "Session configuration accepted event"
+title: "realtime.session.updated"
+description: "Session ready event"
 ---
 
-Triggered after your session configuration is accepted and the session is ready to receive audio input. After receiving this event, you can start sending audio data to the WebSocket connection.
+Triggered after the session is ready to receive audio input. This event is received after `realtime.session.created` and after conversation history has been sent. After receiving this event, you can start sending audio data to the WebSocket connection.
 
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"session.updated"` for this event.
+Event type. Always `"realtime.session.updated"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain session metadata.
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "session.updated"
+  "type": "realtime.session.updated",
+  "data": {}
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_SESSION_UPDATED:
+            console.log("Session updated. Ready to receive audio.");
+            startRecording();
+            break;
+    }
+}
+```
+
+<Note>
+This event indicates that the session is ready. You should start recording and sending audio data after receiving this event.
+</Note>

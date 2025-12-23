@@ -1,5 +1,5 @@
 ---
-title: "input_audio_buffer.speech_stopped"
+title: "realtime.input_audio_buffer.speech_stopped"
 description: "User stopped speaking event"
 ---
 
@@ -8,13 +8,40 @@ Triggered when the server detects that the user has stopped speaking. Handle thi
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"input_audio_buffer.speech_stopped"` for this event.
+Event type. Always `"realtime.input_audio_buffer.speech_stopped"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "input_audio_buffer.speech_stopped"
+  "type": "realtime.input_audio_buffer.speech_stopped",
+  "data": {}
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_SPEECH_STOPPED: "realtime.input_audio_buffer.speech_stopped",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_SPEECH_STOPPED:
+            console.log("Speech stopped detected by server.");
+            // Can show user input indicator
+            break;
+    }
+}
+```
+
+<Note>
+After this event, you will receive `realtime.conversation.item.input_audio_transcription.completed` when the transcription is complete.
+</Note>

@@ -1,0 +1,84 @@
+---
+title: "webrtc.signaling.iceCandidate"
+description: "WebRTC ICE candidate signaling event"
+---
+
+Triggered when a WebRTC ICE candidate is received through the unified WebSocket connection. ICE candidates are used to establish the optimal network path for WebRTC media streaming.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"webrtc.signaling.iceCandidate"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object containing ICE candidate information.
+</ResponseField>
+
+<ResponseField name="data.candidate" type="object">
+The RTCIceCandidate object containing candidate information for network path discovery.
+
+**Example**: 
+```json
+{
+  "candidate": "candidate:1 1 UDP 2130706431 192.168.1.1 54321 typ host",
+  "sdpMLineIndex": 0,
+  "sdpMid": "0"
+}
+```
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "webrtc.signaling.iceCandidate",
+  "data": {
+    "candidate": {
+      "candidate": "candidate:1 1 UDP 2130706431 192.168.1.1 54321 typ host",
+      "sdpMLineIndex": 0,
+      "sdpMid": "0"
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    // ... other event types
+});
+
+function sendIceMessage(candidate) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ICE_CANDIDATE,
+        data: { candidate: candidate }
+    };
+    socket.send(JSON.stringify(message));
+}
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
+            const candidate = new RTCIceCandidate(nav_data.candidate);
+            await peerConnection.addIceCandidate(candidate);
+            break;
+    }
+}
+
+// Send ICE candidates when they're generated
+peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+        sendIceMessage(event.candidate);
+    }
+};
+```
+
+<Note>
+ICE candidates are sent through the unified WebSocket connection. You should send ICE candidates as they're generated and handle received candidates by adding them to your RTCPeerConnection.
+</Note>
+

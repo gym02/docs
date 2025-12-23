@@ -1,0 +1,53 @@
+---
+title: "conversation.connected.close"
+description: "WebSocket connection closed event"
+---
+
+Triggered when the WebSocket connection is closed by the server or due to an error.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"conversation.connected.close"` for this event.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+Optional message describing the reason for connection closure.
+
+**Example**: `"Connection closed by server"` or `"Session timeout"`
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "conversation.connected.close",
+  "message": "Connection closed by server"
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_CLOSE: "conversation.connected.close",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_CLOSE:
+            const closeMessage = data.message || "Connection closed";
+            console.log("Connection closed:", closeMessage);
+            // Clean up resources
+            await cleanupResources();
+            stopRecording();
+            break;
+    }
+}
+```
+
+<Note>
+This event may also be received through the WebSocket's `onclose` event handler. Handle both cases appropriately.
+</Note>
+

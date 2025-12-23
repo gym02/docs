@@ -1,14 +1,18 @@
 ---
-title: "session.connection_limit_exceeded"
+title: "conversation.connected.connection_limit_exceeded"
 description: "Maximum concurrent connections exceeded error"
 ---
 
-Triggered when the maximum number of concurrent connections is exceeded. Handle this event to inform users about the connection limit and suggest closing other active connections.
+Triggered when the maximum number of concurrent connections is exceeded during connection setup or during an active session. Handle this event to inform users about the connection limit and suggest closing other active connections.
 
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"session.connection_limit_exceeded"` for this event.
+Event type. Always `"conversation.connected.connection_limit_exceeded"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
 </ResponseField>
 
 <ResponseField name="message" type="string">
@@ -20,8 +24,33 @@ Error message describing the connection limit.
 <ResponseExample>
 ```json Example
 {
-  "type": "session.connection_limit_exceeded",
+  "type": "conversation.connected.connection_limit_exceeded",
+  "data": {},
   "message": "Maximum concurrent connections (5) exceeded. Please close other connections and try again."
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_CONNECTION_LIMIT_EXCEEDED: "conversation.connected.connection_limit_exceeded",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_CONNECTION_LIMIT_EXCEEDED:
+            const errorMessage = data.message || "Connection limit exceeded";
+            showError(errorMessage);
+            // Suggest closing other connections
+            stopRecording();
+            break;
+    }
+}
+```
+
+<Warning>
+When this event is received, the connection limit has been exceeded. You should inform the user and suggest closing other active connections before retrying.
+</Warning>

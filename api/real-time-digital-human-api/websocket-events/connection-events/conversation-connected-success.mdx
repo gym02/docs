@@ -1,0 +1,87 @@
+---
+title: "conversation.connected.success"
+description: "WebSocket connection successful event"
+---
+
+Triggered immediately after the WebSocket connection is successfully established. This event contains both the session ID and ICE server configuration needed for WebRTC connection setup.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"conversation.connected.success"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object containing connection information.
+</ResponseField>
+
+<ResponseField name="data.sessionId" type="string">
+The session ID for this connection. Use this for WebRTC signaling if needed.
+
+**Example**: `"session-abc123"`
+</ResponseField>
+
+<ResponseField name="data.iceServers" type="array&lt;object&gt;">
+ICE server configuration for WebRTC connection. Use these servers when creating your RTCPeerConnection.
+
+**Example**:
+```json
+[
+  {
+    "urls": "stun:stun.l.google.com:19302"
+  },
+  {
+    "urls": "turn:turn.example.com:3478",
+    "username": "user",
+    "credential": "pass"
+  }
+]
+```
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "conversation.connected.success",
+  "data": {
+    "sessionId": "session-abc123",
+    "iceServers": [
+      {
+        "urls": "stun:stun.l.google.com:19302"
+      }
+    ]
+  }
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_SUCCESS:
+            const sessionId = nav_data.sessionId;
+            const iceServers = nav_data.iceServers;
+            
+            // Configure WebRTC with ICE servers
+            const configuration = { iceServers: iceServers };
+            peerConnection = new RTCPeerConnection(configuration);
+            
+            console.log("Connection successful, sessionId:", sessionId);
+            break;
+    }
+}
+```
+
+<Note>
+This event is sent immediately upon successful WebSocket connection, before any session events. The ICE server configuration is provided directly, eliminating the need for a separate WebRTC signaling WebSocket connection.
+</Note>
+

@@ -1,5 +1,5 @@
 ---
-title: "response.audio_transcript.delta"
+title: "realtime.response.audio_transcript.delta"
 description: "Streaming text chunks as AI generates response"
 ---
 
@@ -8,17 +8,27 @@ Triggered for each incremental text chunk as the AI generates its response. This
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"response.audio_transcript.delta"` for this event.
+Event type. Always `"realtime.response.audio_transcript.delta"` for this event.
 </ResponseField>
 
-<ResponseField name="delta" type="string">
+<ResponseField name="data" type="object">
+Event data object containing response information.
+</ResponseField>
+
+<ResponseField name="data.content" type="string">
 The new text chunk to append to the accumulated response.
 
 **Example**: `"Hello there"`
 </ResponseField>
 
-<ResponseField name="response_id" type="string">
+<ResponseField name="data.id" type="string">
 Unique identifier for this response. Used to track concurrent responses.
+
+**Example**: `"resp-123456"`
+</ResponseField>
+
+<ResponseField name="data.response_id" type="string">
+Alternative field name for the response ID. May be present for compatibility.
 
 **Example**: `"resp-123456"`
 </ResponseField>
@@ -26,9 +36,54 @@ Unique identifier for this response. Used to track concurrent responses.
 <ResponseExample>
 ```json Example
 {
-  "type": "response.audio_transcript.delta",
-  "delta": "Hello there",
-  "response_id": "resp-123456"
+  "type": "realtime.response.audio_transcript.delta",
+  "data": {
+    "content": "Hello there",
+    "id": "resp-123456"
+  }
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA: "realtime.response.audio_transcript.delta",
+    // ... other event types
+});
+
+let markdownBuffer = new Map();
+let responseSpans = new Map();
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
+            const transcript = nav_data.content;
+            const responseId = nav_data.id || nav_data.response_id;
+            
+            // Accumulate content by response ID
+            if (!markdownBuffer.has(responseId)) {
+                markdownBuffer.set(responseId, "");
+            }
+            const existingBuffer = markdownBuffer.get(responseId);
+            markdownBuffer.set(responseId, existingBuffer + transcript);
+            
+            // Get or create message element
+            let aiMessageSpan = responseSpans.get(responseId);
+            if (!aiMessageSpan) {
+                // Create new message element
+                aiMessageSpan = createMessageElement();
+                responseSpans.set(responseId, aiMessageSpan);
+            }
+            
+            // Update displayed content
+            const fullContent = markdownBuffer.get(responseId);
+            aiMessageSpan.innerHTML = marked.parse(fullContent);
+            break;
+    }
+}
+```
+

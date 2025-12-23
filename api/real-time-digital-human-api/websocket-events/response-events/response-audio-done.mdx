@@ -1,5 +1,5 @@
 ---
-title: "response.audio.done"
+title: "realtime.response.audio.done"
 description: "Audio generation completed"
 ---
 
@@ -8,13 +8,41 @@ Triggered when the AI has finished generating all audio for the response. Handle
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"response.audio.done"` for this event.
+Event type. Always `"realtime.response.audio.done"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "response.audio.done"
+  "type": "realtime.response.audio.done",
+  "data": {}
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_RESPONSE_AUDIO_DONE: "realtime.response.audio.done",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE:
+            console.log("Audio response complete.");
+            isPlaying = false;
+            playVideo = false;
+            break;
+    }
+}
+```
+
+<Note>
+After this event, the AI response is complete and the system is ready for the next user interaction.
+</Note>

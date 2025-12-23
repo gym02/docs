@@ -75,11 +75,26 @@
                 "pages": [
                   "api/real-time-digital-human-api/websocket-events/overview",
                   {
+                    "group": "Connection Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/connection-events/conversation-connected-success",
+                      "api/real-time-digital-human-api/websocket-events/connection-events/conversation-connected-fail",
+                      "api/real-time-digital-human-api/websocket-events/connection-events/conversation-connected-close"
+                    ]
+                  },
+                  {
                     "group": "Session Events",
                     "pages": [
-                      "api/real-time-digital-human-api/websocket-events/session-events/session-session-id",
                       "api/real-time-digital-human-api/websocket-events/session-events/session-created",
                       "api/real-time-digital-human-api/websocket-events/session-events/session-updated"
+                    ]
+                  },
+                  {
+                    "group": "WebRTC Signaling Events",
+                    "pages": [
+                      "api/real-time-digital-human-api/websocket-events/webrtc-events/webrtc-signaling-offer",
+                      "api/real-time-digital-human-api/websocket-events/webrtc-events/webrtc-signaling-answer",
+                      "api/real-time-digital-human-api/websocket-events/webrtc-events/webrtc-signaling-icecandidate"
                     ]
                   },
                   {

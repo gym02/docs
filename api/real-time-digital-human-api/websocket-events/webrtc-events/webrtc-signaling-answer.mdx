@@ -1,0 +1,67 @@
+---
+title: "webrtc.signaling.answer"
+description: "WebRTC answer signaling event"
+---
+
+Triggered when a WebRTC answer is received through the unified WebSocket connection. This is the response to a WebRTC offer.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"webrtc.signaling.answer"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object containing WebRTC answer information.
+</ResponseField>
+
+<ResponseField name="data.sdp" type="object">
+The SDP (Session Description Protocol) answer object. This is an RTCSessionDescription object that needs to be set as the remote description.
+
+**Example**: 
+```json
+{
+  "type": "answer",
+  "sdp": "v=0\r\no=- 123456789 123456789 IN IP4 0.0.0.0\r\n..."
+}
+```
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "webrtc.signaling.answer",
+  "data": {
+    "sdp": {
+      "type": "answer",
+      "sdp": "v=0\r\no=- 123456789 123456789 IN IP4 0.0.0.0\r\n..."
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.WEB_RTC_ANSWER:
+            const answer = new RTCSessionDescription(nav_data.sdp);
+            await peerConnection.setRemoteDescription(answer);
+            break;
+    }
+}
+```
+
+<Note>
+WebRTC signaling is sent through the unified WebSocket connection. Make sure to handle the answer after you've sent an offer and are waiting for the response.
+</Note>
+

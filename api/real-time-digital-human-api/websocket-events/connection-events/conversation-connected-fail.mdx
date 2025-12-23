@@ -1,0 +1,52 @@
+---
+title: "conversation.connected.fail"
+description: "WebSocket connection failed event"
+---
+
+Triggered when the WebSocket connection fails to establish or encounters an error during connection setup.
+
+## Event Properties
+
+<ResponseField name="type" type="string">
+Event type. Always `"conversation.connected.fail"` for this event.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+Error message describing the connection failure reason.
+
+**Example**: `"Connection timeout"` or `"Invalid license key"`
+</ResponseField>
+
+<ResponseExample>
+```json Example
+{
+  "type": "conversation.connected.fail",
+  "message": "Invalid license key"
+}
+```
+</ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_FAIL: "conversation.connected.fail",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_FAIL:
+            const errorMessage = data.message || "Connection failed";
+            showError(errorMessage);
+            // Clean up resources
+            cleanupResources();
+            break;
+    }
+}
+```
+
+<Warning>
+When this event is received, the WebSocket connection has failed. You should clean up any resources and inform the user of the error.
+</Warning>
+

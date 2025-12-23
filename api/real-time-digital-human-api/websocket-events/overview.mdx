@@ -7,15 +7,29 @@ When you establish a WebSocket connection with NavTalk, the server sends various
 
 ## Event Categories
 
-WebSocket events are categorized into five main types:
+WebSocket events are categorized into seven main types:
 
 <CardGroup cols={2}>
   <Card
-    title="Session Events"
+    title="Connection Events"
     icon="plug"
-    href="/api/real-time-digital-human-api/websocket-events/session-events/session-session-id"
+    href="/api/real-time-digital-human-api/websocket-events/connection-events/conversation-connected-success"
   >
-    Connection and session lifecycle events (3 events)
+    WebSocket connection lifecycle events (3 events)
+  </Card>
+  <Card
+    title="Session Events"
+    icon="comments"
+    href="/api/real-time-digital-human-api/websocket-events/session-events/session-created"
+  >
+    Session lifecycle events (2 events)
+  </Card>
+  <Card
+    title="WebRTC Signaling Events"
+    icon="video"
+    href="/api/real-time-digital-human-api/websocket-events/webrtc-events/webrtc-signaling-offer"
+  >
+    WebRTC signaling exchange (3 events)
   </Card>
   <Card
     title="Input Events"
@@ -71,47 +85,48 @@ All these components together form a real-time session. You will use client even
 
 <AccordionGroup>
 <Accordion title="Connection & Session Setup Flow">
-1. **Connect WebSocket** → Establish connection to `wss://transfer.navtalk.ai/api/realtime-api`
-2. **Receive `session.session_id`** → Capture the proxy session ID for WebRTC signaling (see [session.session_id](../session-events/session-session-id))
-2. **Receive `session.created`** → Send `session.update` with configuration
-3. **Receive `session.updated`** → Session ready, start sending audio input
+1. **Connect WebSocket** → Establish connection to `wss://transfer.navtalk.ai/wss/v2/realtime-chat`
+2. **Receive `conversation.connected.success`** → Connection successful, contains `sessionId` and `iceServers` for WebRTC
+3. **Receive `realtime.session.created`** → Send conversation history (no longer send session configuration)
+4. **Receive `realtime.session.updated`** → Session ready, start sending audio input
 
-**Note**: If errors occur (`session.gpu_full`, `session.connection_limit_exceeded`, `session.backend.error`), handle them appropriately and inform the user.
+**Note**: If connection errors occur (`conversation.connected.fail`, `conversation.connected.close`, `conversation.connected.insufficient_balance`, `conversation.connected.gpu_full`, `conversation.connected.connection_limit_exceeded`, `conversation.connected.backend_error`), handle them appropriately and inform the user.
 </Accordion>
 
 <Accordion title="User Input Flow">
-1. **User starts speaking** → Receive `input_audio_buffer.speech_started`
+1. **User starts speaking** → Receive `realtime.input_audio_buffer.speech_started`
    - Stop AI audio playback
    - Clear audio queue
 2. **User continues speaking** → Keep sending audio chunks (no events)
-3. **User stops speaking** → Receive `input_audio_buffer.speech_stopped`
-4. **Transcription complete** → Receive `conversation.item.input_audio_transcription.completed`
-   - Display user message in chat
+3. **User stops speaking** → Receive `realtime.input_audio_buffer.speech_stopped`
+4. **Transcription complete** → Receive `realtime.conversation.item.input_audio_transcription.completed`
+   - Display user message in chat (from `data.content`)
    - Save to conversation history
 
-**Note**: If user starts speaking while AI is responding, `input_audio_buffer.speech_started` will interrupt the AI response naturally.
+**Note**: If user starts speaking while AI is responding, `realtime.input_audio_buffer.speech_started` will interrupt the AI response naturally.
 </Accordion>
 
 <Accordion title="AI Response Flow">
-1. **AI starts generating** → Receive `response.audio_transcript.delta` (multiple times)
-   - Accumulate text chunks by `response_id`
+1. **AI starts generating** → Receive `realtime.response.audio_transcript.delta` (multiple times)
+   - Accumulate text chunks by `id` (from `data.id`)
+   - Get content from `data.content`
    - Render markdown in real-time
    - Start video playback
-2. **Text complete** → Receive `response.audio_transcript.done`
-   - Save complete response to history
-3. **Audio complete** → Receive `response.audio.done`
+2. **Text complete** → Receive `realtime.response.audio_transcript.done`
+   - Save complete response to history (from `data.content`)
+3. **Audio complete** → Receive `realtime.response.audio.done`
    - Reset playback flags
 
-**Note**: Use `response_id` to track multiple concurrent responses and accumulate `delta` chunks to build the complete message.
+**Note**: Use `id` from `data.id` to track multiple concurrent responses and accumulate content chunks to build the complete message.
 </Accordion>
 
 <Accordion title="Function Call Flow">
-1. **AI determines function needed** → Receive `response.function_call_arguments.done`
-   - Parse `arguments` (JSON string) and `call_id`
+1. **AI determines function needed** → Receive `realtime.response.function_call_arguments.done`
+   - Parse `arguments` (JSON string) and `call_id` from `data`
 2. **Execute function** → Call external API or execute business logic
 3. **Send result** → Send `conversation.item.create` with `function_call_output`
 4. **Request AI response** → Send `response.create`
-5. **AI processes result** → Receive normal response events (`response.audio_transcript.delta`, etc.)
+5. **AI processes result** → Receive normal response events (`realtime.response.audio_transcript.delta`, etc.)
 
 **Note**: Always send `response.create` after sending the function call output to trigger AI processing.
 </Accordion>
@@ -122,19 +137,21 @@ A typical conversation cycle:
 ```
 Connect WebSocket
   ↓
-session.created → Send session.update
+conversation.connected.success → Get sessionId and iceServers
   ↓
-session.updated → Start recording
+realtime.session.created → Send conversation history
   ↓
-User speaks → input_audio_buffer.speech_started → input_audio_buffer.speech_stopped
+realtime.session.updated → Start recording
   ↓
-conversation.item.input_audio_transcription.completed → Display user message
+User speaks → realtime.input_audio_buffer.speech_started → realtime.input_audio_buffer.speech_stopped
   ↓
-response.audio_transcript.delta (streaming) → Display AI response
+realtime.conversation.item.input_audio_transcription.completed → Display user message
   ↓
-response.audio_transcript.done → Save to history
+realtime.response.audio_transcript.delta (streaming) → Display AI response
   ↓
-response.audio.done → Ready for next interaction
+realtime.response.audio_transcript.done → Save to history
+  ↓
+realtime.response.audio.done → Ready for next interaction
 ```
 
 **With Function Call:**
@@ -142,14 +159,59 @@ response.audio.done → Ready for next interaction
 ```
 [Same flow until AI determines function needed]
   ↓
-response.function_call_arguments.done → Execute function
+realtime.response.function_call_arguments.done → Execute function
   ↓
 Send function_call_output → Send response.create
   ↓
 [Continue with normal response flow]
 ```
+
+**With WebRTC Signaling:**
+
+```
+conversation.connected.success → Get iceServers
+  ↓
+webrtc.signaling.offer → Handle offer, create answer
+  ↓
+webrtc.signaling.answer → Set remote description
+  ↓
+webrtc.signaling.iceCandidate → Add ICE candidates
+```
 </Accordion>
 </AccordionGroup>
+
+## Event Type Constants
+
+All event types are encapsulated using constants. Define them at the beginning of your code:
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    CONNECTED_FAIL: "conversation.connected.fail",
+    CONNECTED_CLOSE: "conversation.connected.close",
+    INSUFFICIENT_BALANCE: "conversation.connected.insufficient_balance",
+    CONNECTED_GPU_FULL: "conversation.connected.gpu_full",
+    CONNECTED_CONNECTION_LIMIT_EXCEEDED: "conversation.connected.connection_limit_exceeded",
+    CONNECTED_BACKEND_ERROR: "conversation.connected.backend_error",
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
+    WEB_RTC_ANSWER: "webrtc.signaling.answer",
+    WEB_RTC_ICE_CANDIDATE: "webrtc.signaling.iceCandidate",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    REALTIME_SPEECH_STARTED: "realtime.input_audio_buffer.speech_started",
+    REALTIME_SPEECH_STOPPED: "realtime.input_audio_buffer.speech_stopped",
+    REALTIME_CONVERSATION_ITEM_COMPLETED: "realtime.conversation.item.input_audio_transcription.completed",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA: "realtime.response.audio_transcript.delta",
+    REALTIME_RESPONSE_AUDIO_DELTA: "realtime.response.audio.delta",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE: "realtime.response.audio_transcript.done",
+    REALTIME_RESPONSE_AUDIO_DONE: "realtime.response.audio.done",
+    REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
+    REALTIME_INPUT_AUDIO_BUFFER_APPEND: "realtime.input_audio_buffer.append",
+    REALTIME_INPUT_TEXT: "realtime.input_text",
+    REALTIME_INPUT_IMAGE: "realtime.input_image",
+    UNKNOWN_TYPE: "unknow"
+});
+```
 
 ## Basic Event Handler
 
@@ -169,50 +231,79 @@ socket.onmessage = async (event) => {
 };
 
 async function handleReceivedMessage(data) {
+  // Extract data: event data is encapsulated in data.data
+  const nav_data = data.data || data;
+  
   switch (data.type) {
+    // Connection Events
+    case NavTalkMessageType.CONNECTED_SUCCESS:
+      const sessionId = nav_data.sessionId;
+      const iceServers = nav_data.iceServers;
+      // Configure WebRTC with iceServers
+      break;
+    case NavTalkMessageType.CONNECTED_FAIL:
+    case NavTalkMessageType.CONNECTED_CLOSE:
+      const errorMessage = data.message || "Unknown error";
+      showError(errorMessage);
+      break;
+    
     // Session Events
-    case "session.session_id":
-      console.log("Received session.session_id:", data.session_id);
+    case NavTalkMessageType.REALTIME_SESSION_CREATED:
+      await sendSessionUpdate(); // Send conversation history only
       break;
-    case "session.created":
-      await sendSessionUpdate();
-      break;
-    case "session.updated":
+    case NavTalkMessageType.REALTIME_SESSION_UPDATED:
       startRecording();
       break;
     
+    // WebRTC Signaling Events
+    case NavTalkMessageType.WEB_RTC_OFFER:
+      handleOffer(nav_data.sdp);
+      break;
+    case NavTalkMessageType.WEB_RTC_ANSWER:
+      handleAnswer(nav_data.sdp);
+      break;
+    case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
+      handleIceCandidate(nav_data.candidate);
+      break;
+    
     // Input Events
-    case "input_audio_buffer.speech_started":
+    case NavTalkMessageType.REALTIME_SPEECH_STARTED:
       stopCurrentAudioPlayback();
       break;
-    case "input_audio_buffer.speech_stopped":
+    case NavTalkMessageType.REALTIME_SPEECH_STOPPED:
       // Wait for transcription
       break;
-    case "conversation.item.input_audio_transcription.completed":
-      displayUserMessage(data.transcript);
+    case NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED:
+      displayUserMessage(nav_data.content);
       break;
     
     // Response Events
-    case "response.audio_transcript.delta":
-      handleResponseDelta(data.delta, data.response_id);
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
+      handleResponseDelta(nav_data.content, nav_data.id);
       break;
-    case "response.audio_transcript.done":
-      await appendChatHistory("assistant", data.transcript);
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
+      await appendChatHistory("assistant", nav_data.content);
       break;
-    case "response.audio.done":
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:
+      if (nav_data.delta) {
+        // Process audio chunk
+        processAudioChunk(nav_data.delta);
+      }
+      break;
+    case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DONE:
       isPlaying = false;
       break;
     
     // Function Call Events
-    case "response.function_call_arguments.done":
-      await handleFunctionCall(data);
+    case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
+      await handleFunctionCall(nav_data);
       break;
     
-    // Error Events
-    case "session.gpu_full":
-    case "session.insufficient_balance":
-    case "session.connection_limit_exceeded":
-    case "session.backend.error":
+    // Error Events (part of Connection Events)
+    case NavTalkMessageType.CONNECTED_GPU_FULL:
+    case NavTalkMessageType.CONNECTED_CONNECTION_LIMIT_EXCEEDED:
+    case NavTalkMessageType.CONNECTED_BACKEND_ERROR:
+    case NavTalkMessageType.INSUFFICIENT_BALANCE:
       showError(data.message || "An error occurred");
       break;
     
@@ -223,6 +314,30 @@ async function handleReceivedMessage(data) {
 ```
 
 ```python Python
+# Event type constants
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'CONNECTED_FAIL': 'conversation.connected.fail',
+    'CONNECTED_CLOSE': 'conversation.connected.close',
+    'INSUFFICIENT_BALANCE': 'conversation.connected.insufficient_balance',
+    'CONNECTED_GPU_FULL': 'conversation.connected.gpu_full',
+    'CONNECTED_CONNECTION_LIMIT_EXCEEDED': 'conversation.connected.connection_limit_exceeded',
+    'CONNECTED_BACKEND_ERROR': 'conversation.connected.backend_error',
+    'WEB_RTC_OFFER': 'webrtc.signaling.offer',
+    'WEB_RTC_ANSWER': 'webrtc.signaling.answer',
+    'WEB_RTC_ICE_CANDIDATE': 'webrtc.signaling.iceCandidate',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    'REALTIME_SPEECH_STARTED': 'realtime.input_audio_buffer.speech_started',
+    'REALTIME_SPEECH_STOPPED': 'realtime.input_audio_buffer.speech_stopped',
+    'REALTIME_CONVERSATION_ITEM_COMPLETED': 'realtime.conversation.item.input_audio_transcription.completed',
+    'REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA': 'realtime.response.audio_transcript.delta',
+    'REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE': 'realtime.response.audio_transcript.done',
+    'REALTIME_RESPONSE_AUDIO_DELTA': 'realtime.response.audio.delta',
+    'REALTIME_RESPONSE_AUDIO_DONE': 'realtime.response.audio.done',
+    'REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE': 'realtime.response.function_call_arguments.done',
+}
+
 async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
@@ -234,39 +349,61 @@ async def handle_messages(websocket):
 
 async def handle_received_message(data, websocket):
     event_type = data.get('type')
+    nav_data = data.get('data', data)  # Extract data from data.data field
+    
+    # Connection Events
+    if event_type == NAV_TALK_MESSAGE_TYPE['CONNECTED_SUCCESS']:
+        session_id = nav_data.get('sessionId')
+        ice_servers = nav_data.get('iceServers')
+        # Configure WebRTC with ice_servers
+    elif event_type in [NAV_TALK_MESSAGE_TYPE['CONNECTED_FAIL'], 
+                        NAV_TALK_MESSAGE_TYPE['CONNECTED_CLOSE']]:
+        error_message = data.get('message', 'Unknown error')
+        show_error(error_message)
     
     # Session Events
-    if event_type == 'session.session_id':
-        print('Received session.session_id:', data.get('session_id'))
-        return
-    if event_type == 'session.created':
-        await send_session_update(websocket)
-    elif event_type == 'session.updated':
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+        await send_session_update(websocket)  # Send conversation history only
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
         start_recording()
     
+    # WebRTC Signaling Events
+    elif event_type == NAV_TALK_MESSAGE_TYPE['WEB_RTC_OFFER']:
+        handle_offer(nav_data.get('sdp'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['WEB_RTC_ANSWER']:
+        handle_answer(nav_data.get('sdp'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['WEB_RTC_ICE_CANDIDATE']:
+        handle_ice_candidate(nav_data.get('candidate'))
+    
     # Input Events
-    elif event_type == 'input_audio_buffer.speech_started':
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_SPEECH_STARTED']:
         stop_current_audio_playback()
-    elif event_type == 'input_audio_buffer.speech_stopped':
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_SPEECH_STOPPED']:
         pass  # Wait for transcription
-    elif event_type == 'conversation.item.input_audio_transcription.completed':
-        display_user_message(data.get('transcript'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_CONVERSATION_ITEM_COMPLETED']:
+        display_user_message(nav_data.get('content'))
     
     # Response Events
-    elif event_type == 'response.audio_transcript.delta':
-        await handle_response_delta(data.get('delta'), data.get('response_id'))
-    elif event_type == 'response.audio_transcript.done':
-        await append_chat_history("assistant", data.get('transcript'))
-    elif event_type == 'response.audio.done':
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA']:
+        await handle_response_delta(nav_data.get('content'), nav_data.get('id'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE']:
+        await append_chat_history("assistant", nav_data.get('content'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_DELTA']:
+        if nav_data.get('delta'):
+            # Process audio chunk
+            process_audio_chunk(nav_data.get('delta'))
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_DONE']:
         is_playing = False
     
     # Function Call Events
-    elif event_type == 'response.function_call_arguments.done':
-        await handle_function_call(data, websocket)
+    elif event_type == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE']:
+        await handle_function_call(nav_data, websocket)
     
-    # Error Events
-    elif event_type in ['session.gpu_full', 'session.insufficient_balance', 
-                         'session.connection_limit_exceeded', 'session.backend.error']:
+    # Error Events (part of Connection Events)
+    elif event_type in [NAV_TALK_MESSAGE_TYPE['CONNECTED_GPU_FULL'],
+                        NAV_TALK_MESSAGE_TYPE['CONNECTED_CONNECTION_LIMIT_EXCEEDED'],
+                        NAV_TALK_MESSAGE_TYPE['CONNECTED_BACKEND_ERROR'],
+                        NAV_TALK_MESSAGE_TYPE['INSUFFICIENT_BALANCE']]:
         show_error(data.get('message', 'An error occurred'))
     
     else:

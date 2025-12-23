@@ -1,5 +1,5 @@
 ---
-title: "response.function_call_arguments.done"
+title: "realtime.response.function_call_arguments.done"
 description: "Function call request event"
 ---
 
@@ -8,16 +8,20 @@ Triggered when the AI determines that a function call is needed during the conve
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"response.function_call_arguments.done"` for this event.
+Event type. Always `"realtime.response.function_call_arguments.done"` for this event.
 </ResponseField>
 
-<ResponseField name="arguments" type="string">
+<ResponseField name="data" type="object">
+Event data object containing function call information.
+</ResponseField>
+
+<ResponseField name="data.arguments" type="string">
 JSON string containing function call parameters.
 
 **Example**: `"{\"userInput\": \"What's the weather in Beijing?\"}"`
 </ResponseField>
 
-<ResponseField name="call_id" type="string">
+<ResponseField name="data.call_id" type="string">
 Unique identifier for this function call.
 
 **Example**: `"call-123456"`
@@ -26,9 +30,60 @@ Unique identifier for this function call.
 <ResponseExample>
 ```json Example
 {
-  "type": "response.function_call_arguments.done",
-  "arguments": "{\"userInput\": \"What's the weather in Beijing?\"}",
-  "call_id": "call-123456"
+  "type": "realtime.response.function_call_arguments.done",
+  "data": {
+    "arguments": "{\"userInput\": \"What's the weather in Beijing?\"}",
+    "call_id": "call-123456"
+  }
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    const nav_data = data.data || data;
+    
+    switch (data.type) {
+        case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
+            const arguments = nav_data.arguments;
+            const callId = nav_data.call_id;
+            
+            // Parse function call arguments
+            const functionCallArgs = JSON.parse(arguments);
+            
+            // Execute function call
+            const result = await executeFunctionCall(functionCallArgs);
+            
+            // Send result back
+            sendFunctionCallResult(result, callId);
+            break;
+    }
+}
+
+function sendFunctionCallResult(result, callId) {
+    const resultJson = {
+        type: "conversation.item.create",
+        item: {
+            type: "function_call_output",
+            output: result,
+            call_id: callId
+        }
+    };
+    socket.send(JSON.stringify(resultJson));
+    
+    // Request AI response
+    const rpJson = { type: "response.create" };
+    socket.send(JSON.stringify(rpJson));
+}
+```
+
+<Note>
+After sending the function call result, always send a `response.create` message to trigger AI processing.
+</Note>

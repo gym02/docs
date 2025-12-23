@@ -1,203 +1,55 @@
 ---
-title: "session.created"
+title: "realtime.session.created"
 description: "Session created event"
 ---
 
-Triggered when the WebSocket connection is established and a session is created. This is the first event you'll receive after connecting to the WebSocket endpoint. Immediately after receiving this event, you must send a `session.update` message to configure the session before sending audio data.
+Triggered when the real-time session is created. This event is received after `conversation.connected.success`. After receiving this event, you should send conversation history (if any) using `conversation.item.create` messages. Session configuration (voice, model, etc.) is passed through WebSocket connection URL parameters, not through `session.update`.
 
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"session.created"` for this event.
+Event type. Always `"realtime.session.created"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain session metadata.
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "session.update",
-  "session": {
-    "instructions": "You are a helpful assistant.",
-    "turn_detection": {
-      "type": "server_vad",
-      "threshold": 0.5,
-      "prefix_padding_ms": 300,
-      "silence_duration_ms": 500
-    },
-    "voice": "cedar",
-    "temperature": 1,
-    "max_response_output_tokens": 4096,
-    "modalities": ["text", "audio"],
-    "input_audio_format": "pcm16",
-    "output_audio_format": "pcm16",
-    "input_audio_transcription": {
-      "model": "whisper-1"
-    }
-  },
-  "tools": [
-    {
-        "type": "function",
-        "name": "function_call_judge",
-        "description": "Are there any function calls or tasks beyond your capability...",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "userInput": {
-                    "type": "string",
-                    "description": "the user input"
-                }
-            },
-            "required": ["userInput"]
-        }
-    }
-  ]
+  "type": "realtime.session.created",
+  "data": {}
 }
 ```
 </ResponseExample>
 
-## Session Configuration Parameters
+## Sending Conversation History
 
-After receiving `session.created`, send a `session.update` message with the following parameters:
+After receiving `realtime.session.created`, send conversation history (if any) using `conversation.item.create` messages. Only send user messages from history:
 
-<ResponseField name="instructions" type="string">
-System prompt that defines the AI's role, behavior, tone, and knowledge base. You can include conversation history, character personality, and guidelines here.
-
-**Example**: `"You are a helpful assistant. Please respond in a friendly and professional manner."`
-</ResponseField>
-
-<ResponseField name="turn_detection" type="object">
-Configuration for voice activity detection (VAD) that determines when the user starts and stops speaking.
-
-<Expandable title="Turn Detection Properties">
-<ResponseField name="type" type="string" required>
-Detection type. Use `"server_vad"` for server-side voice activity detection.
-
-**Example**: `"server_vad"`
-</ResponseField>
-
-<ResponseField name="threshold" type="number" default="0.5">
-Sensitivity threshold (0.0-1.0). Lower values detect speech more easily.
-
-- **0.0-0.3**: Very sensitive, detects quiet speech
-- **0.5**: Moderate sensitivity (recommended)
-- **0.7-1.0**: Less sensitive, only detects loud speech
-
-**Example**: `0.5`
-</ResponseField>
-
-<ResponseField name="prefix_padding_ms" type="number" default="300">
-Milliseconds of audio to include before speech starts. This ensures no speech is cut off at the beginning.
-
-**Example**: `300`
-</ResponseField>
-
-<ResponseField name="silence_duration_ms" type="number" default="500">
-Milliseconds of silence required before considering speech stopped. Longer durations reduce false stops but may delay response.
-
-**Example**: `500`
-</ResponseField>
-</Expandable>
-</ResponseField>
-
-<ResponseField name="voice" type="string">
-Voice model to use for text-to-speech generation.
-
-**Supported voices**: `alloy`, `ash`, `ballad`, `cedar`, `coral`, `echo`, `marin`, `sage`, `shimmer`, `verse`
-
-**Example**: `"cedar"`
-</ResponseField>
-
-<ResponseField name="temperature" type="number" default="1">
-Controls the randomness of the AI's responses. Range: 0.0 - 2.0
-
-- **0.0-0.5**: More deterministic, focused responses
-- **0.5-1.0**: Balanced creativity and consistency (recommended)
-- **1.0-2.0**: More creative and varied responses
-
-**Example**: `1`
-</ResponseField>
-
-<ResponseField name="max_response_output_tokens" type="number" default="4096">
-Maximum number of tokens the AI can generate in a single response. Higher values allow longer responses but increase processing time and cost.
-
-**Example**: `4096`
-</ResponseField>
-
-<ResponseField name="modalities" type="array&lt;string&gt;" default='["text", "audio"]'>
-Types of output the AI should generate.
-
-**Options**: `"text"`, `"audio"`
-
-**Example**: `["text", "audio"]`
-</ResponseField>
-
-<ResponseField name="input_audio_format" type="string" default="pcm16">
-Audio format for input audio data. Must be `"pcm16"`.
-
-**Example**: `"pcm16"`
-</ResponseField>
-
-<ResponseField name="output_audio_format" type="string" default="pcm16">
-Audio format for output audio data. Must be `"pcm16"` when using WebSocket, or use WebRTC for streaming.
-
-**Example**: `"pcm16"`
-</ResponseField>
-
-<ResponseField name="input_audio_transcription" type="object">
-Configuration for speech-to-text transcription of user input.
-
-<Expandable title="Transcription Properties">
-<ResponseField name="model" type="string">
-Transcription model for speech-to-text conversion.
-
-**Supported models**:
-- `"whisper-1"`: OpenAI Whisper model (default)
-- `"gpt-4o-mini-transcribe"`: GPT-4o Mini transcription model
-- `"gpt-4o-transcribe"`: GPT-4o transcription model
-- `"gpt-4o-transcribe-diarize"`: GPT-4o transcription with speaker diarization
-
-**Example**: `"whisper-1"`
-</ResponseField>
-</Expandable>
-</ResponseField>
-
-<ResponseField name="tools" type="array&lt;object&gt;">
-Array of function tools that the AI can call during the conversation.
-
-<Expandable title="Tool Object Structure">
-<ResponseField name="type" type="string" required>
-Must be `"function"`.
-
-**Example**: `"function"`
-</ResponseField>
-
-<ResponseField name="name" type="string" required>
-Function name.
-
-**Example**: `"function_call_judge"`
-</ResponseField>
-
-<ResponseField name="description" type="string" required>
-What the function does and when it should be called.
-
-**Example**: `"Query knowledge base or external APIs when needed."`
-</ResponseField>
-
-<ResponseField name="parameters" type="object" required>
-Function parameters schema in JSON Schema format.
-
-**Example**:
-```json
-{
-  "type": "object",
-  "properties": {
-    "userInput": {
-      "type": "string",
-      "description": "The user's question or input"
-    }
-  },
-  "required": ["userInput"]
+```javascript
+async function sendSessionUpdate() {
+    const history = localStorage.getItem('realtimeChatHistory');
+    const conversationHistory = history ? JSON.parse(history) : [];
+    
+    // Only send user messages
+    conversationHistory.forEach((msg) => {
+        if (msg.role === 'user') {
+            const messageConfig = {
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: msg.role,
+                    content: [{ type: 'input_text', text: msg.content }]
+                }
+            };
+            socket.send(JSON.stringify(messageConfig));
+        }
+    });
 }
 ```
-</ResponseField>
-</Expandable>
-</ResponseField>
+
+<Note>
+Session configuration (voice, model, instructions, etc.) is passed through WebSocket connection URL query parameters, not through `session.update` messages. The `sendSessionUpdate()` function is only used to send conversation history.
+</Note>

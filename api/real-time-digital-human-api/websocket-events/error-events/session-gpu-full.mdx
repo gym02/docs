@@ -1,20 +1,56 @@
 ---
-title: "session.gpu_full"
+title: "conversation.connected.gpu_full"
 description: "GPU resources exhausted error"
 ---
 
-Triggered when GPU resources are exhausted on the server. Handle this event to inform users that the service is temporarily unavailable and suggest retrying later.
+Triggered when GPU resources are exhausted on the server during connection setup or during an active session. Handle this event to inform users that the service is temporarily unavailable and suggest retrying later.
 
 ## Event Properties
 
 <ResponseField name="type" type="string">
-Event type. Always `"session.gpu_full"` for this event.
+Event type. Always `"conversation.connected.gpu_full"` for this event.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+Event data object. May be empty or contain additional metadata.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+Optional error message describing the GPU resource exhaustion.
+
+**Example**: `"GPU resources are full. Please try again later!"`
 </ResponseField>
 
 <ResponseExample>
 ```json Example
 {
-  "type": "session.gpu_full"
+  "type": "conversation.connected.gpu_full",
+  "data": {},
+  "message": "GPU resources are full. Please try again later!"
 }
 ```
 </ResponseExample>
+
+## Usage Example
+
+```javascript
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_GPU_FULL: "conversation.connected.gpu_full",
+    // ... other event types
+});
+
+async function handleReceivedMessage(data) {
+    switch (data.type) {
+        case NavTalkMessageType.CONNECTED_GPU_FULL:
+            const errorMessage = data.message || "GPU resources are full. Please try again later!";
+            showError(errorMessage);
+            // Inform user to retry later
+            stopRecording();
+            break;
+    }
+}
+```
+
+<Warning>
+When this event is received, the service is temporarily unavailable due to GPU resource exhaustion. You should inform the user and suggest retrying later.
+</Warning>
