@@ -214,7 +214,10 @@ To use any of these avatars in your WebSocket connection, specify the character 
 
 ```javascript
 const CHARACTER_NAME = 'navtalk.Astrid'; // Replace with your chosen avatar
-const websocketUrl = `wss://transfer.navtalk.ai/api/realtime-api?license=${LICENSE}&characterName=${CHARACTER_NAME}`;
+const LICENSE = 'your-license-key';
+const VOICE = 'coral'; // Optional: specify voice
+const MODEL = 'gpt-realtime'; // Optional: specify model
+const websocketUrl = `wss://transfer.navtalk.ai/wss/v2/realtime-chat?license=${encodeURIComponent(LICENSE)}&name=${encodeURIComponent(CHARACTER_NAME)}&voice=${encodeURIComponent(VOICE)}&model=${encodeURIComponent(MODEL)}`;
 ```
 
 <Note>
