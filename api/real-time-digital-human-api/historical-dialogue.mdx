@@ -13,6 +13,14 @@ Save each conversation message to persistent storage as it occurs:
 
 <CodeGroup>
 ```javascript JavaScript
+const NavTalkMessageType = Object.freeze({
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    REALTIME_CONVERSATION_ITEM_COMPLETED: "realtime.conversation.item.input_audio_transcription.completed",
+    REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE: "realtime.response.audio_transcript.done",
+    // ... other event types
+});
+
 // Save conversation history to localStorage
 async function appendRealtimeChatHistory(role, content) {
   // Get existing history from storage
@@ -30,15 +38,18 @@ async function appendRealtimeChatHistory(role, content) {
 socket.onmessage = async (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
     // Save user message when transcription completes
-    if (data.type === 'conversation.item.input_audio_transcription.completed') {
-      await appendRealtimeChatHistory("user", data.transcript);
+    if (data.type === NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED) {
+      const transcript = nav_data.content || nav_data.transcript || nav_data.text;
+      await appendRealtimeChatHistory("user", transcript);
     }
     
     // Save AI response when complete
-    if (data.type === 'response.audio_transcript.done') {
-      await appendRealtimeChatHistory("assistant", data.transcript);
+    if (data.type === NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE) {
+      const transcript = nav_data.content || nav_data.transcript || nav_data.text;
+      await appendRealtimeChatHistory("assistant", transcript);
     }
   }
 };
@@ -47,6 +58,14 @@ socket.onmessage = async (event) => {
 ```python Python
 import json
 import os
+
+NAV_TALK_MESSAGE_TYPE = {
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    'REALTIME_CONVERSATION_ITEM_COMPLETED': 'realtime.conversation.item.input_audio_transcription.completed',
+    'REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE': 'realtime.response.audio_transcript.done',
+    # ... other event types
+}
 
 def save_conversation_history(role, content, history_file="conversation_history.json"):
     """Save conversation message to file"""
@@ -69,12 +88,15 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
+            nav_data = data.get('data', data)
             
-            if data.get('type') == 'conversation.item.input_audio_transcription.completed':
-                save_conversation_history("user", data.get('transcript'))
+            if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_CONVERSATION_ITEM_COMPLETED']:
+                transcript = nav_data.get('content') or nav_data.get('transcript') or nav_data.get('text')
+                save_conversation_history("user", transcript)
             
-            elif data.get('type') == 'response.audio_transcript.done':
-                save_conversation_history("assistant", data.get('transcript'))
+            elif data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE']:
+                transcript = nav_data.get('content') or nav_data.get('transcript') or nav_data.get('text')
+                save_conversation_history("assistant", transcript)
 ```
 </CodeGroup>
 </Step>
@@ -89,40 +111,15 @@ async function sendSessionUpdate() {
   const history = localStorage.getItem("realtimeChatHistory");
   const conversationHistory = history ? JSON.parse(history) : [];
   
-  // Send session configuration
-  const sessionConfig = {
-    type: "session.update",
-    session: {
-      instructions: "You are a helpful assistant.",
-      turn_detection: {
-        type: "server_vad",
-        threshold: 0.5,
-        prefix_padding_ms: 300,
-        silence_duration_ms: 500
-      },
-      voice: "cedar",
-      temperature: 1,
-      max_response_output_tokens: 4096,
-      modalities: ["text", "audio"],
-      input_audio_format: "pcm16",
-      output_audio_format: "pcm16",
-      input_audio_transcription: {
-        model: "whisper-1"
-      }
-    }
-  };
-  
-  // Send session update first
-  socket.send(JSON.stringify(sessionConfig));
-  
-  // Send each historical message
-conversationHistory.forEach((msg) => {
-  if (msg.role === "user") {
-    const messageConfig = {
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
+  // Session configuration (voice, model, instructions, etc.) is passed through URL parameters
+  // Only send user message history
+  conversationHistory.forEach((msg) => {
+    if (msg.role === "user") {
+      const messageConfig = {
+        type: "conversation.item.create",
+        item: {
+          type: "message",
+          role: "user",
           content: [
             {
               type: "input_text",
@@ -133,7 +130,7 @@ conversationHistory.forEach((msg) => {
       };
       
       // Send user messages from history
-    socket.send(JSON.stringify(messageConfig));
+      socket.send(JSON.stringify(messageConfig));
       console.log("Sent historical message:", msg.content);
     }
   });
@@ -143,13 +140,14 @@ conversationHistory.forEach((msg) => {
 socket.onmessage = async (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
       console.log("Session created, sending history.");
       await sendSessionUpdate();
     }
     
-    if (data.type === 'session.updated') {
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
       console.log("Session updated. Ready to receive audio.");
       // Start recording audio here
     }
@@ -161,7 +159,7 @@ socket.onmessage = async (event) => {
 import json
 
 async def send_session_update(websocket):
-    """Send session configuration with conversation history"""
+    """Send conversation history (session configuration is passed through URL parameters)"""
     # Load conversation history
     history_file = "conversation_history.json"
     if os.path.exists(history_file):
@@ -170,32 +168,8 @@ async def send_session_update(websocket):
     else:
         conversation_history = []
     
-    # Send session configuration
-    session_config = {
-        "type": "session.update",
-        "session": {
-            "instructions": "You are a helpful assistant.",
-            "turn_detection": {
-                "type": "server_vad",
-                "threshold": 0.5,
-                "prefix_padding_ms": 300,
-                "silence_duration_ms": 500
-            },
-            "voice": "cedar",
-            "temperature": 1,
-            "max_response_output_tokens": 4096,
-            "modalities": ["text", "audio"],
-            "input_audio_format": "pcm16",
-            "output_audio_format": "pcm16",
-            "input_audio_transcription": {
-                "model": "whisper-1"
-            }
-        }
-    }
-    
-    await websocket.send(json.dumps(session_config))
-    
-    # Send historical messages
+    # Session configuration (voice, model, instructions, etc.) is passed through URL parameters
+    # Only send user message history
     for msg in conversation_history:
         if msg["role"] == "user":
             message_config = {
@@ -219,11 +193,12 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
+            nav_data = data.get('data', data)
             
-            if data.get('type') == 'session.created':
+            if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
                 await send_session_update(websocket)
             
-            elif data.get('type') == 'session.updated':
+            elif data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
                 print("Session updated. Ready to receive audio.")
 ```
 </CodeGroup>
