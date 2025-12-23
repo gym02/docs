@@ -1,13 +1,13 @@
 ---
 title: "Research Assistant"
-description: "Use Sophia as a research assistant for information gathering and research analysis"
+description: "Use Lily as a research assistant for information gathering and research analysis"
 ---
 
-![Sophia - Research Assistant](/images/api/real-time-digital-human-api/Sophia.png)
+![Lily - Research Assistant](https://api.navtalk.ai/uploadFiles/navtalk.Lily.png)
 
 ## Overview
 
-The **Research Assistant** use case uses **Sophia** to help with information gathering, research analysis, and knowledge discovery. This digital assistant can search for information, analyze data, synthesize findings, and present research in a clear and organized manner.
+The **Research Assistant** use case uses **Lily** to help with information gathering, research analysis, and knowledge discovery. This digital assistant can search for information, analyze data, synthesize findings, and present research in a clear and organized manner.
 
 ## Use Case Benefits
 
@@ -20,35 +20,35 @@ The **Research Assistant** use case uses **Sophia** to help with information gat
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const license = 'your-license-key';
-const characterName = 'navtalk.Sophia';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const license = 'your-license-key';
+const characterName = 'navtalk.Lily';
+const voice = 'shimmer';
+const model = 'gpt-realtime';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Sophia as a research assistant
+// Configure Lily as a research assistant
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are Sophia, a thorough and analytical research assistant.
-            Your role is to help with information gathering, research analysis, and knowledge discovery.
-            Search for relevant information, analyze data, identify patterns, and synthesize findings.
-            Present research in a clear, organized, and well-structured manner.
-            Cite sources when providing information and verify facts.
-            Be methodical, detail-oriented, and objective in your analysis.
-          `,
-          voice: 'shimmer',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };
@@ -60,35 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_research_assistant():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Sophia'
+    character_name = 'navtalk.Lily'
+    voice = 'shimmer'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are Sophia, a thorough and analytical research assistant.
-                                Your role is to help with information gathering, research analysis, and knowledge discovery.
-                                Search for relevant information, analyze data, identify patterns, and synthesize findings.
-                                Present research in a clear, organized, and well-structured manner.
-                                Cite sources when providing information and verify facts.
-                                Be methodical, detail-oriented, and objective in your analysis.
-                            ''',
-                            'voice': 'shimmer',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_research_assistant())
 ```

@@ -1,13 +1,13 @@
 ---
 title: "Educational Tutor"
-description: "Use Chloe as an educational tutor to provide personalized lessons adapted to learning style"
+description: "Use Gabriela as an educational tutor to provide personalized lessons adapted to learning style"
 ---
 
-![Chloe - Educational Tutor](/images/api/real-time-digital-human-api/Chloe.png)
+![Gabriela - Educational Tutor](https://api.navtalk.ai/uploadFiles/navtalk.Gabriela.png)
 
 ## Overview
 
-The **Educational Tutor** use case uses **Chloe** to deliver personalized, adaptive learning experiences. This digital tutor can explain concepts, answer questions, provide practice exercises, and adjust teaching style based on the student's learning progress.
+The **Educational Tutor** use case uses **Gabriela** to deliver personalized, adaptive learning experiences. This digital tutor can explain concepts, answer questions, provide practice exercises, and adjust teaching style based on the student's learning progress.
 
 ## Use Case Benefits
 
@@ -20,35 +20,35 @@ The **Educational Tutor** use case uses **Chloe** to deliver personalized, adapt
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const license = 'your-license-key';
-const characterName = 'navtalk.Chloe';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const license = 'your-license-key';
+const characterName = 'navtalk.Gabriela';
+const voice = 'shimmer';
+const model = 'gpt-realtime';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Chloe as an educational tutor
+// Configure Gabriela as an educational tutor
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are an educational tutor named Chloe.
-            Your role is to help students learn and understand various subjects.
-            Explain concepts clearly and in multiple ways if needed.
-            Ask questions to check understanding and provide practice exercises.
-            Adapt your teaching style to the student's learning pace and preferences.
-            Be patient, encouraging, and supportive.
-          `,
-          voice: 'shimmer',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };
@@ -60,35 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_educational_tutor():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Chloe'
+    character_name = 'navtalk.Gabriela'
+    voice = 'shimmer'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are an educational tutor named Chloe.
-                                Your role is to help students learn and understand various subjects.
-                                Explain concepts clearly and in multiple ways if needed.
-                                Ask questions to check understanding and provide practice exercises.
-                                Adapt your teaching style to the student's learning pace and preferences.
-                                Be patient, encouraging, and supportive.
-                            ''',
-                            'voice': 'shimmer',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_educational_tutor())
 ```

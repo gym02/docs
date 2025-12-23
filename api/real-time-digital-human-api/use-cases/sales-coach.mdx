@@ -1,13 +1,13 @@
 ---
 title: "Sales Coach"
-description: "Use Emma as a sales coach to provide scalable one-on-one sales training and guidance"
+description: "Use Luke as a sales coach to provide scalable one-on-one sales training and guidance"
 ---
 
-![Emma - Sales Coach](/images/api/real-time-digital-human-api/Emma.png)
+![Luke - Sales Coach](https://api.navtalk.ai/uploadFiles/navtalk.Luke.png)
 
 ## Overview
 
-The **Sales Coach** use case leverages **Emma** to provide personalized sales training and coaching. This digital coach can role-play sales scenarios, provide feedback on sales techniques, and help sales teams improve their performance through interactive practice sessions.
+The **Sales Coach** use case leverages **Luke** to provide personalized sales training and coaching. This digital coach can role-play sales scenarios, provide feedback on sales techniques, and help sales teams improve their performance through interactive practice sessions.
 
 ## Use Case Benefits
 
@@ -20,34 +20,35 @@ The **Sales Coach** use case leverages **Emma** to provide personalized sales tr
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const license = 'your-license-key';
-const characterName = 'navtalk.Emma';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const license = 'your-license-key';
+const characterName = 'navtalk.Luke';
+const voice = 'coral';
+const model = 'gpt-realtime';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Emma as a sales coach
+// Configure Luke as a sales coach
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are a sales coach named Emma with extensive experience in sales training.
-            Your role is to help sales professionals improve their skills through practice and feedback.
-            Role-play various sales scenarios, from initial contact to closing deals.
-            Provide constructive feedback on communication techniques, objection handling, and closing strategies.
-            Be encouraging but honest in your assessments.
-          `,
-          voice: 'coral',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };
@@ -59,34 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_sales_coach():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Emma'
+    character_name = 'navtalk.Luke'
+    voice = 'coral'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are a sales coach named Emma with extensive experience in sales training.
-                                Your role is to help sales professionals improve their skills through practice and feedback.
-                                Role-play various sales scenarios, from initial contact to closing deals.
-                                Provide constructive feedback on communication techniques, objection handling, and closing strategies.
-                                Be encouraging but honest in your assessments.
-                            ''',
-                            'voice': 'coral',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_sales_coach())
 ```

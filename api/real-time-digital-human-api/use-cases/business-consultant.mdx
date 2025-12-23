@@ -1,13 +1,13 @@
 ---
 title: "Business Consultant"
-description: "Use Mia as a business consultant to provide strategic business advice and professional guidance"
+description: "Use Lisa as a business consultant to provide strategic business advice and professional guidance"
 ---
 
-![Mia - Business Consultant](/images/api/real-time-digital-human-api/Mia.png)
+![Lisa - Business Consultant](https://api.navtalk.ai/uploadFiles/navtalk.Lisa.png)
 
 ## Overview
 
-The **Business Consultant** use case leverages **Mia** to provide strategic business advice and professional guidance. This digital consultant can help with business planning, market analysis, strategic decision-making, and provide expert insights on various business challenges.
+The **Business Consultant** use case leverages **Lisa** to provide strategic business advice and professional guidance. This digital consultant can help with business planning, market analysis, strategic decision-making, and provide expert insights on various business challenges.
 
 ## Use Case Benefits
 
@@ -29,14 +29,14 @@ const NavTalkMessageType = Object.freeze({
 
 const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
 const license = 'your-license-key';
-const characterName = 'navtalk.Mia';
+const characterName = 'navtalk.Lisa';
 const voice = 'coral';
 const model = 'gpt-realtime';
 
 const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Mia as a business consultant
+// Configure Lisa as a business consultant
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
@@ -60,35 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_business_consultant():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Mia'
+    character_name = 'navtalk.Lisa'
+    voice = 'coral'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are Mia, an experienced business consultant with expertise in strategy, operations, and market analysis.
-                                Your role is to provide strategic business advice and professional guidance.
-                                Help clients with business planning, market research, competitive analysis, and strategic decision-making.
-                                Ask clarifying questions to understand their business challenges fully.
-                                Provide actionable recommendations based on best practices and industry insights.
-                                Be professional, analytical, and solution-oriented.
-                            ''',
-                            'voice': 'coral',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_business_consultant())
 ```

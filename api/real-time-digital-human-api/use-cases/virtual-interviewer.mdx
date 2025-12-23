@@ -1,13 +1,13 @@
 ---
 title: "Virtual Interviewer"
-description: "Use Ava as a virtual interviewer to conduct engaging candidate screening at scale"
+description: "Use Lauren as a virtual interviewer to conduct engaging candidate screening at scale"
 ---
 
-![Ava - Virtual Interviewer](/images/api/real-time-digital-human-api/Ava.png)
+![Lauren - Virtual Interviewer](https://api.navtalk.ai/uploadFiles/navtalk.Lauren.png)
 
 ## Overview
 
-The **Virtual Interviewer** use case leverages **Ava** to conduct engaging and scalable candidate screening. This digital human can ask relevant interview questions, assess candidate responses, and provide a consistent interview experience for all applicants.
+The **Virtual Interviewer** use case leverages **Lauren** to conduct engaging and scalable candidate screening. This digital human can ask relevant interview questions, assess candidate responses, and provide a consistent interview experience for all applicants.
 
 ## Use Case Benefits
 
@@ -20,34 +20,35 @@ The **Virtual Interviewer** use case leverages **Ava** to conduct engaging and s
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const license = 'your-license-key';
-const characterName = 'navtalk.Ava';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const license = 'your-license-key';
+const characterName = 'navtalk.Lauren';
+const voice = 'shimmer';
+const model = 'gpt-realtime';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Ava as a professional interviewer
+// Configure Lauren as a professional interviewer
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are a professional HR interviewer named Ava.
-            Your role is to conduct job interviews in a friendly yet professional manner.
-            Ask relevant questions about the candidate's experience, skills, and qualifications.
-            Assess their responses and provide constructive feedback when appropriate.
-            Keep the conversation structured and focused on evaluating the candidate's suitability for the position.
-          `,
-          voice: 'shimmer',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };
@@ -59,34 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_virtual_interviewer():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Ava'
+    character_name = 'navtalk.Lauren'
+    voice = 'shimmer'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are a professional HR interviewer named Ava.
-                                Your role is to conduct job interviews in a friendly yet professional manner.
-                                Ask relevant questions about the candidate's experience, skills, and qualifications.
-                                Assess their responses and provide constructive feedback when appropriate.
-                                Keep the conversation structured and focused on evaluating the candidate's suitability for the position.
-                            ''',
-                            'voice': 'shimmer',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_virtual_interviewer())
 ```

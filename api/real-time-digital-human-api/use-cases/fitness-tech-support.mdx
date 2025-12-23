@@ -1,13 +1,13 @@
 ---
 title: "Fitness Trainer & Tech Support"
-description: "Use Leo to provide fitness coaching and technical support expertise"
+description: "Use Owen to provide fitness coaching and technical support expertise"
 ---
 
-![Leo - Fitness Trainer & Tech Support](/images/api/real-time-digital-human-api/Leo.png)
+![Owen - Fitness Trainer & Tech Support](https://api.navtalk.ai/uploadFiles/navtalk.Owen.png)
 
 ## Overview
 
-The **Fitness Trainer & Tech Support** use case uses **Leo** to provide dual expertise in both fitness coaching and technical support. This versatile digital assistant can guide users through workout routines, provide fitness advice, and also assist with technical issues when needed.
+The **Fitness Trainer & Tech Support** use case uses **Owen** to provide dual expertise in both fitness coaching and technical support. This versatile digital assistant can guide users through workout routines, provide fitness advice, and also assist with technical issues when needed.
 
 ## Use Case Benefits
 
@@ -20,35 +20,35 @@ The **Fitness Trainer & Tech Support** use case uses **Leo** to provide dual exp
 
 <CodeGroup>
 ```javascript JavaScript
-const websocketUrl = 'wss://transfer.navtalk.ai/api/realtime-api';
-const license = 'your-license-key';
-const characterName = 'navtalk.Leo';
+const NavTalkMessageType = Object.freeze({
+    CONNECTED_SUCCESS: "conversation.connected.success",
+    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_SESSION_UPDATED: "realtime.session.updated",
+    // ... other event types
+});
 
-const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&characterName=${encodeURIComponent(characterName)}`;
+const websocketUrl = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat';
+const license = 'your-license-key';
+const characterName = 'navtalk.Owen';
+const voice = 'ballad';
+const model = 'gpt-realtime';
+
+const websocketUrlWithParams = `${websocketUrl}?license=${encodeURIComponent(license)}&name=${encodeURIComponent(characterName)}&voice=${encodeURIComponent(voice)}&model=${encodeURIComponent(model)}`;
 const socket = new WebSocket(websocketUrlWithParams);
 
-// Configure Leo as fitness trainer and tech support
+// Configure Owen as fitness trainer and tech support
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
+    const nav_data = data.data || data;
     
-    if (data.type === 'session.created') {
-      const sessionConfig = {
-        type: 'session.update',
-        session: {
-          instructions: `
-            You are Leo, a professional fitness trainer and technical support specialist.
-            You can help users with:
-            1. Fitness guidance: Create workout plans, demonstrate exercises, provide nutrition advice, and motivate users to reach their fitness goals.
-            2. Technical support: Troubleshoot software issues, explain technical concepts, guide users through technical processes, and answer technology-related questions.
-            Adapt your communication style based on whether the user needs fitness coaching or technical assistance.
-            Be friendly, knowledgeable, and supportive in both roles.
-          `,
-          voice: 'ballad',
-          // ... other session parameters
-        }
-      };
-      socket.send(JSON.stringify(sessionConfig));
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
+      // Send conversation history if needed
+      // Session configuration (instructions, voice, model) is passed through URL parameters
+    }
+    
+    if (data.type === NavTalkMessageType.REALTIME_SESSION_UPDATED) {
+      // Session ready, start sending audio input
     }
   }
 };
@@ -60,35 +60,36 @@ import websockets
 import json
 from urllib.parse import quote
 
+NAV_TALK_MESSAGE_TYPE = {
+    'CONNECTED_SUCCESS': 'conversation.connected.success',
+    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_SESSION_UPDATED': 'realtime.session.updated',
+    # ... other event types
+}
+
 async def connect_fitness_tech_support():
-    websocket_url = 'wss://transfer.navtalk.ai/api/realtime-api'
+    websocket_url = 'wss://transfer.navtalk.ai/wss/v2/realtime-chat'
     license = 'your-license-key'
-    character_name = 'navtalk.Leo'
+    character_name = 'navtalk.Owen'
+    voice = 'ballad'
+    model = 'gpt-realtime'
     
-    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&characterName={quote(character_name)}'
+    websocket_url_with_params = f'{websocket_url}?license={quote(license)}&name={quote(character_name)}&voice={quote(voice)}&model={quote(model)}'
     
     async with websockets.connect(websocket_url_with_params) as websocket:
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
+                nav_data = data.get('data', data)
                 
-                if data.get('type') == 'session.created':
-                    session_config = {
-                        'type': 'session.update',
-                        'session': {
-                            'instructions': '''
-                                You are Leo, a professional fitness trainer and technical support specialist.
-                                You can help users with:
-                                1. Fitness guidance: Create workout plans, demonstrate exercises, provide nutrition advice, and motivate users to reach their fitness goals.
-                                2. Technical support: Troubleshoot software issues, explain technical concepts, guide users through technical processes, and answer technology-related questions.
-                                Adapt your communication style based on whether the user needs fitness coaching or technical assistance.
-                                Be friendly, knowledgeable, and supportive in both roles.
-                            ''',
-                            'voice': 'ballad',
-                            # ... other session parameters
-                        }
-                    }
-                    await websocket.send(json.dumps(session_config))
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
+                    # Send conversation history if needed
+                    # Session configuration (instructions, voice, model) is passed through URL parameters
+                    pass
+                
+                if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_UPDATED']:
+                    # Session ready, start sending audio input
+                    pass
 
 asyncio.run(connect_fitness_tech_support())
 ```
