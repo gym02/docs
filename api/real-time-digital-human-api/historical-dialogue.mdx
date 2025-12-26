@@ -5,7 +5,22 @@ description: "Learn how to maintain conversation history and context across sess
 
 ## Maintaining Conversation History Across Sessions
 
-NavTalk supports maintaining conversation history across multiple sessions, allowing the digital human to remember previous conversations and maintain context continuity. Follow these steps to implement persistent conversation history:
+NavTalk supports maintaining conversation history across multiple sessions, allowing the digital human to remember previous conversations and maintain context continuity. 
+
+### Workflow Overview
+
+The conversation history workflow follows this sequence:
+
+1. **Store messages**: Save user and assistant messages as they occur during the conversation
+2. **Load on connection**: When establishing a new WebSocket connection, wait for `realtime.session.created` event
+3. **Send history**: Send stored user messages using `conversation.item.create` messages
+4. **Wait for ready**: After sending history, wait for `realtime.session.updated` event before starting audio input
+
+<Note>
+Session configuration (voice, model, instructions, etc.) is passed through WebSocket connection URL query parameters, not through `session.update` messages. The `conversation.item.create` messages are only used to send conversation history.
+</Note>
+
+Follow these steps to implement persistent conversation history:
 
 <Steps>
 <Step title="Store Conversation History">
@@ -38,18 +53,22 @@ async function appendRealtimeChatHistory(role, content) {
 socket.onmessage = async (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     // Save user message when transcription completes
-    if (data.type === NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED) {
-      const transcript = nav_data.content || nav_data.transcript || nav_data.text;
-      await appendRealtimeChatHistory("user", transcript);
+    if (nav_data && data.type === NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED) {
+      const transcript = nav_data.content;
+      if (transcript) {
+        await appendRealtimeChatHistory("user", transcript);
+      }
     }
     
     // Save AI response when complete
-    if (data.type === NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE) {
-      const transcript = nav_data.content || nav_data.transcript || nav_data.text;
-      await appendRealtimeChatHistory("assistant", transcript);
+    if (nav_data && data.type === NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE) {
+      const transcript = nav_data.content;
+      if (transcript) {
+        await appendRealtimeChatHistory("assistant", transcript);
+      }
     }
   }
 };
@@ -88,15 +107,17 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            nav_data = data.get('data', data)
+            nav_data = data.get('data')
             
-            if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_CONVERSATION_ITEM_COMPLETED']:
-                transcript = nav_data.get('content') or nav_data.get('transcript') or nav_data.get('text')
-                save_conversation_history("user", transcript)
+            if nav_data and data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_CONVERSATION_ITEM_COMPLETED']:
+                transcript = nav_data.get('content')
+                if transcript:
+                    save_conversation_history("user", transcript)
             
-            elif data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE']:
-                transcript = nav_data.get('content') or nav_data.get('transcript') or nav_data.get('text')
-                save_conversation_history("assistant", transcript)
+            elif nav_data and data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE']:
+                transcript = nav_data.get('content')
+                if transcript:
+                    save_conversation_history("assistant", transcript)
 ```
 </CodeGroup>
 </Step>
@@ -129,9 +150,13 @@ async function sendSessionUpdate() {
         }
       };
       
-      // Send user messages from history
-      socket.send(JSON.stringify(messageConfig));
-      console.log("Sent historical message:", msg.content);
+      try {
+        // Send user messages from history
+        socket.send(JSON.stringify(messageConfig));
+        console.log("Sent historical message:", msg.content);
+      } catch (e) {
+        console.error("Error sending historical message:", e);
+      }
     }
   });
 }
@@ -140,7 +165,6 @@ async function sendSessionUpdate() {
 socket.onmessage = async (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
-    const nav_data = data.data || data;
     
     if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
       console.log("Session created, sending history.");
@@ -185,15 +209,17 @@ async def send_session_update(websocket):
                     ]
                 }
             }
-            await websocket.send(json.dumps(message_config))
-            print(f"Sent historical message: {msg['content']}")
+            try:
+                await websocket.send(json.dumps(message_config))
+                print(f"Sent historical message: {msg['content']}")
+            except Exception as e:
+                print(f"Error sending historical message: {e}")
 
 # Handle session creation
 async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            nav_data = data.get('data', data)
             
             if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
                 await send_session_update(websocket)
