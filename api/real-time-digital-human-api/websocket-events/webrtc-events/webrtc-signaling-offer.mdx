@@ -41,7 +41,9 @@ The SDP (Session Description Protocol) offer object. This is an RTCSessionDescri
 ```
 </ResponseExample>
 
-## Usage Example
+## Receiving Offer
+
+When you receive a WebRTC offer (typically sent by the server), handle it like this:
 
 ```javascript
 const NavTalkMessageType = Object.freeze({
@@ -51,10 +53,20 @@ const NavTalkMessageType = Object.freeze({
     // ... other event types
 });
 
+// Function to send answer (after receiving offer)
 function sendAnswerMessage(sdp) {
     const message = {
         type: NavTalkMessageType.WEB_RTC_ANSWER,
         data: { sdp: sdp }
+    };
+    socket.send(JSON.stringify(message));
+}
+
+// Function to send ICE candidate
+function sendIceMessage(candidate) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ICE_CANDIDATE,
+        data: { candidate: candidate }
     };
     socket.send(JSON.stringify(message));
 }
@@ -64,21 +76,42 @@ async function handleReceivedMessage(data) {
     
     switch (data.type) {
         case NavTalkMessageType.WEB_RTC_OFFER:
+            // Create peer connection
             const offer = new RTCSessionDescription(nav_data.sdp);
             peerConnection = new RTCPeerConnection(configuration);
             
+            // Set remote description and create answer
             await peerConnection.setRemoteDescription(offer);
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             
             // Send answer through unified WebSocket
             sendAnswerMessage(peerConnection.localDescription);
+            
+            // Set up ICE candidate handler
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    sendIceMessage(event.candidate);
+                }
+            };
             break;
     }
 }
 ```
 
+**Key Points:**
+- The `sdp` parameter in `data.sdp` is an `RTCSessionDescription` object with:
+  - `type`: `"offer"`
+  - `sdp`: The SDP string containing the offer description
+- After receiving an offer, you should:
+  1. Create an RTCPeerConnection
+  2. Set the offer as remote description
+  3. Create and send an answer
+  4. Set up ICE candidate handler to send candidates
+
 <Note>
-All WebRTC signaling (offer, answer, ICE candidates) is sent through the unified WebSocket connection using the encapsulated event types. There is no need for a separate WebRTC signaling WebSocket connection.
+- **When received**: The server typically sends the offer when establishing a WebRTC connection
+- **What to do**: After receiving an offer, create an answer and send it back, then send ICE candidates as they're generated
+- All WebRTC signaling (offer, answer, ICE candidates) is sent through the unified WebSocket connection using the encapsulated event types. There is no need for a separate WebRTC signaling WebSocket connection.
 </Note>
 

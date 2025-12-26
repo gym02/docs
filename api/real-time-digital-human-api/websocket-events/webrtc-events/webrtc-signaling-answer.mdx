@@ -41,14 +41,69 @@ The SDP (Session Description Protocol) answer object. This is an RTCSessionDescr
 ```
 </ResponseExample>
 
-## Usage Example
+## Sending Answer
+
+After receiving a WebRTC offer, you need to create an answer and send it back. Here's how to send the answer:
 
 ```javascript
 const NavTalkMessageType = Object.freeze({
+    WEB_RTC_OFFER: "webrtc.signaling.offer",
     WEB_RTC_ANSWER: "webrtc.signaling.answer",
     // ... other event types
 });
 
+// Function to send answer
+function sendAnswerMessage(sdp) {
+    const message = {
+        type: NavTalkMessageType.WEB_RTC_ANSWER,
+        data: { sdp: sdp }
+    };
+    socket.send(JSON.stringify(message));
+    console.log('Sent answer:', message);
+}
+
+// Handle received offer and send answer
+async function handleOffer(offerData) {
+    const offer = new RTCSessionDescription(offerData.sdp);
+    peerConnection = new RTCPeerConnection(configuration);
+    
+    await peerConnection.setRemoteDescription(offer);
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    
+    // Send the answer (peerConnection.localDescription is an RTCSessionDescription object)
+    sendAnswerMessage(peerConnection.localDescription);
+}
+```
+
+**Message Structure:**
+
+When sending an answer, the message structure should be:
+
+```json
+{
+  "type": "webrtc.signaling.answer",
+  "data": {
+    "sdp": {
+      "type": "answer",
+      "sdp": "v=0\r\no=- 8643312983218886913 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\na=group:BUNDLE 0 1\r\na=msid-semantic: WMS\r\nm=video 9 UDP/TLS/RTP/SAVPF 97 98 99 100 101 102\r\nc=IN IP4 0.0.0.0\r\na=rtcp:9 IN IP4 0.0.0.0\r\na=ice-ufrag:lwyK\r\na=ice-pwd:DL6EkCNVmdcrlsmJsjry5CiG\r\na=ice-options:trickle\r\na=fingerprint:sha-256 FE:A4:ED:91:41:78:BB:35:7D:CC:77:36:84:05:60:5D:6F:12:0A:B0:0E:A1:94:DA:90:3B:EF:6F:39:56:7F:E0\r\na=setup:active\r\na=mid:0\r\na=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\na=extmap:1 urn:ietf:params:rtp-hdrext:sdes:mid\r\na=recvonly\r\na=rtcp-mux\r\na=rtpmap:97 VP8/90000\r\na=rtcp-fb:97 goog-remb\r\na=rtcp-fb:97 nack\r\na=rtcp-fb:97 nack pli\r\na=rtpmap:98 rtx/90000\r\na=fmtp:98 apt=97\r\na=rtpmap:99 H264/90000\r\na=rtcp-fb:99 goog-remb\r\na=rtcp-fb:99 nack\r\na=rtcp-fb:99 nack pli\r\na=fmtp:99 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f\r\na=rtpmap:100 rtx/90000\r\na=fmtp:100 apt=99\r\na=rtpmap:101 H264/90000\r\na=rtcp-fb:101 goog-remb\r\na=rtcp-fb:101 nack\r\na=rtcp-fb:101 nack pli\r\na=fmtp:101 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f\r\na=rtpmap:102 rtx/90000\r\na=fmtp:102 apt=101\r\nm=audio 9 UDP/TLS/RTP/SAVPF 96 9 0 8\r\nc=IN IP4 0.0.0.0\r\na=rtcp:9 IN IP4 0.0.0.0\r\na=ice-ufrag:lwyK\r\na=ice-pwd:DL6EkCNVmdcrlsmJsjry5CiG\r\na=ice-options:trickle\r\na=fingerprint:sha-256 FE:A4:ED:91:41:78:BB:35:7D:CC:77:36:84:05:60:5D:6F:12:0A:B0:0E:A1:94:DA:90:3B:EF:6F:39:56:7F:E0\r\na=setup:active\r\na=mid:1\r\na=extmap:2 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\na=extmap:1 urn:ietf:params:rtp-hdrext:sdes:mid\r\na=recvonly\r\na=rtcp-mux\r\na=rtpmap:96 opus/48000/2\r\na=fmtp:96 minptime=10;useinbandfec=1\r\na=rtpmap:9 G722/8000\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\n"
+    }
+  }
+}
+```
+
+**Key Points:**
+- The `sdp` parameter in `data.sdp` should be an `RTCSessionDescription` object (or equivalent plain object) with:
+  - `type`: `"answer"`
+  - `sdp`: The SDP string containing the answer description
+- Send the answer **immediately after** you receive an offer and create an answer using `peerConnection.createAnswer()`
+- Use `peerConnection.localDescription` as the `sdp` value when sending
+
+## Receiving Answer
+
+When you receive an answer (if you sent an offer), handle it like this:
+
+```javascript
 async function handleReceivedMessage(data) {
     const nav_data = data.data || data;
     
@@ -62,6 +117,8 @@ async function handleReceivedMessage(data) {
 ```
 
 <Note>
-WebRTC signaling is sent through the unified WebSocket connection. Make sure to handle the answer after you've sent an offer and are waiting for the response.
+- **When to send**: Send an answer immediately after receiving an offer and creating an answer with `peerConnection.createAnswer()`
+- **What to send**: Send `peerConnection.localDescription` (which is an RTCSessionDescription object) as the `sdp` value
+- WebRTC signaling is sent through the unified WebSocket connection
 </Note>
 
