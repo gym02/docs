@@ -403,8 +403,8 @@ async function handleReceivedMessage(data) {
 
 ```javascript
 async function handleReceivedMessage(data) {
-    // Extract data: new version data may be encapsulated in data.data
-    const nav_data = data.data || data;
+    // Extract data: event data is encapsulated in data.data
+    const nav_data = data.data;
     
     switch (data.type) {
         // ======================== Connection Events ====================
@@ -562,8 +562,8 @@ const transcript = data.transcript;
 
 ```javascript
 const nav_data = data.data;
-const sessionId = nav_data.sessionId ?? data.sessionId; // Compatibility handling
-const transcript = nav_data.transcript ?? data.transcript;
+const sessionId = nav_data.sessionId;
+const transcript = nav_data.transcript;
 ```
 
 ### Step 7: Update WebRTC Signaling Sending
@@ -633,14 +633,14 @@ socket.send(JSON.stringify({
 
 <Warning>
 1. **Backward Compatibility**: The new version API is not backward compatible with the old version. You must complete all migration steps according to this guide.
-2. **Data Field Access**: Some message data may be encapsulated in `data.data`. Adjust access methods according to the actual message structure.
+2. **Data Field Access**: All event data is encapsulated in `data.data`. Always use `data.data` to access event data, not the root-level `data` object.
 3. **WebRTC Connection**: In the new version, WebRTC signaling is sent through the unified WebSocket. A separate WebRTC WebSocket connection is no longer needed.
 </Warning>
 
 <Note>
 If you encounter issues during migration, check:
 - Whether all event types have been updated to the new constants
-- Whether message data access is correct (whether `data.data` is used)
+- Whether message data access is correct (always use `data.data` to access event data)
 - Whether WebRTC signaling is sent through the unified WebSocket
 - Whether the audio sending format is correct (whether data is encapsulated in `data.audio`)
 </Note>

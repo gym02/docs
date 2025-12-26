@@ -136,8 +136,8 @@ socket.onmessage = (event) => {
 };
 
 async function handleReceivedMessage(data) {
-  // Extract data from nested structure if present
-  const nav_data = data.data || data;
+  // Extract data from nested structure
+  const nav_data = data.data;
   
   switch (data.type) {
     // Connection events
@@ -234,7 +234,7 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            nav_data = data.get('data', data)
+            nav_data = data.get('data')
             
             message_type = data.get('type')
             
@@ -509,8 +509,8 @@ async def start_recording(websocket):
 ```javascript JavaScript
 // Enhanced message handler with all event types
 async function handleReceivedMessage(data) {
-  // Extract data from nested structure if present
-  const nav_data = data.data || data;
+  // Extract data from nested structure
+  const nav_data = data.data;
   
   switch (data.type) {
     // Connection events
@@ -566,7 +566,7 @@ async function handleReceivedMessage(data) {
     
     // User transcription events
     case NavTalkMessageType.REALTIME_CONVERSATION_ITEM_COMPLETED:
-      const transcript = nav_data.content ?? nav_data.transcript ?? data.transcript;
+      const transcript = nav_data.content;
       console.log('Received transcription:', transcript);
       // Display user message in UI
       displayUserMessage(transcript);
@@ -577,8 +577,8 @@ async function handleReceivedMessage(data) {
     // AI response text stream (streaming)
     case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
       // This event fires multiple times as the AI generates text
-      const deltaTranscript = nav_data.content ?? nav_data.delta ?? data.delta; // Incremental text chunk
-      const responseId = nav_data.id ?? nav_data.response_id ?? data.response_id; // Unique ID for this response
+      const deltaTranscript = nav_data.content; // Incremental text chunk
+      const responseId = nav_data.id; // Unique ID for this response
       
       // Accumulate text chunks (you may need to buffer incomplete content)
       accumulateResponseText(responseId, deltaTranscript);
@@ -589,7 +589,7 @@ async function handleReceivedMessage(data) {
     
     // AI response text completed
     case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
-      const finalTranscript = nav_data.content ?? nav_data.transcript ?? data.transcript;
+      const finalTranscript = nav_data.content;
       console.log('AI response complete:', finalTranscript);
       // Display final text
       displayAIResponseComplete(finalTranscript);
@@ -600,9 +600,9 @@ async function handleReceivedMessage(data) {
     // AI response audio stream (if you're receiving audio via WebSocket)
     case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:
       // Handle audio delta if needed
-      if (nav_data.delta ?? data.delta) {
+      if (nav_data.delta) {
         // Process audio chunk
-        handleAudioChunk(nav_data.delta ?? data.delta);
+        handleAudioChunk(nav_data.delta);
       }
       break;
     

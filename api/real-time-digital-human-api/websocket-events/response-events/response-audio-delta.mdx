@@ -41,7 +41,7 @@ const NavTalkMessageType = Object.freeze({
 });
 
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_DELTA:

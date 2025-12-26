@@ -72,7 +72,7 @@ function sendIceMessage(candidate) {
 }
 
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.WEB_RTC_OFFER:

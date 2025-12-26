@@ -112,7 +112,7 @@ When you receive an ICE candidate, handle it like this:
 
 ```javascript
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:
@@ -140,7 +140,7 @@ peerConnection.onicecandidate = (event) => {
 
 // Handle received ICE candidates
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.WEB_RTC_ICE_CANDIDATE:

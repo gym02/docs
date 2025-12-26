@@ -54,11 +54,11 @@ const NavTalkMessageType = Object.freeze({
 });
 
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DONE:
-            const transcript = nav_data.content || nav_data.transcript;
+            const transcript = nav_data.content;
             console.log("Received transcription: " + transcript);
             
             // Save to history

@@ -120,7 +120,7 @@ const NavTalkMessageType = Object.freeze({
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
       case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
@@ -143,7 +143,7 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            nav_data = data.get('data', data)
+            nav_data = data.get('data')
             
             if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE']:
                 await handle_function_call(nav_data, data, websocket)

@@ -57,12 +57,12 @@ let markdownBuffer = new Map();
 let responseSpans = new Map();
 
 async function handleReceivedMessage(data) {
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     switch (data.type) {
         case NavTalkMessageType.REALTIME_RESPONSE_AUDIO_TRANSCRIPT_DELTA:
             const transcript = nav_data.content;
-            const responseId = nav_data.id || nav_data.response_id;
+            const responseId = nav_data.id;
             
             // Accumulate content by response ID
             if (!markdownBuffer.has(responseId)) {

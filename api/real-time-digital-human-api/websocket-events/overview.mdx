@@ -232,7 +232,7 @@ socket.onmessage = async (event) => {
 
 async function handleReceivedMessage(data) {
   // Extract data: event data is encapsulated in data.data
-  const nav_data = data.data || data;
+  const nav_data = data.data;
   
   switch (data.type) {
     // Connection Events
@@ -349,7 +349,7 @@ async def handle_messages(websocket):
 
 async def handle_received_message(data, websocket):
     event_type = data.get('type')
-    nav_data = data.get('data', data)  # Extract data from data.data field
+    nav_data = data.get('data')  # Extract data from data.data field
     
     # Connection Events
     if event_type == NAV_TALK_MESSAGE_TYPE['CONNECTED_SUCCESS']:

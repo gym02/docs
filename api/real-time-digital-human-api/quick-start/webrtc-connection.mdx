@@ -27,7 +27,7 @@ const NavTalkMessageType = Object.freeze({
 
 // In your message handler (same socket used for real-time API)
 async function handleReceivedMessage(data) {
-  const nav_data = data.data || data;
+  const nav_data = data.data;
   
   switch (data.type) {
     // ... other event handlers ...
@@ -79,7 +79,7 @@ async def handle_messages(websocket):
     async for message in websocket:
         if isinstance(message, str):
             data = json.loads(message)
-            nav_data = data.get('data', data)
+            nav_data = data.get('data')
             
             message_type = data.get('type')
             

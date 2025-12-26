@@ -40,7 +40,7 @@ const socket = new WebSocket(websocketUrlWithParams);
 socket.onmessage = (event) => {
   if (typeof event.data === 'string') {
     const data = JSON.parse(event.data);
-    const nav_data = data.data || data;
+    const nav_data = data.data;
     
     if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
       // Send conversation history if needed
@@ -80,7 +80,7 @@ async def connect_research_assistant():
         async for message in websocket:
             if isinstance(message, str):
                 data = json.loads(message)
-                nav_data = data.get('data', data)
+                nav_data = data.get('data')
                 
                 if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
                     # Send conversation history if needed
