@@ -177,13 +177,16 @@ function handleOffer(message) {
         })
         .catch(err => console.error('Error handling offer:', err));
       
-      // Handle incoming tracks (audio/video)
+      // Handle incoming tracks (audio/video) - this is where video stream is displayed
+      // Make sure you have: <video id="character-video" autoplay playsinline></video> in your HTML
       peerConnection.ontrack = (event) => {
         console.log('Received remote track:', event);
         const remoteVideo = document.getElementById('character-video');
-        if (remoteVideo) {
+        if (remoteVideo && event.streams && event.streams[0]) {
           remoteVideo.srcObject = event.streams[0];
-          remoteVideo.play().catch(e => console.error('Video play failed:', e));
+          remoteVideo.play()
+            .then(() => console.log('Video playback started'))
+            .catch(e => console.error('Video play failed:', e));
         }
       };
       
@@ -281,34 +284,23 @@ async def handle_ice_candidate(message):
 </CodeGroup>
 </Step>
 
-<Step title="Display Video Stream">
-  Display the received video stream in a video element:
+<Step title="Video Stream Display">
+  The video stream is automatically handled by the `ontrack` event handler set up in **Step 2** (Handle WebRTC Offer). When the WebRTC connection is established and media tracks are received, the `ontrack` event fires and displays the video in your HTML video element.
 
-<CodeGroup>
-```javascript JavaScript
-// HTML: <video id="character-video" autoplay playsinline></video>
+**Important points:**
+- The `ontrack` handler is set up **inside** the `handleOffer` function (Step 2), right after creating the RTCPeerConnection
+- This ensures the handler is ready before any tracks arrive
+- The video element ID should match what you use in your HTML: `<video id="character-video" autoplay playsinline></video>`
 
-peerConnection.ontrack = (event) => {
-  console.log('Received remote track:', event);
-  
-  const remoteVideo = document.getElementById('character-video');
-  if (remoteVideo && event.streams && event.streams[0]) {
-    remoteVideo.srcObject = event.streams[0];
-    
-    // Start playback
-    remoteVideo.play()
-      .then(() => console.log('Video playback started'))
-      .catch(e => console.error('Video play failed:', e));
-  }
-};
-```
+**Complete flow:**
+1. Server sends WebRTC offer → `handleOffer` is called
+2. `handleOffer` creates RTCPeerConnection and sets up `ontrack` handler
+3. When media tracks arrive → `ontrack` event fires automatically
+4. Video is displayed in the HTML video element
 
-```python Python
-# Python implementation depends on your GUI framework
-# For web-based Python apps, you might use aiohttp + WebRTC
-# or integrate with a frontend framework
-```
-</CodeGroup>
+<Note>
+The `ontrack` event handler is set up once when creating the peer connection. You don't need to set it up again elsewhere. All incoming audio/video tracks will automatically trigger this handler.
+</Note>
 </Step>
 
 <Step title="Optional: Handle Renegotiation (Advanced)">
