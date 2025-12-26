@@ -48,6 +48,10 @@ async function handleReceivedMessage(data) {
 }
 
 // Helper functions to send WebRTC signaling messages
+
+// Note: sendOfferMessage is typically not needed in the normal flow,
+// as the server sends the offer first. However, it may be needed for
+// renegotiation scenarios (e.g., when onnegotiationneeded is triggered)
 function sendOfferMessage(sdp) {
   const message = {
     type: NavTalkMessageType.WEB_RTC_OFFER,
@@ -56,6 +60,7 @@ function sendOfferMessage(sdp) {
   socket.send(JSON.stringify(message));
 }
 
+// This function is called after receiving an offer and creating an answer
 function sendAnswerMessage(sdp) {
   const message = {
     type: NavTalkMessageType.WEB_RTC_ANSWER,
@@ -64,6 +69,7 @@ function sendAnswerMessage(sdp) {
   socket.send(JSON.stringify(message));
 }
 
+// This function is called when ICE candidates are generated
 function sendIceMessage(candidate) {
   const message = {
     type: NavTalkMessageType.WEB_RTC_ICE_CANDIDATE,
@@ -92,6 +98,10 @@ async def handle_messages(websocket):
             # ... other event handlers ...
 
 # Helper functions to send WebRTC signaling messages
+
+# Note: send_offer_message is typically not needed in the normal flow,
+# as the server sends the offer first. However, it may be needed for
+# renegotiation scenarios (e.g., when onnegotiationneeded is triggered)
 async def send_offer_message(websocket, sdp):
     message = {
         'type': 'webrtc.signaling.offer',
@@ -99,6 +109,7 @@ async def send_offer_message(websocket, sdp):
     }
     await websocket.send(json.dumps(message))
 
+# This function is called after receiving an offer and creating an answer
 async def send_answer_message(websocket, sdp):
     message = {
         'type': 'webrtc.signaling.answer',
@@ -106,6 +117,7 @@ async def send_answer_message(websocket, sdp):
     }
     await websocket.send(json.dumps(message))
 
+# This function is called when ICE candidates are generated
 async def send_ice_message(websocket, candidate):
     message = {
         'type': 'webrtc.signaling.iceCandidate',
@@ -297,5 +309,59 @@ peerConnection.ontrack = (event) => {
 # or integrate with a frontend framework
 ```
 </CodeGroup>
+</Step>
+
+<Step title="Optional: Handle Renegotiation (Advanced)">
+  In some advanced scenarios, you may need to handle WebRTC renegotiation. This happens when the connection needs to be re-established (e.g., after adding/removing media tracks, changing codecs, etc.). In such cases, you may need to send an offer:
+
+<CodeGroup>
+```javascript JavaScript
+// Handle renegotiation when needed
+peerConnection.onnegotiationneeded = async () => {
+  console.log('Renegotiation needed');
+  
+  try {
+    // Create a new offer
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    
+    // Send the offer through unified WebSocket
+    sendOfferMessage(peerConnection.localDescription);
+  } catch (err) {
+    console.error('Error during renegotiation:', err);
+  }
+};
+```
+
+```python Python
+# Handle renegotiation when needed
+@pc.on('negotiationneeded')
+async def on_negotiation_needed():
+    print('Renegotiation needed')
+    
+    try:
+        # Create a new offer
+        offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+        
+        # Send the offer through unified WebSocket
+        await send_offer_message(websocket, {
+            'sdp': pc.localDescription.sdp,
+            'type': pc.localDescription.type
+        })
+    except Exception as err:
+        print(f'Error during renegotiation: {err}')
+```
+</CodeGroup>
+
+<Note>
+**When is renegotiation needed?**
+- Typically, the server sends the initial offer, and you respond with an answer
+- Renegotiation is only needed in advanced scenarios, such as:
+  - Dynamically adding/removing media tracks
+  - Changing codec preferences
+  - Recovering from connection failures
+- In most cases, you won't need to handle `onnegotiationneeded` or call `sendOfferMessage`
+</Note>
 </Step>
 </Steps>
