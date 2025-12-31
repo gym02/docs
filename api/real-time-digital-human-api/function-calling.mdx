@@ -7,103 +7,103 @@ NavTalk supports function calling to integrate digital humans with external syst
 
 <Steps>
 <Step title="Define Function Tools">
-Define the functions that can be called by including them in the `tools` array. In v2, session configuration (voice, model, instructions, etc.) is passed through WebSocket connection URL parameters. Tools can be configured by sending a `session.update` message with only the tools array after receiving `realtime.session.created`:
+Define the functions that can be called by including them in the `tools` array. In v2, function tools configuration is sent immediately after the WebSocket connection is established (in the `onopen` event), not after receiving `realtime.session.created`:
 
 <CodeGroup>
 ```javascript JavaScript
 const NavTalkMessageType = Object.freeze({
-    REALTIME_SESSION_CREATED: "realtime.session.created",
+    REALTIME_INPUT_FUNCTION_CALL: "realtime.input.function_call",
     REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
+    REALTIME_FUNCTION_CALL_OUTPUT: "realtime.function_call.output",
     // ... other event types
 });
 
-// After receiving realtime.session.created, send tools configuration
-async function sendToolsConfiguration() {
-  const sessionConfig = {
-    type: 'session.update',
-    session: {
-      tools: [
-        {
-          type: 'function',
-          name: 'function_call_judge',
-          description: 'Automatically triggers function extension calls when user requests exceed the current conversation capabilities.',
-          parameters: {
-            type: 'object',
-            properties: {
-              userInput: {
-                type: 'string',
-                description: 'Raw user request content to be processed'
-              }
-            },
-            required: ['userInput']
+// Send function tools configuration when WebSocket connection is established
+function sendFunctionCallConfig() {
+  const functions = [
+    {
+      type: 'function',
+      name: 'function_call_judge',
+      description: 'Automatically triggers function extension calls when user requests exceed the current conversation capabilities.',
+      parameters: {
+        type: 'object',
+        properties: {
+          userInput: {
+            type: 'string',
+            description: 'Raw user request content to be processed'
           }
-        }
-      ]
+        },
+        required: ['userInput']
+      }
+    }
+  ];
+  
+  const functionJson = JSON.stringify(functions);
+  const message = {
+    type: NavTalkMessageType.REALTIME_INPUT_FUNCTION_CALL,
+    data: {
+      content: functionJson
     }
   };
   
-  socket.send(JSON.stringify(sessionConfig));
+  socket.send(JSON.stringify(message));
 }
 
-// Call this after receiving realtime.session.created
-socket.onmessage = async (event) => {
-  if (typeof event.data === 'string') {
-    const data = JSON.parse(event.data);
-    
-    if (data.type === NavTalkMessageType.REALTIME_SESSION_CREATED) {
-      await sendToolsConfiguration();
-    }
-  }
+// Call this when WebSocket connection is established
+socket.onopen = () => {
+  console.log('WebSocket connection established');
+  sendFunctionCallConfig();
 };
 ```
 
 ```python Python
 NAV_TALK_MESSAGE_TYPE = {
-    'REALTIME_SESSION_CREATED': 'realtime.session.created',
+    'REALTIME_INPUT_FUNCTION_CALL': 'realtime.input.function_call',
     'REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE': 'realtime.response.function_call_arguments.done',
+    'REALTIME_FUNCTION_CALL_OUTPUT': 'realtime.function_call.output',
     # ... other event types
 }
 
-# After receiving realtime.session.created, send tools configuration
-async def send_tools_configuration(websocket):
-    session_config = {
-        'type': 'session.update',
-        'session': {
-            'tools': [
-                {
-                    'type': 'function',
-                    'name': 'function_call_judge',
-                    'description': 'Automatically triggers function extension calls when user requests exceed the current conversation capabilities.',
-                    'parameters': {
-                        'type': 'object',
-                        'properties': {
-                            'userInput': {
-                                'type': 'string',
-                                'description': 'Raw user request content to be processed'
-                            }
-                        },
-                        'required': ['userInput']
+# Send function tools configuration when WebSocket connection is established
+async def send_function_call_config(websocket):
+    functions = [
+        {
+            'type': 'function',
+            'name': 'function_call_judge',
+            'description': 'Automatically triggers function extension calls when user requests exceed the current conversation capabilities.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'userInput': {
+                        'type': 'string',
+                        'description': 'Raw user request content to be processed'
                     }
-                }
-            ]
+                },
+                'required': ['userInput']
+            }
+        }
+    ]
+    
+    function_json = json.dumps(functions)
+    message = {
+        'type': NAV_TALK_MESSAGE_TYPE['REALTIME_INPUT_FUNCTION_CALL'],
+        'data': {
+            'content': function_json
         }
     }
     
-    await websocket.send(json.dumps(session_config))
+    await websocket.send(json.dumps(message))
 
-# Call this after receiving realtime.session.created
-async def handle_messages(websocket):
-    async for message in websocket:
-        if isinstance(message, str):
-            data = json.loads(message)
-            
-            if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_SESSION_CREATED']:
-                await send_tools_configuration(websocket)
+# Call this when WebSocket connection is established
+async def connect_websocket():
+    websocket = await websockets.connect(websocket_url)
+    await send_function_call_config(websocket)
+    return websocket
 ```
 </CodeGroup>
 
 <Note>
-  You can define multiple functions in the `tools` array. Each function should have a unique name, clear description, and well-defined parameters. In v2, session configuration (voice, model, instructions, etc.) is passed through WebSocket connection URL parameters, not through `session.update`. Only send the `tools` array in the `session.update` message.
+  You can define multiple functions in the `tools` array. Each function should have a unique name, clear description, and well-defined parameters. Function tools configuration is sent immediately after WebSocket connection is established, not after receiving `realtime.session.created`. Session configuration (voice, model, instructions, etc.) is passed through WebSocket connection URL parameters.
 </Note>
 </Step>
 
@@ -124,7 +124,7 @@ socket.onmessage = (event) => {
     
     switch (data.type) {
       case NavTalkMessageType.REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE:
-        handleFunctionCall(nav_data, data);
+        handleFunctionCall(data);
         break;
       
       // ... handle other message types
@@ -146,7 +146,7 @@ async def handle_messages(websocket):
             nav_data = data.get('data')
             
             if data.get('type') == NAV_TALK_MESSAGE_TYPE['REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE']:
-                await handle_function_call(nav_data, data, websocket)
+                await handle_function_call(data, websocket)
             
             # ... handle other message types
 ```
@@ -172,10 +172,12 @@ Parse the function call arguments and execute your custom logic:
 
 <CodeGroup>
 ```javascript JavaScript
-function handleFunctionCall(nav_data, eventJson) {
+function handleFunctionCall(data) {
   try {
+    const nav_data = data.data;
     // Parse function arguments
-    const functionCallArgs = JSON.parse(nav_data.arguments);
+    const argumentsParam = nav_data.arguments;
+    const functionCallArgs = JSON.parse(argumentsParam);
     const userInput = functionCallArgs.userInput;
     const callId = nav_data.call_id;
     
@@ -201,12 +203,14 @@ function handleFunctionCall(nav_data, eventJson) {
 ```
 
 ```python Python
-async def handle_function_call(nav_data, event_json, websocket):
+async def handle_function_call(data, websocket):
     try:
+        nav_data = data.get('data')
         # Parse function arguments
-        function_call_args = json.loads(nav_data['arguments'])
+        arguments_param = nav_data.get('arguments')
+        function_call_args = json.loads(arguments_param)
         user_input = function_call_args.get('userInput')
-        call_id = nav_data['call_id']
+        call_id = nav_data.get('call_id')
         
         if user_input:
             # Call your external API or business logic
@@ -331,23 +335,16 @@ After processing the function call, send the result back to the AI so it can con
 function sendFunctionCallResult(result, callId) {
   // Send function call output
   const resultJson = {
-    type: 'conversation.item.create',
-    item: {
-      type: 'function_call_output',
-      output: result,
-      call_id: callId
+    type: NavTalkMessageType.REALTIME_FUNCTION_CALL_OUTPUT,
+    data: {
+      content: result,
+      call_id: callId,
+      reply: 1
     }
   };
   
   socket.send(JSON.stringify(resultJson));
   console.log('Sent function call result:', resultJson);
-  
-  // Request AI to generate a response based on the function result
-  const responseRequest = {
-    type: 'response.create'
-  };
-  socket.send(JSON.stringify(responseRequest));
-  console.log('Requested AI response');
 }
 ```
 
@@ -355,29 +352,22 @@ function sendFunctionCallResult(result, callId) {
 async def send_function_call_result(result, call_id, websocket):
     # Send function call output
     result_json = {
-        'type': 'conversation.item.create',
-        'item': {
-            'type': 'function_call_output',
-            'output': result,
-            'call_id': call_id
+        'type': NAV_TALK_MESSAGE_TYPE['REALTIME_FUNCTION_CALL_OUTPUT'],
+        'data': {
+            'content': result,
+            'call_id': call_id,
+            'reply': 1
         }
     }
     
     await websocket.send(json.dumps(result_json))
     print(f'Sent function call result: {result_json}')
-    
-    # Request AI to generate a response based on the function result
-    response_request = {
-        'type': 'response.create'
-    }
-    await websocket.send(json.dumps(response_request))
-    print('Requested AI response')
 ```
 </CodeGroup>
 
-<Warning>
-  Always call `response.create` after sending the function call output. This tells the AI to process the function result and continue the conversation.
-</Warning>
+<Note>
+  The `reply: 1` field in the function call output message indicates that the AI should automatically generate a response based on the function result. The AI will process the function result and continue the conversation without needing a separate `response.create` message.
+</Note>
 </Step>
 </Steps>
 
