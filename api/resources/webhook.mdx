@@ -1,0 +1,500 @@
+---
+title: "Webhook"
+description: "Integration guide for receiving real-time conversation events and complete session records via Webhook"
+toc:
+  maxDepth: 1
+---
+
+NavTalk supports pushing real-time conversation events and complete session records to your server via Webhook, enabling you to:
+
+- Receive real-time session lifecycle events (session creation, message output, session closure)
+- Receive complete session records when a session ends
+- Persist conversation data to databases
+- Implement business logic processing and data analysis
+
+## How It Works
+
+Webhook uses HTTP POST requests to push events to your configured server endpoint. NavTalk triggers Webhooks in the following scenarios:
+
+1. **Real-time Event Push** (`/api/webhook/message`): Immediately pushes when specific events occur in a session
+2. **Session Record Push** (`/api/webhook/session`): Pushes complete session data when a session ends
+
+## Event Types
+
+**Real-time Events (Message Webhook)**: Pushed through the `/api/webhook/message` endpoint, including the following event types:
+
+| Event Type | Description | Trigger Time |
+|---------|------|---------|
+| `session.created` | Session creation | When a new session is established |
+| `conversation.output` | Conversation output | When AI or user sends a message |
+| `session.closed` | Session closure | When a session ends |
+
+**Session Records (Session Webhook)**: Pushed through the `/api/webhook/session` endpoint, including complete message list (all conversation content), session start time, session end time, and session ID.
+
+## Quick Start
+
+Select your programming language and framework to create a Webhook endpoint. Below are example code snippets for Webhook controller/route handling:
+
+<CodeGroup>
+```java WebhookController.java
+package org.demo.hookjava.controller;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.demo.hookjava.model.SessionData;
+import org.demo.hookjava.model.MessageData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/webhook")
+public class WebhookController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * Receive real-time Webhook events
+     * Handle events such as session creation, conversation output, and session closure
+     */
+    @PostMapping("/message")
+    public ResponseEntity<String> receiveRealTimeWebhook(@RequestBody MessageData payload) {
+        logger.info("========== Webhook Event Received ==========");
+        logger.info("Event: {}", payload.getEvent());
+        logger.info("Session ID: {}", payload.getSessionId());
+        logger.info("Role: {}", payload.getRole());
+        logger.info("Timestamp: {}", payload.getTimestamp());
+        logger.info("Message: {}", payload.getMessage());
+        logger.info("============================================");
+
+        // Handle business logic based on event type
+        switch (payload.getEvent()) {
+            case "session.created":
+                // TODO: Handle session creation logic
+                break;
+            case "conversation.output":
+                // TODO: Handle conversation messages
+                break;
+            case "session.closed":
+                // TODO: Handle session closure logic
+                break;
+            default:
+                logger.warn("Unknown event type: {}", payload.getEvent());
+        }
+
+        return ResponseEntity.ok("Webhook received successfully");
+    }
+
+    /**
+     * Receive complete session record
+     * Receive entire session data when session ends
+     */
+    @PostMapping("/session")
+    public ResponseEntity<String> receiveSessionRecord(@RequestBody SessionData sessData) {
+        try {
+            String jsonStr = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(sessData);
+            logger.info("Full session record received: {}", jsonStr);
+            // TODO: Persist sessData to database or perform other business logic
+        } catch (Exception e) {
+            logger.error("Failed to process session record", e);
+        }
+        return ResponseEntity.ok("Session record received successfully");
+    }
+}
+```
+
+```python webhook_controller.py
+from flask import Flask, request, jsonify
+import json
+import logging
+
+app = Flask(__name__)
+logger = logging.getLogger(__name__)
+
+@app.route('/api/webhook/message', methods=['POST'])
+def receive_real_time_webhook():
+    """Receive real-time Webhook events"""
+    try:
+        payload = request.get_json()
+        
+        logger.info("========== Webhook Event Received ==========")
+        logger.info(f"Event: {payload.get('event')}")
+        logger.info(f"Session ID: {payload.get('sessionId')}")
+        logger.info(f"Role: {payload.get('role')}")
+        logger.info(f"Timestamp: {payload.get('timestamp')}")
+        logger.info(f"Message: {payload.get('message')}")
+        logger.info("============================================")
+        
+        # Handle business logic based on event type
+        event = payload.get('event')
+        if event == 'session.created':
+            # TODO: Handle session creation logic
+            pass
+        elif event == 'conversation.output':
+            # TODO: Handle conversation messages
+            pass
+        elif event == 'session.closed':
+            # TODO: Handle session closure logic
+            pass
+        else:
+            logger.warning(f"Unknown event type: {event}")
+        
+        return jsonify({"message": "Webhook received successfully"}), 200
+    except Exception as e:
+        logger.error(f"Error processing webhook: {e}")
+        return jsonify({"error": "Error processing webhook"}), 500
+
+@app.route('/api/webhook/session', methods=['POST'])
+def receive_session_record():
+    """Receive complete session record"""
+    try:
+        sess_data = request.get_json()
+        
+        json_str = json.dumps(sess_data, indent=2, ensure_ascii=False)
+        logger.info(f"Full session record received: {json_str}")
+        # TODO: Persist sess_data to database or perform other business logic
+        
+        return jsonify({"message": "Session record received successfully"}), 200
+    except Exception as e:
+        logger.error(f"Failed to process session record: {e}")
+        return jsonify({"error": "Failed to process session record"}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
+```
+
+```csharp WebhookController.cs
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+
+namespace NavTalkWebhook.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class WebhookController : ControllerBase
+    {
+        private readonly ILogger<WebhookController> _logger;
+
+        public WebhookController(ILogger<WebhookController> logger)
+        {
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Receive real-time Webhook events
+        /// Handle events such as session creation, conversation output, and session closure
+        /// </summary>
+        [HttpPost("message")]
+        public IActionResult ReceiveRealTimeWebhook([FromBody] MessageData payload)
+        {
+            _logger.LogInformation("========== Webhook Event Received ==========");
+            _logger.LogInformation("Event: {Event}", payload.Event);
+            _logger.LogInformation("Session ID: {SessionId}", payload.SessionId);
+            _logger.LogInformation("Role: {Role}", payload.Role);
+            _logger.LogInformation("Timestamp: {Timestamp}", payload.Timestamp);
+            _logger.LogInformation("Message: {Message}", payload.Message);
+            _logger.LogInformation("============================================");
+
+            // Handle business logic based on event type
+            switch (payload.Event)
+            {
+                case "session.created":
+                    // TODO: Handle session creation logic
+                    break;
+                case "conversation.output":
+                    // TODO: Handle conversation messages
+                    break;
+                case "session.closed":
+                    // TODO: Handle session closure logic
+                    break;
+                default:
+                    _logger.LogWarning("Unknown event type: {Event}", payload.Event);
+                    break;
+            }
+
+            return Ok(new { message = "Webhook received successfully" });
+        }
+
+        /// <summary>
+        /// Receive complete session record
+        /// Receive entire session data when session ends
+        /// </summary>
+        [HttpPost("session")]
+        public IActionResult ReceiveSessionRecord([FromBody] SessionData sessData)
+        {
+            try
+            {
+                var jsonStr = JsonSerializer.Serialize(sessData, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true 
+                });
+                _logger.LogInformation("Full session record received: {JsonStr}", jsonStr);
+                // TODO: Persist sessData to database or perform other business logic
+                
+                return Ok(new { message = "Session record received successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process session record");
+                return StatusCode(500, new { error = "Failed to process session record" });
+            }
+        }
+    }
+}
+```
+</CodeGroup>
+
+Data model definitions:
+
+<CodeGroup>
+```java MessageData.java
+package org.demo.hookjava.model;
+
+public class MessageData {
+    private String event;       // session.created、conversation.output、session.closed
+    private String sessionId;
+    private String role;        // ai、user、system
+    private String timestamp;   // ISO 8601
+    private String message;     // conversation.output
+
+    // Getter / Setter
+    public String getEvent() { return event; }
+    public void setEvent(String event) { this.event = event; }
+
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public String getTimestamp() { return timestamp; }
+    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+}
+```
+
+```python models.py
+from dataclasses import dataclass
+from typing import Optional, List
+
+@dataclass
+class MessageData:
+    """Real-time event data model"""
+    event: str  # session.created、conversation.output、session.closed
+    session_id: str
+    role: str  # ai、user、system
+    timestamp: str  # ISO 8601
+    message: Optional[str] = None  # conversation.output
+
+@dataclass
+class SessionData:
+    """Complete session record, including all messages and session metadata"""
+    session_id: str
+    start_time: str  # UTC, ISO 8601
+    end_time: str  # UTC, ISO 8601
+    messages: List[MessageData]
+```
+
+```csharp Models.cs
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace NavTalkWebhook.Models
+{
+    /// <summary>
+    /// Real-time event data model
+    /// </summary>
+    public class MessageData
+    {
+        [JsonPropertyName("event")]
+        public string Event { get; set; }  // session.created、conversation.output、session.closed
+        
+        [JsonPropertyName("sessionId")]
+        public string SessionId { get; set; }
+        
+        [JsonPropertyName("role")]
+        public string Role { get; set; }  // ai、user、system
+        
+        [JsonPropertyName("timestamp")]
+        public string Timestamp { get; set; }  // ISO 8601
+        
+        [JsonPropertyName("message")]
+        public string Message { get; set; }  // conversation.output
+    }
+
+    /// <summary>
+    /// Complete session record, including all messages and session metadata
+    /// </summary>
+    public class SessionData
+    {
+        [JsonPropertyName("sessionId")]
+        public string SessionId { get; set; }
+        
+        [JsonPropertyName("startTime")]
+        public string StartTime { get; set; }  // UTC, ISO 8601
+        
+        [JsonPropertyName("endTime")]
+        public string EndTime { get; set; }  // UTC, ISO 8601
+        
+        [JsonPropertyName("messages")]
+        public List<MessageData> Messages { get; set; }
+    }
+}
+```
+</CodeGroup>
+
+Dependency configuration files:
+
+<CodeGroup>
+```xml pom.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.demo</groupId>
+    <artifactId>HookJava</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>HookJava</name>
+    <description>NavTalk Webhook sample project</description>
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <spring-boot.version>2.6.13</spring-boot.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>org.demo.hookjava.HookJavaApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+```txt requirements.txt
+Flask==2.3.3
+Werkzeug==2.3.7
+```
+
+```xml NavTalkWebhook.csproj
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+</Project>
+```
+</CodeGroup>
+
+Configure your Webhook URL in the NavTalk console: Log in to the [NavTalk Console](https://console.navtalk.ai/), go to project settings, and configure the following Webhook URLs:
+- **Real-time Event Webhook**: `https://your-domain.com/api/webhook/message`
+- **Session Record Webhook**: `https://your-domain.com/api/webhook/session`
+
+Deploy your application (Spring Boot / Flask / ASP.NET Core), ensure your server is publicly accessible, create a test session in NavTalk, and check your server logs to confirm Webhook events have been received.
+
+## Data Format
+
+**MessageData Format** - Real-time event data format:
+
+```json
+{
+  "event": "conversation.output",
+  "sessionId": "session_123456",
+  "role": "ai",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "message": "Hello, how can I help you?"
+}
+```
+
+**Field Descriptions:**
+
+| Field | Type | Description |
+|------|------|------|
+| `event` | string | Event type: `session.created`, `conversation.output`, `session.closed` |
+| `sessionId` | string | Unique session identifier |
+| `role` | string | Message role: `ai`, `user`, `system` |
+| `timestamp` | string | Event timestamp (ISO 8601 format) |
+| `message` | string | Message content (only present in `conversation.output` events) |
+
+**SessionData Format** - Complete session record data format:
+
+```json
+{
+  "sessionId": "session_123456",
+  "startTime": "2024-01-15T10:00:00Z",
+  "endTime": "2024-01-15T10:30:00Z",
+  "messages": [
+    {
+      "event": "conversation.output",
+      "sessionId": "session_123456",
+      "role": "user",
+      "timestamp": "2024-01-15T10:00:05Z",
+      "message": "Hello"
+    },
+    {
+      "event": "conversation.output",
+      "sessionId": "session_123456",
+      "role": "ai",
+      "timestamp": "2024-01-15T10:00:10Z",
+      "message": "Hello, how can I help you?"
+    }
+  ]
+}
+```
