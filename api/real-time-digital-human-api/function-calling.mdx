@@ -12,9 +12,9 @@ Define the functions that can be called by including them in the `tools` array. 
 <CodeGroup>
 ```javascript JavaScript
 const NavTalkMessageType = Object.freeze({
-    REALTIME_INPUT_FUNCTION_CALL: "realtime.input.function_call",
+    REALTIME_INPUT_FUNCTION_CALL: "realtime.input_function_call",
     REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE: "realtime.response.function_call_arguments.done",
-    REALTIME_FUNCTION_CALL_OUTPUT: "realtime.function_call.output",
+    REALTIME_FUNCTION_CALL_OUTPUT: "realtime.function_call_output",
     // ... other event types
 });
 
@@ -58,9 +58,9 @@ socket.onopen = () => {
 
 ```python Python
 NAV_TALK_MESSAGE_TYPE = {
-    'REALTIME_INPUT_FUNCTION_CALL': 'realtime.input.function_call',
+    'REALTIME_INPUT_FUNCTION_CALL': 'realtime.input_function_call',
     'REALTIME_RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE': 'realtime.response.function_call_arguments.done',
-    'REALTIME_FUNCTION_CALL_OUTPUT': 'realtime.function_call.output',
+    'REALTIME_FUNCTION_CALL_OUTPUT': 'realtime.function_call_output',
     # ... other event types
 }
 
@@ -154,10 +154,16 @@ async def handle_messages(websocket):
 
 The `realtime.response.function_call_arguments.done` event contains the following properties:
 
-<ResponseField name="data.arguments" type="string">
-JSON string containing the function call parameters. Parse this JSON string to extract the actual parameter values.
+<ResponseField name="data.function_name" type="string">
+Name of the function to be called.
 
-**Example**: `"{\"userInput\": \"What's the weather in Beijing?\"}"`
+**Example**: `"function_call_judge"`
+</ResponseField>
+
+<ResponseField name="data.arguments" type="string | object">
+Function call parameters. May be a JSON string or already parsed object containing the parameter values.
+
+**Example**: `"{\"userInput\": \"What's the weather in Beijing?\"}"` or `{"userInput": "What's the weather in Beijing?"}`
 </ResponseField>
 
 <ResponseField name="data.call_id" type="string">
@@ -175,26 +181,53 @@ Parse the function call arguments and execute your custom logic:
 function handleFunctionCall(data) {
   try {
     const nav_data = data.data;
-    // Parse function arguments
-    const argumentsParam = nav_data.arguments;
-    const functionCallArgs = JSON.parse(argumentsParam);
-    const userInput = functionCallArgs.userInput;
-    const callId = nav_data.call_id;
+    if (!nav_data) {
+      console.error('Invalid function call message:', data);
+      return;
+    }
     
-    if (userInput) {
-      // Call your external API or business logic
-      callExternalAPI(userInput)
-        .then(result => {
-          // Send the result back
-          sendFunctionCallResult(result, callId);
-        })
-        .catch(error => {
-          console.error('Function call failed:', error);
-          // Send error result
-          sendFunctionCallResult('Error: ' + error.message, callId);
-        });
-    } else {
-      console.error('Missing required parameter: userInput');
+    // Extract function call details
+    const functionName = nav_data.function_name;
+    const callId = nav_data.call_id;
+    let functionCallArgs = {};
+    
+    // Parse function arguments
+    if (nav_data.arguments) {
+      try {
+        if (typeof nav_data.arguments === 'string') {
+          functionCallArgs = JSON.parse(nav_data.arguments);
+        } else {
+          // arguments is already an object, use it directly
+          functionCallArgs = nav_data.arguments;
+        }
+      } catch (parseError) {
+        console.error('Failed to parse function call arguments:', parseError);
+      }
+    }
+    
+    // Handle different function calls
+    switch (functionName) {
+      case 'function_call_judge':
+        const userInput = functionCallArgs.userInput;
+        if (userInput) {
+          // Call your external API or business logic
+          callExternalAPI(userInput)
+            .then(result => {
+              // Send the result back
+              sendFunctionCallResult(result, callId);
+            })
+            .catch(error => {
+              console.error('Function call failed:', error);
+              // Send error result
+              sendFunctionCallResult('Error: ' + error.message, callId);
+            });
+        } else {
+          console.error('Missing required parameter: userInput');
+        }
+        break;
+      
+      default:
+        console.warn('Unhandled function call:', functionName, functionCallArgs);
     }
   } catch (error) {
     console.error('Error parsing function call arguments:', error);
@@ -206,26 +239,46 @@ function handleFunctionCall(data) {
 async def handle_function_call(data, websocket):
     try:
         nav_data = data.get('data')
+        if not nav_data:
+            print(f'Invalid function call message: {data}')
+            return
+        
+        # Extract function call details
+        function_name = nav_data.get('function_name')
+        call_id = nav_data.get('call_id')
+        function_call_args = {}
+        
         # Parse function arguments
         arguments_param = nav_data.get('arguments')
-        function_call_args = json.loads(arguments_param)
-        user_input = function_call_args.get('userInput')
-        call_id = nav_data.get('call_id')
-        
-        if user_input:
-            # Call your external API or business logic
+        if arguments_param:
             try:
-                result = await call_external_api(user_input)
-                # Send the result back
-                await send_function_call_result(result, call_id, websocket)
-            except Exception as error:
-                print(f'Function call failed: {error}')
-                # Send error result
-                await send_function_call_result(f'Error: {str(error)}', call_id, websocket)
+                if isinstance(arguments_param, str):
+                    function_call_args = json.loads(arguments_param)
+                else:
+                    # arguments is already a dictionary, use it directly
+                    function_call_args = arguments_param
+            except json.JSONDecodeError as parse_error:
+                print(f'Failed to parse function call arguments: {parse_error}')
+        
+        # Handle different function calls
+        if function_name == 'function_call_judge':
+            user_input = function_call_args.get('userInput')
+            if user_input:
+                # Call your external API or business logic
+                try:
+                    result = await call_external_api(user_input)
+                    # Send the result back
+                    await send_function_call_result(result, call_id, websocket)
+                except Exception as error:
+                    print(f'Function call failed: {error}')
+                    # Send error result
+                    await send_function_call_result(f'Error: {str(error)}', call_id, websocket)
+            else:
+                print('Missing required parameter: userInput')
         else:
-            print('Missing required parameter: userInput')
+            print(f'Unhandled function call: {function_name}, {function_call_args}')
     except Exception as error:
-        print(f'Error parsing function call arguments: {error}')
+        print(f'Error handling function call: {error}')
 ```
 </CodeGroup>
 </Step>
@@ -333,35 +386,47 @@ After processing the function call, send the result back to the AI so it can con
 <CodeGroup>
 ```javascript JavaScript
 function sendFunctionCallResult(result, callId) {
-  // Send function call output
+  // Send function call output with correct format
   const resultJson = {
     type: NavTalkMessageType.REALTIME_FUNCTION_CALL_OUTPUT,
     data: {
-      content: result,
-      call_id: callId,
-      reply: 1
+      output: result,
+      call_id: callId
     }
   };
   
   socket.send(JSON.stringify(resultJson));
   console.log('Sent function call result:', resultJson);
+  
+  // Actively request a response.create to get the result
+  const responseCreateJson = {
+    type: "response.create"
+  };
+  socket.send(JSON.stringify(responseCreateJson));
+  console.log('Requested response.create after function call result');
 }
 ```
 
 ```python Python
 async def send_function_call_result(result, call_id, websocket):
-    # Send function call output
+    # Send function call output with correct format
     result_json = {
         'type': NAV_TALK_MESSAGE_TYPE['REALTIME_FUNCTION_CALL_OUTPUT'],
         'data': {
-            'content': result,
-            'call_id': call_id,
-            'reply': 1
+            'output': result,
+            'call_id': call_id
         }
     }
     
     await websocket.send(json.dumps(result_json))
     print(f'Sent function call result: {result_json}')
+    
+    # Actively request a response.create to get the result
+    response_create_json = {
+        'type': 'response.create'
+    }
+    await websocket.send(json.dumps(response_create_json))
+    print('Requested response.create after function call result')
 ```
 </CodeGroup>
 
