@@ -186,18 +186,57 @@
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "NavTalk API",
             "icon": "terminal",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              {
+                "group": "Provider",
+                "pages": [
+                  "api-reference/endpoint/navtalk/provider-list"
+                ]
+              },
+              {
+                "group": "Model",
+                "pages": [
+                  "api-reference/endpoint/navtalk/model-list"
+                ]
+              },
+              {
+                "group": "Voice",
+                "pages": [
+                  "api-reference/endpoint/navtalk/voice-list"
+                ]
+              },
+              {
+                "group": "Avatar",
+                "pages": [
+                  "api-reference/endpoint/navtalk/avatar-add",
+                  "api-reference/endpoint/navtalk/avatar-update",
+                  "api-reference/endpoint/navtalk/avatar-delete",
+                  "api-reference/endpoint/navtalk/avatar-status",
+                  "api-reference/endpoint/navtalk/avatar-list"
+                ]
+              },
+              {
+                "group": "File",
+                "pages": [
+                  "api-reference/endpoint/navtalk/file-upload"
+                ]
+              },
+              {
+                "group": "Generate",
+                "pages": [
+                  "api-reference/endpoint/navtalk/generate-loop-video",
+                  "api-reference/endpoint/navtalk/generate-loop-video-status"
+                ]
+              }
             ]
           }
         ]
       }
     ]
   },
-  "openapi": "api-reference/openapi.json"
+  "api": {
+    "openapi": "api-reference/openapi.json"
+  }
 }

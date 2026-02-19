@@ -1,94 +1,152 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "NavTalk API",
+    "description": "NavTalk API for AI avatar management, file uploads, and video generation",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.navtalk.ai",
+      "description": "NavTalk Production Environment Server"
+    },
+    {
+      "url": "https://qaapi.navtalk.ai",
+      "description": "NavTalk QA Environment Server"
+    },
+    {
+      "url": "https://devapi.navtalk.ai",
+      "description": "NavTalk Development Environment Server"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "navtalkLicenseAuth": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/api/open/v1/provider/list": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "tags": ["Provider"],
+        "summary": "List Providers",
+        "description": "Returns all AI providers associated with the current license. The returned `id` and `provider` fields are used when creating avatars or querying models/voices.",
+        "operationId": "listProviders",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                "schema": { "$ref": "#/components/schemas/ProviderListResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": [
+                    {
+                      "id": "b92a28fb2ea737457c7f13ba554759c0",
+                      "provider": "openai",
+                      "name": "My OpenAI Provider"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "License validation failed or server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": {
+                  "code": 400,
+                  "message": "Invalid license key"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/avatar/add": {
+      "post": {
+        "tags": ["Avatar"],
+        "summary": "Add Avatar",
+        "description": "Create a new avatar training job from a video or image URL.\n\n- **Video avatar**: provide an `mp4`, `mov`, `webm`, `m4v`, or `avi` URL.\n- **Image avatar**: provide a `jpg`, `jpeg`, `png`, `gif`, `webp`, or `bmp` URL.\n\nReturns a `jobId` (for polling status) and an `avatarId` (for referencing the avatar in sessions).\n\nThe `license` key can be passed as either a query parameter or a request header.",
+        "operationId": "addAvatar",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AvatarAddRequest" },
+              "examples": {
+                "video": {
+                  "summary": "Video avatar",
+                  "value": {
+                    "name": "my-video-avatar",
+                    "url": "https://example.com/sample.mp4",
+                    "providerId": "b92a28fb2ea737457c7f13ba554759c0",
+                    "model": "agent_3201khcbet2vf349gpmtfg83q0hy",
+                    "voice": "CwhRBWXzGAHq8TQ4Fs17",
+                    "firstMessage": "Hi! How can I help you today?",
+                    "prompt": "You are a helpful assistant."
+                  }
+                },
+                "image": {
+                  "summary": "Image avatar",
+                  "value": {
+                    "name": "my-image-avatar",
+                    "url": "https://example.com/photo.jpg",
+                    "providerId": "b92a28fb2ea737457c7f13ba554759c0",
+                    "model": "agent_3201khcbet2vf349gpmtfg83q0hy",
+                    "voice": "CwhRBWXzGAHq8TQ4Fs17"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar training job created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AvatarAddResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": {
+                    "jobId": "096f43cf-4dbf-47d5-9583-8e3d0c3a5641",
+                    "avatarId": "fbc269dcd0a738cf8e5e0f465671303c"
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Validation failed or server error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "examples": {
+                  "invalidProvider": {
+                    "summary": "Provider not found",
+                    "value": { "code": 400, "message": "Provider not found" }
+                  },
+                  "invalidModel": {
+                    "summary": "Model not supported",
+                    "value": { "code": 400, "message": "Model 'xxx' is not supported by this provider" }
+                  },
+                  "invalidUrl": {
+                    "summary": "Invalid URL",
+                    "value": { "code": 400, "message": "The url must point to an image (jpg/jpeg/png/gif/webp/bmp) or video (mp4/mov/webm/m4v/avi)" }
+                  },
+                  "duplicateName": {
+                    "summary": "Duplicate name",
+                    "value": { "code": 400, "message": "The name already exists" }
+                  }
                 }
               }
             }
@@ -96,57 +154,562 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/open/v1/avatar/delete": {
+      "post": {
+        "tags": ["Avatar"],
+        "summary": "Delete Avatar",
+        "description": "Delete an avatar by its ID. If the avatar's training job is still in `Pending` or `Processing` state, the job will also be cancelled automatically.",
+        "operationId": "deleteAvatar",
+        "security": [{ "navtalkLicenseAuth": [] }],
         "parameters": [
           {
             "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
+            "in": "query",
+            "description": "The avatar ID to delete",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "example": "fbc269dcd0a738cf8e5e0f465671303c"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Avatar deleted successfully",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                "schema": { "$ref": "#/components/schemas/NavtalkMessageResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": "Avatar deleted successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Avatar not found or permission denied",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "examples": {
+                  "notFound": {
+                    "summary": "Avatar not found",
+                    "value": { "code": 400, "message": "Avatar not found" }
+                  },
+                  "noPermission": {
+                    "summary": "No permission",
+                    "value": { "code": 400, "message": "You do not have permission to delete this avatar" }
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/api/open/v1/avatar/status": {
+      "get": {
+        "tags": ["Avatar"],
+        "summary": "Get Avatar Status",
+        "description": "Query the training status of an avatar job. Poll this endpoint after calling `/avatar/add` until the status becomes `Success` or `Failed`.\n\nPossible statuses: `Pending`, `Processing`, `Success`, `Failed`.",
+        "operationId": "getAvatarStatus",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "query",
+            "description": "The job ID returned by `/avatar/add`",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "096f43cf-4dbf-47d5-9583-8e3d0c3a5641"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AvatarStatusResponse" },
+                "examples": {
+                  "success": {
+                    "summary": "Training complete",
+                    "value": { "code": 200, "message": "SUCCESS", "data": "Success" }
+                  },
+                  "processing": {
+                    "summary": "Still processing",
+                    "value": { "code": 200, "message": "SUCCESS", "data": "Processing" }
+                  },
+                  "pending": {
+                    "summary": "Task is pending",
+                    "value": { "code": 200, "message": "SUCCESS", "data": "Pending" }
+                  },
+                  "failed": {
+                    "summary": "Training failed",
+                    "value": { "code": 200, "message": "SUCCESS", "data": "Failed" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Job not found or validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": { "code": 400, "message": "Avatar not found" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/avatar/list": {
+      "get": {
+        "tags": ["Avatar"],
+        "summary": "List Avatars",
+        "description": "Returns all avatars owned by the current license account.",
+        "operationId": "listAvatars",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Avatar list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AvatarListResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": [
+                    {
+                      "id": "fbc269dcd0a738cf8e5e0f465671303c",
+                      "name": "my-video-avatar",
+                      "url": "https://example.com/sample.mp4",
+                      "thumbnailUrl": "https://example.com/thumb.jpg",
+                      "providerId": "b92a28fb2ea737457c7f13ba554759c0",
+                      "model": "agent_3201khcbet2vf349gpmtfg83q0hy",
+                      "voice": "CwhRBWXzGAHq8TQ4Fs17",
+                      "firstMessage": "Hi! How can I help you today?",
+                      "prompt": "You are a helpful assistant.",
+                      "videoFile": true,
+                      "status": "Success"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "License validation failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": { "code": 400, "message": "Invalid license key" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/avatar/update": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Avatar"],
+        "summary": "Update Avatar",
+        "description": "Update an existing avatar's configuration including provider, model, voice, prompt, and thumbnail.\n\nYou can update the following fields:\n- `providerId`, `model`, `voice`: Switch to different AI provider/model/voice\n- `firstMessage`, `prompt`: Modify avatar behavior and initial greeting\n- `thumbnailUrl`: Update the avatar's thumbnail image\n\nNote: The avatar's source media (`url`) and name cannot be changed after creation.",
+        "operationId": "updateAvatar",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+              "schema": { "$ref": "#/components/schemas/AvatarUpdateRequest" },
+              "example": {
+                "id": "avatar-abc123xyz",
+                "providerId": "provider-def456uvw",
+                "model": "model-ghi789rst",
+                "voice": "voice-jkl012mno",
+                "firstMessage": "Hello! How may I assist you?",
+                "prompt": "You are a friendly customer service assistant.",
+                "thumbnailUrl": "https://cdn.example.com/thumbnails/avatar-thumb.jpg"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Avatar updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkMessageResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": "Avatar updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or permission denied",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "examples": {
+                  "notFound": {
+                    "summary": "Avatar not found",
+                    "value": { "code": 400, "message": "Avatar not found" }
+                  },
+                  "noPermission": {
+                    "summary": "No permission to update",
+                    "value": { "code": 400, "message": "No permission to update this avatar" }
+                  },
+                  "invalidProvider": {
+                    "summary": "Provider not found",
+                    "value": { "code": 400, "message": "Provider not found" }
+                  },
+                  "invalidModel": {
+                    "summary": "Model not supported",
+                    "value": { "code": 400, "message": "Model 'xxx' is not supported by this provider" }
+                  },
+                  "invalidVoice": {
+                    "summary": "Voice not supported",
+                    "value": { "code": 400, "message": "Voice 'xxx' is not supported by this provider" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/model/list": {
+      "get": {
+        "tags": ["Model"],
+        "summary": "List Models",
+        "description": "Returns all AI models available under the specified provider. The returned `model` field is used as the `model` parameter when creating an avatar.",
+        "operationId": "listModels",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [
+          {
+            "name": "providerId",
+            "in": "query",
+            "description": "The provider ID (obtained from `/provider/list`)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "b92a28fb2ea737457c7f13ba554759c0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Model list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelListResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": [
+                    {
+                      "model": "agent_3201khcbet2vf349gpmtfg83q0hy",
+                      "name": "GPT-4o Realtime"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "License validation failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": { "code": 400, "message": "Invalid license key" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/voice/list": {
+      "get": {
+        "tags": ["Voice"],
+        "summary": "List Voices",
+        "description": "Returns all voices available under the specified provider. The returned `voice` field is used as the `voice` parameter when creating an avatar.",
+        "operationId": "listVoices",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [
+          {
+            "name": "providerId",
+            "in": "query",
+            "description": "The provider ID (obtained from `/provider/list`)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "b92a28fb2ea737457c7f13ba554759c0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Voice list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VoiceListResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": [
+                    {
+                      "voice": "CwhRBWXzGAHq8TQ4Fs17",
+                      "name": "Rachel",
+                      "description": "A calm and clear female voice",
+                      "gender": "female",
+                      "url": "https://example.com/voices/rachel-preview.mp3"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "License validation failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": { "code": 400, "message": "Invalid license key" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/file/upload": {
+      "post": {
+        "tags": ["File"],
+        "summary": "Upload File",
+        "description": "Upload an image or video file to the NavTalk storage.\n\n**Supported formats:**\n- **Images**: jpg, jpeg, png, gif, webp, bmp\n- **Videos**: mp4, mov, webm, m4v, avi\n\n**Limitations:**\n- Maximum file size: 20 MB\n- Only image and video files are accepted\n\nReturns the uploaded file's metadata including accessible URL.",
+        "operationId": "uploadFile",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image or video file to upload (max 20MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FileUploadResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": {
+                    "fileName": "img.png",
+                    "fileUrl": "/uploadFiles/2026-02-19/eb836cdb-6a07-4424-bedd-0ddd5b28eb67.png",
+                    "suffix": "png",
+                    "fileType": "image/png"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Upload failed due to validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "examples": {
+                  "emptyFile": {
+                    "summary": "File is empty",
+                    "value": { "code": 400, "message": "file is empty" }
+                  },
+                  "invalidType": {
+                    "summary": "Invalid file type",
+                    "value": { "code": 400, "message": "file is not video or image" }
+                  },
+                  "tooLarge": {
+                    "summary": "File too large",
+                    "value": { "code": 400, "message": "file size is too large, max 20MB" }
+                  },
+                  "uploadFailed": {
+                    "summary": "Upload failed",
+                    "value": { "code": 400, "message": "failed to save file" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/generate/generateLoopVideo": {
+      "post": {
+        "tags": ["Generate"],
+        "summary": "Generate Loop Video",
+        "description": "Generate a looping video from an uploaded image. The complete workflow includes:\n1. Upload an image file\n2. Generate video from the image\n3. Detect blink points in the video\n4. Create a seamlessly looping video\n\nThis endpoint initiates the generation process and returns a task ID as a string. Use this task ID to poll the status endpoint.\n\n**Supported image formats**: jpg, jpeg, png, gif, webp, bmp\n\n**Response**: Returns a task ID string (e.g., \"853377020565258316\") that you should use to query the generation status.",
+        "operationId": "generateLoopVideo",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image"],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image file to generate video from"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "Optional generation prompt to guide the video style",
+                    "example": "Natural head movement, subtle smile"
+                  },
+                  "negative_prompt": {
+                    "type": "string",
+                    "description": "Optional negative prompt to avoid unwanted features",
+                    "example": "Blurry, distorted, unnatural"
+                  },
+                  "beforeSeconds": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Seconds to keep before the detected blink point (default: 0.5)",
+                    "example": 0.5
+                  },
+                  "afterSeconds": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Seconds to keep after the detected blink point (default: 0.5)",
+                    "example": 0.5
+                  },
+                  "maxPollingTime": {
+                    "type": "integer",
+                    "description": "Maximum polling time in seconds (default: 300)",
+                    "example": 300
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video generation task created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoopVideoGenResponse" },
+                "example": {
+                  "code": 200,
+                  "message": "SUCCESS",
+                  "data": "853377020565258316"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Generation failed due to validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "examples": {
+                  "emptyImage": {
+                    "summary": "Image file is empty",
+                    "value": { "code": 400, "message": "Image file cannot be empty" }
+                  },
+                  "processingFailed": {
+                    "summary": "Processing failed",
+                    "value": { "code": 400, "message": "Processing failed: error details" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/open/v1/generate/generateLoopVideo/status": {
+      "get": {
+        "tags": ["Generate"],
+        "summary": "Query Loop Video Generation Status",
+        "description": "Query the generation status of a loop video task. Poll this endpoint after calling `/generate/generateLoopVideo` until the task is completed.\n\n**This endpoint always returns `code: 200` with two possible success states:**\n\n1. **Processing state** (task in progress):\n   - `message`: `\"Task is still in progress\"`\n   - `data`: `null`\n   - Action: Continue polling\n\n2. **Completed state** (task finished):\n   - `message`: `\"SUCCESS\"`\n   - `data`: Object containing video file information\n   - Action: Stop polling, video is ready\n\n**Polling recommendations:**\n- Poll every 2-5 seconds while `data` is `null`\n- Stop polling when `data` is not `null` (task completed)\n- The `fileUrl` in the response is a relative path that should be combined with your server base URL",
+        "operationId": "getGenerateLoopVideoStatus",
+        "security": [{ "navtalkLicenseAuth": [] }],
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "query",
+            "description": "The task ID string returned by `/generate/generateLoopVideo` (e.g., \"853377020565258316\")",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "853377020565258316"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved successfully. Returns two possible states: processing (data: null) or completed (data: object with video info).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoopVideoStatusResponse" },
+                "examples": {
+                  "success": {
+                    "summary": "Generation completed successfully",
+                    "value": {
+                      "code": 200,
+                      "message": "SUCCESS",
+                      "data": {
+                        "suffix": "mp4",
+                        "originalTaskId": "853381669443731470",
+                        "fileUrl": "/uploadFiles/2026-02-19/357cdbca-d06c-4060-bb1a-2930a6260be1.mp4",
+                        "fileType": "video/mp4"
+                      }
+                    }
+                  },
+                  "processing": {
+                    "summary": "Task is still in progress",
+                    "value": {
+                      "code": 200,
+                      "message": "Task is still in progress",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Task not found or validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NavtalkErrorResponse" },
+                "example": { "code": 400, "message": "Failed to query status: Task not found" }
+              }
+            }
           }
         }
       }
@@ -154,64 +717,417 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "AvatarAddRequest": {
+        "required": ["name", "url", "providerId", "model", "voice"],
         "type": "object",
         "properties": {
           "name": {
-            "description": "The name of the plant",
-            "type": "string"
+            "type": "string",
+            "description": "Display name for the avatar. Must be unique per account.",
+            "example": "my-video-avatar"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "url": {
+            "type": "string",
+            "description": "URL of the source media file. Supported video formats: `mp4`, `mov`, `webm`, `m4v`, `avi`. Supported image formats: `jpg`, `jpeg`, `png`, `gif`, `webp`, `bmp`.",
+            "example": "https://example.com/sample.mp4"
+          },
+          "providerId": {
+            "type": "string",
+            "description": "The provider ID to use (obtained from `/provider/list`).",
+            "example": "b92a28fb2ea737457c7f13ba554759c0"
+          },
+          "model": {
+            "type": "string",
+            "description": "The model key to use (obtained from `/model/list`).",
+            "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
+          },
+          "voice": {
+            "type": "string",
+            "description": "The voice key to use (obtained from `/voice/list`).",
+            "example": "CwhRBWXzGAHq8TQ4Fs17"
+          },
+          "firstMessage": {
+            "type": "string",
+            "description": "Optional opening message the avatar says at the start of a conversation.",
+            "example": "Hi! How can I help you today?"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Optional system prompt that controls the avatar's behavior and personality.",
+            "example": "You are a helpful assistant."
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Optional thumbnail image URL. If omitted for a video avatar, the first frame is extracted automatically.",
+            "example": "https://example.com/thumb.jpg"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "OpenAvatar": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique avatar ID.",
+            "example": "fbc269dcd0a738cf8e5e0f465671303c"
           },
-          {
-            "required": [
-              "id"
-            ],
+          "name": {
+            "type": "string",
+            "description": "Display name of the avatar.",
+            "example": "my-video-avatar"
+          },
+          "url": {
+            "type": "string",
+            "description": "Source media URL used to create the avatar.",
+            "example": "https://example.com/sample.mp4"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Thumbnail image URL (null if not set).",
+            "example": "https://example.com/thumb.jpg"
+          },
+          "providerId": {
+            "type": "string",
+            "description": "Provider ID associated with this avatar.",
+            "example": "b92a28fb2ea737457c7f13ba554759c0"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model key used by this avatar.",
+            "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
+          },
+          "voice": {
+            "type": "string",
+            "description": "Voice key used by this avatar.",
+            "example": "CwhRBWXzGAHq8TQ4Fs17"
+          },
+          "firstMessage": {
+            "type": "string",
+            "description": "Opening message spoken by the avatar.",
+            "example": "Hi! How can I help you today?"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "System prompt for the avatar.",
+            "example": "You are a helpful assistant."
+          },
+          "videoFile": {
+            "type": "boolean",
+            "description": "True if the avatar was created from a video file.",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "Processing", "Success", "Failed"],
+            "description": "Current training status of the avatar.",
+            "example": "Success"
+          }
+        }
+      },
+      "OpenProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique provider ID.",
+            "example": "b92a28fb2ea737457c7f13ba554759c0"
+          },
+          "provider": {
+            "type": "string",
+            "enum": ["openai", "elevenlabs", "unknow"],
+            "description": "Provider type identifier.",
+            "example": "openai"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the provider.",
+            "example": "My OpenAI Provider"
+          }
+        }
+      },
+      "OpenModel": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "Model key, used as the `model` field when creating an avatar.",
+            "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the model.",
+            "example": "GPT-4o Realtime"
+          }
+        }
+      },
+      "OpenVoice": {
+        "type": "object",
+        "properties": {
+          "voice": {
+            "type": "string",
+            "description": "Voice key, used as the `voice` field when creating an avatar.",
+            "example": "CwhRBWXzGAHq8TQ4Fs17"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the voice.",
+            "example": "Rachel"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description of the voice characteristics.",
+            "example": "A calm and clear female voice"
+          },
+          "gender": {
+            "type": "string",
+            "description": "Gender of the voice.",
+            "example": "female"
+          },
+          "url": {
+            "type": "string",
+            "description": "Audio preview URL for this voice.",
+            "example": "https://example.com/voices/rachel-preview.mp3"
+          }
+        }
+      },
+      "ProviderListResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OpenProvider" }
+          }
+        }
+      },
+      "AvatarAddResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
             "type": "object",
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+              "jobId": {
+                "type": "string",
+                "description": "Use this ID to poll `/avatar/status`.",
+                "example": "096f43cf-4dbf-47d5-9583-8e3d0c3a5641"
+              },
+              "avatarId": {
+                "type": "string",
+                "description": "Use this ID to reference the avatar in sessions.",
+                "example": "fbc269dcd0a738cf8e5e0f465671303c"
               }
             }
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "AvatarStatusResponse": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "string",
+            "enum": ["Pending", "Processing", "Success", "Failed"],
+            "description": "Current training status of the avatar.",
+            "example": "Success"
+          }
+        }
+      },
+      "AvatarListResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OpenAvatar" }
+          }
+        }
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OpenModel" }
+          }
+        }
+      },
+      "VoiceListResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OpenVoice" }
+          }
+        }
+      },
+      "NavtalkMessageResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": { "type": "string", "example": "Avatar deleted successfully" }
+        }
+      },
+      "NavtalkErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 400 },
+          "message": { "type": "string", "example": "Invalid license key" }
+        }
+      },
+      "AvatarUpdateRequest": {
+        "required": ["id", "providerId", "model", "voice"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The avatar ID to update.",
+            "example": "avatar-abc123xyz"
           },
-          "message": {
-            "type": "string"
+          "providerId": {
+            "type": "string",
+            "description": "The provider ID to use (obtained from `/provider/list`).",
+            "example": "provider-def456uvw"
+          },
+          "model": {
+            "type": "string",
+            "description": "The model key to use (obtained from `/model/list`).",
+            "example": "model-ghi789rst"
+          },
+          "voice": {
+            "type": "string",
+            "description": "The voice key to use (obtained from `/voice/list`).",
+            "example": "voice-jkl012mno"
+          },
+          "firstMessage": {
+            "type": "string",
+            "description": "Optional opening message the avatar says at the start of a conversation.",
+            "example": "Hello! How may I assist you?"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Optional system prompt that controls the avatar's behavior and personality.",
+            "example": "You are a friendly customer service assistant."
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Optional thumbnail image URL.",
+            "example": "https://cdn.example.com/thumbnails/avatar-thumb.jpg"
+          }
+        }
+      },
+      "OpenFile": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "Original filename of the uploaded file.",
+            "example": "img.png"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "Relative path to the uploaded file.",
+            "example": "/uploadFiles/2026-02-19/eb836cdb-6a07-4424-bedd-0ddd5b28eb67.png"
+          },
+          "suffix": {
+            "type": "string",
+            "description": "File extension without the dot.",
+            "example": "png"
+          },
+          "fileType": {
+            "type": "string",
+            "description": "MIME type of the uploaded file.",
+            "example": "image/png"
+          }
+        }
+      },
+      "FileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": { "$ref": "#/components/schemas/OpenFile" }
+        }
+      },
+      "LoopVideoGenResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer", "example": 200 },
+          "message": { "type": "string", "example": "SUCCESS" },
+          "data": {
+            "type": "string",
+            "description": "Task ID for polling generation status. Use this ID to query the generation status via the status endpoint.",
+            "example": "853377020565258316"
+          }
+        }
+      },
+      "LoopVideoStatusResponse": {
+        "type": "object",
+        "properties": {
+          "code": { 
+            "type": "integer", 
+            "example": 200 
+          },
+          "message": { 
+            "type": "string", 
+            "description": "Status message indicating task state. Returns 'Task is still in progress' when processing, or 'SUCCESS' when completed. Both are successful responses (code 200).",
+            "example": "SUCCESS",
+            "enum": ["Task is still in progress", "SUCCESS"]
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null",
+                "description": "null when task is still in progress"
+              },
+              {
+                "type": "object",
+                "description": "Video information when task is completed successfully",
+                "properties": {
+                  "suffix": {
+                    "type": "string",
+                    "description": "Video file extension.",
+                    "example": "mp4"
+                  },
+                  "originalTaskId": {
+                    "type": "string",
+                    "description": "The original task ID.",
+                    "example": "853381669443731470"
+                  },
+                  "fileUrl": {
+                    "type": "string",
+                    "description": "Relative path to the generated video file.",
+                    "example": "/uploadFiles/2026-02-19/357cdbca-d06c-4060-bb1a-2930a6260be1.mp4"
+                  },
+                  "fileType": {
+                    "type": "string",
+                    "description": "MIME type of the video file.",
+                    "example": "video/mp4"
+                  }
+                }
+              }
+            ]
           }
         }
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "navtalkLicenseAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "license",
+        "description": "NavTalk API license key (e.g. sk_navtalk_...)"
       }
     }
   }
 }
+
