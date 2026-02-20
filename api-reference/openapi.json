@@ -736,7 +736,7 @@
           },
           "model": {
             "type": "string",
-            "description": "The model key to use (obtained from `/model/list`).",
+            "description": "The model key to use (obtained from `/model/list`). For ElevenLabs agents, see [ElevenLabs Agents Quickstart](https://elevenlabs.io/docs/eleven-agents/quickstart).",
             "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
           },
           "voice": {
@@ -781,7 +781,7 @@
           },
           "model": {
             "type": "string",
-            "description": "Model key used by this avatar.",
+            "description": "Model key used by this avatar. For ElevenLabs agents, see [ElevenLabs Agents Quickstart](https://elevenlabs.io/docs/eleven-agents/quickstart).",
             "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
           },
           "voice": {
@@ -838,7 +838,7 @@
         "properties": {
           "model": {
             "type": "string",
-            "description": "Model key, used as the `model` field when creating an avatar.",
+            "description": "Model key, used as the `model` field when creating an avatar. For ElevenLabs agents, see [ElevenLabs Agents Quickstart](https://elevenlabs.io/docs/eleven-agents/quickstart).",
             "example": "agent_3201khcbet2vf349gpmtfg83q0hy"
           },
           "name": {
@@ -988,7 +988,7 @@
           },
           "model": {
             "type": "string",
-            "description": "The model key to use (obtained from `/model/list`).",
+            "description": "The model key to use (obtained from `/model/list`). For ElevenLabs agents, see [ElevenLabs Agents Quickstart](https://elevenlabs.io/docs/eleven-agents/quickstart).",
             "example": "model-ghi789rst"
           },
           "voice": {
