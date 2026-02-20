@@ -288,7 +288,6 @@
                       "id": "fbc269dcd0a738cf8e5e0f465671303c",
                       "name": "my-video-avatar",
                       "url": "https://example.com/sample.mp4",
-                      "thumbnailUrl": "https://example.com/thumb.jpg",
                       "providerId": "b92a28fb2ea737457c7f13ba554759c0",
                       "model": "agent_3201khcbet2vf349gpmtfg83q0hy",
                       "voice": "CwhRBWXzGAHq8TQ4Fs17",
@@ -318,7 +317,7 @@
       "post": {
         "tags": ["Avatar"],
         "summary": "Update Avatar",
-        "description": "Update an existing avatar's configuration including provider, model, voice, prompt, and thumbnail.\n\nYou can update the following fields:\n- `providerId`, `model`, `voice`: Switch to different AI provider/model/voice\n- `firstMessage`, `prompt`: Modify avatar behavior and initial greeting\n- `thumbnailUrl`: Update the avatar's thumbnail image\n\nNote: The avatar's source media (`url`) and name cannot be changed after creation.",
+        "description": "Update an existing avatar's configuration including provider, model, voice, and prompt.\n\nYou can update the following fields:\n- `providerId`, `model`, `voice`: Switch to different AI provider/model/voice\n- `firstMessage`, `prompt`: Modify avatar behavior and initial greeting\n\nNote: The avatar's source media (`url`) and name cannot be changed after creation.",
         "operationId": "updateAvatar",
         "security": [{ "navtalkLicenseAuth": [] }],
         "parameters": [],
@@ -333,8 +332,7 @@
                 "model": "model-ghi789rst",
                 "voice": "voice-jkl012mno",
                 "firstMessage": "Hello! How may I assist you?",
-                "prompt": "You are a friendly customer service assistant.",
-                "thumbnailUrl": "https://cdn.example.com/thumbnails/avatar-thumb.jpg"
+                "prompt": "You are a friendly customer service assistant."
               }
             }
           }
@@ -755,11 +753,6 @@
             "type": "string",
             "description": "Optional system prompt that controls the avatar's behavior and personality.",
             "example": "You are a helpful assistant."
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "description": "Optional thumbnail image URL. If omitted for a video avatar, the first frame is extracted automatically.",
-            "example": "https://example.com/thumb.jpg"
           }
         }
       },
@@ -780,11 +773,6 @@
             "type": "string",
             "description": "Source media URL used to create the avatar.",
             "example": "https://example.com/sample.mp4"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "description": "Thumbnail image URL (null if not set).",
-            "example": "https://example.com/thumb.jpg"
           },
           "providerId": {
             "type": "string",
@@ -1017,11 +1005,6 @@
             "type": "string",
             "description": "Optional system prompt that controls the avatar's behavior and personality.",
             "example": "You are a friendly customer service assistant."
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "description": "Optional thumbnail image URL.",
-            "example": "https://cdn.example.com/thumbnails/avatar-thumb.jpg"
           }
         }
       },
